@@ -40,10 +40,12 @@ static NSMutableDictionary* baseHeaders;
 
 + (void)post:(NSString *)path json:(NSDictionary *)json callback:(APICallback)callback {
     [self send:@"POST" path:path contentType:@"application/json" data:json.toJsonData callback:callback];
+    NSLog(@"API POST %@ %@", path, json);
 }
 
 + (void)get:(NSString *)path queries:(NSDictionary *)queries callback:(APICallback)callback {
     path = [NSString stringWithFormat:@"%@?%@", path, queries.toQueryString];
+    NSLog(@"API GET %@", path);
     [self send:@"GET" path:path contentType:nil data:nil callback:callback];
 }
 
@@ -90,6 +92,7 @@ static NSMutableDictionary* baseHeaders;
     
     [httpData appendData:[[NSString stringWithFormat:@"--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
     
+    NSLog(@"API Upload %@", path);
     [self send:@"POST" path:path contentType:contentType data:httpData callback:callback];
 }
 
@@ -97,11 +100,10 @@ static NSMutableDictionary* baseHeaders;
 + (void) send:(NSString*)method path:(NSString*)path contentType:(NSString*)contentType data:(NSData*)data callback:(APICallback)callback {
     if (!server) { [NSException raise:@"MissingServer" format:@"You must do [API setup:@\"https://your.server.com\""]; }
     NSString* url = [server stringByAppendingString:path];
-    NSMutableURLRequest* request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
     request.HTTPMethod = method;
     request.HTTPBody = data;
     request.allHTTPHeaderFields = [API headers:contentType data:data];
-    NSLog(@"API %@ %@", method, path);
     [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse *_response, NSData *data, NSError *connectionError) {
         if (connectionError) { return callback(connectionError, nil); }
         NSHTTPURLResponse* response = (NSHTTPURLResponse*)_response;
@@ -109,14 +111,17 @@ static NSMutableDictionary* baseHeaders;
         if (error) { return callback(error, nil); }
         
         NSString* contentType = response.allHeaderFields[@"content-type"];
-        if ([contentType isEqualToString:@"application/json"]) {
+        
+        if ([contentType rangeOfString:@"application/json"].location == 0) {
             id jsonRes = [JSON parseData:data];
             if (!jsonRes) { return callback(makeError(@"Bad JSON format"), nil); }
-            NSLog(@"API got %@ %@ %@", method, path, jsonRes);
+            NSLog(@"API got json: %@ %@ %@", method, path, jsonRes);
             callback(nil, jsonRes);
-        } else if ([contentType isEqualToString:@"text/plain"]) {
-            NSLog(@"API got %@ %@ %@", method, path, data.toString);
+        } else if ([contentType rangeOfString:@"text/plain"].location == 0) {
+            NSLog(@"API got text: %@ %@ %@", method, path, data.toString);
             callback(nil, data.toString);
+        } else {
+            NSLog(@"API got unknown: %@ %@ %@", method, path, contentType);
         }
     }];    
 }
@@ -127,7 +132,7 @@ static NSMutableDictionary* baseHeaders;
         headers[@"content-type"] = contentType;
     }
     if (data && data.length) {
-        headers[@"content-length"] = idInt(data.length);
+        headers[@"content-length"] = [idInt(data.length) stringValue];
     }
     return headers;
 }
