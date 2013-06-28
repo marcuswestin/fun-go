@@ -10,6 +10,7 @@
 
 @class ViewStyle;
 
+typedef ViewStyle* (^Styler)();
 typedef ViewStyle* (^StylerView)(UIView* view);
 typedef ViewStyle* (^StylerFloat1)(float num);
 typedef ViewStyle* (^StylerFloat2)(float f1, float f2);
@@ -22,14 +23,15 @@ typedef ViewStyle* (^StylerColor1)(UIColor* color);
 - (instancetype)initWithView:(UIView*)view;
 - (UIView*)apply;
 
-/* Size
- ******/
+/* Position
+ **********/
 - (StylerFloat1)x;
 - (StylerFloat1)y;
 - (StylerFloat2)xy;
+- (ViewStyle*)sizeToFit;
 
-/* Position
- **********/
+/* Size
+ ******/
 - (StylerFloat1)w;
 - (StylerFloat1)h;
 - (StylerFloat2)wh;

@@ -99,6 +99,12 @@
     };
 }
 
+- (ViewStyle*)sizeToFit {
+    [view sizeToFit];
+    frame.size = view.frame.size;
+    return self;
+}
+
 /* Color
  *******/
 - (StylerColor1)bg {
