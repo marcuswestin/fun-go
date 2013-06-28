@@ -21,6 +21,9 @@ static NSString* _cachesDirectory;
 + (id)readJsonDocument:(NSString *)filename {
     return [Files readDocument:filename].toJsonObject;
 }
++ (void)writeJsonDocument:(NSString *)filename data:(id)data {
+    [Files writeDocument:filename data:[JSON toData:data]];
+}
 + (NSData*)readDocument:(NSString*)name {
     return [NSData dataWithContentsOfFile:[self documentPath:name]];
 }
