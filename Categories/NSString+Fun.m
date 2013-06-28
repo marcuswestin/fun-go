@@ -22,4 +22,8 @@
     return [self dataUsingEncoding:NSUTF8StringEncoding];
 }
 
+- (NSString *)stringByRemoving:(NSString *)needles {
+    return [self stringByReplacingOccurrencesOfString:needles withString:@""];
+}
+
 @end

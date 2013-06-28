@@ -13,5 +13,6 @@
 - (NSArray*)splitByComma;
 - (NSArray*)split:(NSString*)splitter;
 - (NSData*)toData;
+- (NSString*)stringByRemoving:(NSString*)needles;
 
 @end
