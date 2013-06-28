@@ -16,6 +16,7 @@
 #import "NSObject+Fun.h"
 #import "NSString+Fun.h"
 #import "UIColor+Fun.h"
+#import "UIControl+Fun.h"
 #import "UIView+FunStyle.h"
 
 #import "API.h"
