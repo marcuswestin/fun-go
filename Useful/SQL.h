@@ -28,8 +28,9 @@
 - (SQLRow*)selectOne:(NSString *)sql args:(NSArray *)args;
 //- (void)update:(NSString*)sql args:(NSArray*)args;
 //- (void)updateOne:(NSString*)sql args:(NSArray*)args callback:(Callback)callback;
-//- (void)insert:(NSString*)sql args:(NSArray*)args callback:(Callback)callback;
-//- (void)insertMultiple:(NSString*)sql argsList:(NSArray*)args callback:(Callback)callback;
+- (NSError*)insert:(NSString*)sql args:(NSArray*)args;
+- (NSError*)insertMultiple:(NSString*)sql argsList:(NSArray*)argsList;
+- (NSError*)insertOrReplaceMultipleInto:(NSString*)table items:(NSArray*)items;
 @end
 
 typedef void (^SQLSelectCallback)(id err, NSArray* rows);

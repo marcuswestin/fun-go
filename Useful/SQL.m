@@ -7,6 +7,7 @@
 //
 
 #import "FunAll.h"
+#import "FMDatabaseAdditions.h"
 
 @implementation SQLBaseResult
 @synthesize error;
@@ -20,6 +21,7 @@
 @synthesize rows;
 @end
 
+static NSMutableDictionary* columnsCache;
 
 @implementation SQL
 
@@ -27,6 +29,7 @@ static FMDatabaseQueue* queue;
 
 + (void) open:(NSString*)path {
     queue = [FMDatabaseQueue databaseQueueWithPath:path];
+    columnsCache = [NSMutableDictionary dictionary];
 }
 
 + (void)autocommit:(SQLConnBlock)block {
@@ -48,6 +51,8 @@ static FMDatabaseQueue* queue;
 }
 
 @end
+
+static NSMutableDictionary* columns;
 
 @implementation SQLConn
 
@@ -80,51 +85,62 @@ static FMDatabaseQueue* queue;
         return result;
     }
     
-    if (multiRes.rows.count != 1) {
+    if (multiRes.rows.count > 1) {
         result.error = makeError(@"Bad number of rows");
         return result;
     }
     
-    result.row = multiRes.rows[0];
+    result.row = multiRes.rows.count ? multiRes.rows[0] : nil;
+    
     return result;
 }
 
+- (NSError *)insert:(NSString *)sql args:(NSArray *)args {
+    BOOL success = [db executeUpdate:sql withArgumentsInArray:args];
+    if (!success) { return db.lastError; }
+    return nil;
+}
 
-//+ (void)update:(NSString *)sql args:(NSArray *)args callback:(Callback)callback {
-//    [queue inDatabase:^(FMDatabase *db) {
-//        BOOL success = [db executeUpdate:sql withArgumentsInArray:args];
-//        //        if (!success && ignoreDuplicates && db.lastErrorCode == SQLITE_CONSTRAINT) { success = YES; }
-//        if (!success) { return callback(db.lastError, nil); }
-//        callback(nil,nil);
-//    }];
-//}
-//
-//+ (void)updateOne:(NSString *)sql args:(NSArray *)args callback:(Callback)callback {
-//    [queue inDatabase:^(FMDatabase *db) {
-//        BOOL success = [db executeUpdate:sql withArgumentsInArray:args];
-//        //        if (!success && ignoreDuplicates && db.lastErrorCode == SQLITE_CONSTRAINT) { success = YES; }
-//        if (!success) { return callback(db.lastError, nil); }
-//        if (db.changes != 1) { return callback(@"Updated too many rows", nil); }
-//        callback(nil, nil);
-//    }];
-//    
-//}
-//
-//+ (void)insert:(NSString *)sql args:(NSArray *)args callback:(Callback)callback {
-//    [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-//        BOOL success = [db executeUpdate:sql withArgumentsInArray:args];
-//        if (!success) { return callback(db.lastError, nil); }
-//        callback(nil,nil);
-//    }];
-//}
-//
-//+ (void)insertMultiple:(NSString *)sql argsList:(NSArray *)argsList callback:(Callback)callback {
-//    [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-//        for (NSArray* args in argsList) {
-//            BOOL success = [db executeUpdate:sql withArgumentsInArray:args];
-//            if (!success) { return callback(db.lastError, nil); }
-//        }
-//        callback(nil,nil);
-//    }];
-//}
+- (NSError *)insertMultiple:(NSString *)sql argsList:(NSArray *)argsList {
+    for (NSArray* args in argsList) {
+        BOOL success = [db executeUpdate:sql withArgumentsInArray:args];
+        if (!success) { return db.lastError; }
+    }
+    return nil;
+}
+
+- (NSError*)insertOrReplaceMultipleInto:(NSString*)table items:(NSArray*)items {
+    if (!items || items.count == 0) { return nil; }
+    
+    NSArray* columns = [self _columns:table];
+    NSString* questionMarks = [@"?" stringByPaddingToLength:columns.count*2-1 withString:@",?" startingAtIndex:0];
+    NSString* columnNames = [columns map:^id(id name, NSUInteger i) { return name; }].joinedByCommaSpace;
+    NSString* sql = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)", table, columnNames, questionMarks];
+
+    NSMutableArray* values;
+    for (id item in items) {
+        values = [NSMutableArray arrayWithCapacity:items.count];
+        
+        for (NSString* column in columns) {
+            [values addObject:item[column] ? item[column] : NSNull.null];
+        }
+
+        BOOL success = [db executeUpdate:sql withArgumentsInArray:values];
+        if (!success) { return db.lastError; }
+    }
+    return nil;
+}
+
+- (NSArray*)_columns:(NSString*)table {
+    if (columnsCache[table]) { return columnsCache[table]; }
+    NSMutableArray* columns = [NSMutableArray array];
+    FMResultSet* rs = [db getTableSchema:table];
+    if (!rs) { return nil; }
+    while ([rs next]) {
+        [columns addObject:[rs stringForColumn:@"name"]];
+    }
+    [rs close];
+    return columnsCache[table] = columns;
+}
+
 @end
