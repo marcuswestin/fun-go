@@ -25,6 +25,7 @@ static int numRequests = 0;
 
 + (void)setup:(NSString *)serverUrl {
     server = serverUrl;
+    baseHeaders = [NSMutableDictionary dictionary];
 }
 
 + (void)setHeaders:(NSDictionary *)headers {
