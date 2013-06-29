@@ -25,20 +25,20 @@
     }
 }
 
-- (NSString*) join:(NSString*)joiner {
+- (NSString*) joinBy:(NSString*)joiner {
     return [self componentsJoinedByString:joiner];
 }
 
 - (NSString *)joinedByComma {
-    return [self join:@","];
+    return [self joinBy:@","];
 }
 
 - (NSString *)joinedBySpace {
-    return [self join:@" "];
+    return [self joinBy:@" "];
 }
 
 - (NSString *)joinedByCommaSpace {
-    return [self join:@", "];
+    return [self joinBy:@", "];
 }
 
 

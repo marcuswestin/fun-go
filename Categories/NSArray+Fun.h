@@ -18,7 +18,7 @@ typedef void (^Iterate)(id val, NSUInteger i);
 - (void) each:(Iterate)iterateFn;
 - (NSMutableArray*) map:(MapIntToId)mapper;
 
-- (NSString*)join:(NSString*)joiner;
+- (NSString*)joinBy:(NSString*)joiner;
 - (NSString*)joinedBySpace;
 - (NSString*)joinedByComma;
 - (NSString*)joinedByCommaSpace;
