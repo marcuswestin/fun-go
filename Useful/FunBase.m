@@ -7,10 +7,12 @@
 //
 
 #import "FunBase.h"
+#import "Overlay.h"
 #import <objc/runtime.h>
 
 void error(NSError* err) {
     if (!err) { return; }
+    [Overlay hide];
     NSLog(@"ERROR %@", err);
 }
 
