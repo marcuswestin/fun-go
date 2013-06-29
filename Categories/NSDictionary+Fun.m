@@ -42,10 +42,9 @@
 
 - (NSString *)toQueryString {
     NSMutableArray* arr = [NSMutableArray arrayWithCapacity:self.count];
-    for (NSString* key in self) {
-        NSString* value = self[key];
-        [arr addObject:[NSString stringWithFormat:@"%@=%@", key.encodedURIComponent, value.encodedURIComponent]];
-    }
+    [self enumerateKeysAndObjectsUsingBlock:^(NSString* key, id value, BOOL *stop) {
+        [arr addObject:[NSString stringWithFormat:@"%@=%@", key.encodedURIComponent, [value stringValue].encodedURIComponent]];
+    }];
     return [arr joinBy:@"&"];
 }
 
