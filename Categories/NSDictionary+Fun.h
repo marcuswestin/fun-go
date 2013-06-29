@@ -9,9 +9,17 @@
 #import <Foundation/Foundation.h>
 
 typedef void (^DictionaryIterateFn)(id val, id key);
+typedef id (^DictionaryMapFn)(id val, id key);
 
 @interface NSDictionary (Fun)
 
 - (void)each:(DictionaryIterateFn)iterateFn;
+
+- (NSArray*)array;
+- (NSArray*)array:(DictionaryMapFn)mapFn;
+
+- (NSDictionary*)map:(DictionaryMapFn)mapFn;
+
+- (NSString *)toQueryString;
 
 @end

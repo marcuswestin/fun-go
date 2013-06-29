@@ -26,4 +26,9 @@
     return [self stringByReplacingOccurrencesOfString:needles withString:@""];
 }
 
+- (NSString *)encodedURIComponent {
+    return (__bridge NSString*) CFURLCreateStringByAddingPercentEscapes(NULL, (__bridge CFStringRef)self, NULL,
+                                                                        (CFStringRef)@"!*'\"();:@&=+$,/?%#[]% ", kCFStringEncodingUTF8 );
+}
+
 @end

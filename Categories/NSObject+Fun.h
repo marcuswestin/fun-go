@@ -10,7 +10,6 @@
 
 @interface NSObject (Fun)
 
-- (NSString *)toQueryString;
 - (NSString *)toJsonString;
 - (NSData*)toJsonData;
 + (NSObject*)parseJsonData:(NSData*)jsonData;

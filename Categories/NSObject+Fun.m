@@ -12,11 +12,6 @@
 
 @implementation NSObject (Fun)
 
-- (NSString *)toQueryString {
-    return (__bridge NSString*) CFURLCreateStringByAddingPercentEscapes(NULL, (__bridge CFStringRef)self, NULL,
-                                                                        (CFStringRef)@"!*'\"();:@&=+$,/?%#[]% ", kCFStringEncodingUTF8 );
-}
-
 - (NSString *)toJsonString {
     return [[NSString alloc] initWithData:self.toJsonData encoding:NSUTF8StringEncoding];
 }

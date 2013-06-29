@@ -14,5 +14,6 @@
 - (NSArray*)split:(NSString*)splitter;
 - (NSData*)toData;
 - (NSString*)stringByRemoving:(NSString*)needles;
+- (NSString*)encodedURIComponent;
 
 @end

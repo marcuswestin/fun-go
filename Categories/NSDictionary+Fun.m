@@ -7,6 +7,8 @@
 //
 
 #import "NSDictionary+Fun.h"
+#import "NSArray+Fun.h"
+#import "NSString+Fun.h"
 
 @implementation NSDictionary (Fun)
 
@@ -14,6 +16,37 @@
     for (id key in self) {
         iterateFn(self[key], key);
     }
+}
+
+- (NSArray *)array:(DictionaryMapFn)mapFn {
+    NSMutableArray* arr = [NSMutableArray arrayWithCapacity:self.count];
+    for (id key in self) {
+        [arr addObject:mapFn(self[key], key)];
+    }
+    return arr;
+}
+
+- (NSArray *)array {
+    return [self array:^id(id val, id key) {
+        return val;
+    }];
+}
+
+- (NSDictionary *)map:(DictionaryMapFn)mapFn {
+    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:self.count];
+    for (id key in self) {
+        dict[key] = mapFn(self[key], key);
+    }
+    return dict;
+}
+
+- (NSString *)toQueryString {
+    NSMutableArray* arr = [NSMutableArray arrayWithCapacity:self.count];
+    for (NSString* key in self) {
+        NSString* value = self[key];
+        [arr addObject:[NSString stringWithFormat:@"%@=%@", key.encodedURIComponent, value.encodedURIComponent]];
+    }
+    return [arr joinBy:@"&"];
 }
 
 @end
