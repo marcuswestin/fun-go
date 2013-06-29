@@ -140,7 +140,7 @@ static int numRequests = 0;
         headers[@"content-type"] = contentType;
     }
     if (data && data.length) {
-        headers[@"content-length"] = [idInt(data.length) stringValue];
+        headers[@"content-length"] = [num(data.length) stringValue];
     }
     return headers;
 }

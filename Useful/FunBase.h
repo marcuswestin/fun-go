@@ -15,7 +15,7 @@ typedef void (^Callback)(id err, id res);
 typedef void (^DataCallback)(id err, NSData* data);
 
 NSString* concat(id arg1, ...);
-NSNumber* idInt(int i);
+NSNumber* num(int i);
 
 @interface FunBase : NSObject
 

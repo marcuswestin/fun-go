@@ -25,7 +25,7 @@ NSString* concat(NSString* firstArg, ...) {
     return result;
 }
 
-NSNumber* idInt(int i) { return [NSNumber numberWithInt:i]; }
+NSNumber* num(int i) { return [NSNumber numberWithInt:i]; }
 
 NSError* makeError(NSString* localMessage) {
     return [NSError errorWithDomain:@"Global" code:1 userInfo:@{ NSLocalizedDescriptionKey:localMessage }];
