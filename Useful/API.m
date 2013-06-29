@@ -100,6 +100,14 @@ static int numRequests = 0;
 
 
 + (void) send:(NSString*)method path:(NSString*)path contentType:(NSString*)contentType data:(NSData*)data callback:(APICallback)callback {
+
+    NSDictionary* devInterceptRes = [API _devIntercept:path];
+    if (devInterceptRes) {
+        return dispatch_async(dispatch_get_main_queue(), ^{
+            callback(nil, devInterceptRes);
+        });
+    }
+    
     if (!server) { [NSException raise:@"MissingServer" format:@"You must do [API setup:@\"https://your.server.com\""]; }
     NSString* url = [server stringByAppendingString:path];
     NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
@@ -109,29 +117,34 @@ static int numRequests = 0;
 
     [API _showSpinner];
     
-    [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse *_response, NSData *data, NSError *connectionError) {
+    [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
         
-        [API _hideSpinner];
-        
-        if (connectionError) { return callback(connectionError, nil); }
-        NSHTTPURLResponse* response = (NSHTTPURLResponse*)_response;
-        NSError* error = checkHttpError(response);
-        if (error) { return callback(error, nil); }
-        
-        NSString* contentType = response.allHeaderFields[@"content-type"];
-        
-        if ([contentType rangeOfString:@"application/json"].location == 0) {
-            id jsonRes = [JSON parseData:data];
-            if (!jsonRes) { return callback(makeError(@"Bad JSON format"), nil); }
-            NSLog(@"API got json: %@ %@ %@", method, path, jsonRes);
-            callback(nil, jsonRes);
-        } else if ([contentType rangeOfString:@"text/plain"].location == 0) {
-            NSLog(@"API got text: %@ %@ %@", method, path, data.toString);
-            callback(nil, data.toString);
-        } else {
-            NSLog(@"API got unknown: %@ %@ %@", method, path, contentType);
-        }
-    }];    
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [API _handleResponse:(NSHTTPURLResponse*)response forMethod:method path:path data:data error:connectionError callback:callback];
+        });
+    }];
+}
+
++ (void)_handleResponse:(NSHTTPURLResponse*)response forMethod:(NSString*)method path:(NSString*)path data:(NSData*)data error:(NSError*)connectionError callback:(APICallback)callback {
+    [API _hideSpinner];
+    
+    if (connectionError) { return callback(connectionError, nil); }
+    NSError* error = checkHttpError(response);
+    if (error) { return callback(error, nil); }
+    
+    NSString* contentType = response.allHeaderFields[@"content-type"];
+    
+    if ([contentType rangeOfString:@"application/json"].location == 0) {
+        id jsonRes = [JSON parseData:data];
+        if (!jsonRes) { return callback(makeError(@"Bad JSON format"), nil); }
+        NSLog(@"API got json: %@ %@ %@", method, path, jsonRes);
+        callback(nil, jsonRes);
+    } else if ([contentType rangeOfString:@"text/plain"].location == 0) {
+        NSLog(@"API got text: %@ %@ %@", method, path, data.toString);
+        callback(nil, data.toString);
+    } else {
+        NSLog(@"API got unknown: %@ %@ %@", method, path, contentType);
+    }
 }
 
 + (NSDictionary*)headers:(NSString*)contentType data:(NSData*)data {
