@@ -21,6 +21,7 @@ static NSString* server;
 static NSOperationQueue* queue;
 static NSString* multipartBoundary;
 static NSMutableDictionary* baseHeaders;
+static int numRequests = 0;
 
 + (void)setup:(NSString *)serverUrl {
     server = serverUrl;
@@ -104,7 +105,13 @@ static NSMutableDictionary* baseHeaders;
     request.HTTPMethod = method;
     request.HTTPBody = data;
     request.allHTTPHeaderFields = [API headers:contentType data:data];
+
+    [API _showSpinner];
+    
     [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse *_response, NSData *data, NSError *connectionError) {
+        
+        [API _hideSpinner];
+        
         if (connectionError) { return callback(connectionError, nil); }
         NSHTTPURLResponse* response = (NSHTTPURLResponse*)_response;
         NSError* error = checkHttpError(response);
@@ -135,6 +142,28 @@ static NSMutableDictionary* baseHeaders;
         headers[@"content-length"] = [idInt(data.length) stringValue];
     }
     return headers;
+}
+
++ (void)_showSpinner {
+    @synchronized(self) {
+        if (numRequests == 0) {
+            UIApplication.sharedApplication.networkActivityIndicatorVisible = YES;
+        }
+        numRequests += 1;
+    }
+}
+
++ (void)_hideSpinner {
+    @synchronized(self) {
+        numRequests -= 1;
+        if (numRequests == 0) {
+            UIApplication.sharedApplication.networkActivityIndicatorVisible = NO;
+        }
+    }
+}
+
++ (NSDictionary*)_devIntercept:(NSString*)path {
+    return nil;
 }
 
 @end
