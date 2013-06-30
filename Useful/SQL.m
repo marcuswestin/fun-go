@@ -9,16 +9,10 @@
 #import "FunAll.h"
 #import "FMDatabaseAdditions.h"
 
-@implementation SQLBaseResult
+@implementation SQLRes
 @synthesize error;
-@end
-
-@implementation SQLRow
-@synthesize row;
-@end
-
-@implementation SQLRows
 @synthesize rows;
+@synthesize row;
 @end
 
 static NSMutableDictionary* columnsCache;
@@ -58,8 +52,8 @@ static NSMutableDictionary* columns;
 
 @synthesize db;
 
-- (SQLRows*)select:(NSString *)sql args:(NSArray *)args {
-    SQLRows* result = [[SQLRows alloc] init];
+- (SQLRes*)select:(NSString *)sql args:(NSArray *)args {
+    SQLRes* result = [[SQLRes alloc] init];
 
     FMResultSet* resultSet = [db executeQuery:sql withArgumentsInArray:args];
     if (!resultSet) {
@@ -72,25 +66,24 @@ static NSMutableDictionary* columns;
         [rows addObject:[resultSet resultDictionary]];
     }
     
-    result.rows = rows;
+    if (rows.count == 1) {
+        result.row = rows[0];
+    } else {
+        result.rows = rows;
+    }
+    
     return result;
 }
 
-- (SQLRow *)selectOne:(NSString *)sql args:(NSArray *)args {
-    SQLRows* multiRes = [self select:sql args:args];
-    SQLRow* result = [[SQLRow alloc] init];
+- (SQLRes*)selectOne:(NSString *)sql args:(NSArray *)args {
+    SQLRes* result = [self select:sql args:args];
     
-    if (multiRes.error) {
-        result.error = multiRes.error;
-        return result;
-    }
+    if (result.error) { return result; }
     
-    if (multiRes.rows.count > 1) {
+    if (result.rows.count > 1) {
         result.error = makeError(@"Bad number of rows");
         return result;
     }
-    
-    result.row = multiRes.rows.count ? multiRes.rows[0] : nil;
     
     return result;
 }

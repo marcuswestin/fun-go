@@ -10,22 +10,16 @@
 #import "FMDatabase.h"
 #import "FMDatabaseQueue.h"
 
-@interface SQLBaseResult : NSObject
+@interface SQLRes : NSObject
 @property NSError* error;
-@end
-
-@interface SQLRow : SQLBaseResult
-@property id row;
-@end
-
-@interface SQLRows :SQLBaseResult
 @property NSArray* rows;
+@property NSDictionary* row;
 @end
 
 @interface SQLConn : FunBase
 @property FMDatabase* db;
-- (SQLRows*)select:(NSString *)sql args:(NSArray *)args;
-- (SQLRow*)selectOne:(NSString *)sql args:(NSArray *)args;
+- (SQLRes*)select:(NSString *)sql args:(NSArray *)args;
+- (SQLRes*)selectOne:(NSString *)sql args:(NSArray *)args;
 //- (void)update:(NSString*)sql args:(NSArray*)args;
 //- (void)updateOne:(NSString*)sql args:(NSArray*)args callback:(Callback)callback;
 - (NSError*)insert:(NSString*)sql args:(NSArray*)args;
