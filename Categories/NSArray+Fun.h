@@ -12,11 +12,14 @@
 
 typedef id (^MapIntToId)(id val, NSUInteger i);
 typedef void (^Iterate)(id val, NSUInteger i);
+typedef BOOL (^Filter)(id val, NSUInteger i);
 
 @interface NSArray (Fun)
 
 - (void) each:(Iterate)iterateFn;
 - (NSMutableArray*) map:(MapIntToId)mapper;
+- (NSMutableArray*) filter:(Filter)filterFn;
+- (id) pickOne:(Filter)pickFn;
 
 - (NSString*)joinBy:(NSString*)joiner;
 - (NSString*)joinedBySpace;

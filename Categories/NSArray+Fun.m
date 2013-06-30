@@ -25,6 +25,23 @@
     }
 }
 
+- (NSMutableArray *)filter:(Filter)filterFn {
+    NSMutableArray* results = [NSMutableArray array];
+    [self each:^(id val, NSUInteger i) {
+        if (!filterFn(val, i)) { return; }
+        [results addObject:val];
+    }];
+    return results;
+}
+
+- (id)pickOne:(Filter)pickFn {
+    NSUInteger length = [self count];
+    for (NSUInteger i=0; i<length; i++) {
+        if (pickFn(self[i], i)) { return self[i]; }
+    }
+    return nil;
+}
+
 - (NSString*) joinBy:(NSString*)joiner {
     return [self componentsJoinedByString:joiner];
 }
