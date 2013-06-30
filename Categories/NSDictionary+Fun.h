@@ -22,4 +22,7 @@ typedef id (^DictionaryMapFn)(id val, id key);
 
 - (NSString *)toQueryString;
 
+- (NSUInteger)integerFor:(NSString*)property;
+
 @end
+

@@ -48,4 +48,9 @@
     return [arr joinBy:@"&"];
 }
 
+- (NSUInteger)integerFor:(NSString *)property {
+    id val = self[property];
+    return (val == [NSNull null] ? 0 : [val integerValue]);
+}
+
 @end
