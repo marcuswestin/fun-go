@@ -42,4 +42,8 @@ static NSString* _cachesDirectory;
 + (NSString*)documentPath:(NSString*)filename {
     return [_documentsDirectory stringByAppendingPathComponent:filename];
 }
++ (NSString *)readResource:(NSString *)name {
+    NSString* path = [[NSBundle mainBundle] pathForResource:name ofType:nil];
+    return [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
+}
 @end

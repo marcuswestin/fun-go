@@ -19,5 +19,6 @@
 + (BOOL)writeCache:(NSString*)filename data:(NSData*)data;
 + (NSString*)cachePath:(NSString*)filename;
 + (NSString*)documentPath:(NSString*)filename;
++ (NSString*)readResource:(NSString*)name;
 
 @end
