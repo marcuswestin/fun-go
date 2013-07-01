@@ -8,29 +8,89 @@
 
 #import "FunAll.h"
 #import "FMDatabaseAdditions.h"
+#import "Files.h"
+#import "Log.h"
 
 @implementation SQLRes
-@synthesize error;
-@synthesize rows;
-@synthesize row;
 @end
 
 static NSMutableDictionary* columnsCache;
+
+@implementation SQLMigrations {
+    NSMutableArray* _completedMigrations;
+    NSUInteger _migrationIndex;
+    NSMutableArray* _newMigrations;
+}
+static NSString* MigrationDoc = @"SQLMigrationInfo";
+- (id)init {
+    if (self = [super init]) {
+        NSDictionary* migrationInfo = [Files readJsonDocument:MigrationDoc];
+        _migrationIndex = 0;
+        if (migrationInfo) {
+            _completedMigrations = [NSMutableArray arrayWithArray:migrationInfo[@"completedMigrations"]];
+        } else {
+            _completedMigrations = [NSMutableArray array];
+        }
+    }
+    return self;
+}
+- (void)registerMigration:(NSString *)name withBlock:(MigrationBlock)block {
+    if (_migrationIndex < _completedMigrations.count) {
+        NSString* expectedMigraitonName = _completedMigrations[_migrationIndex];
+        if (![name isEqualToString:expectedMigraitonName]) {
+            [Log error:makeError(@"Bad migration order")];
+            [NSException raise:@"BadMigration" format:@"Expected migration named %@ but found %@", expectedMigraitonName, name];
+        }
+    } else {
+        [_newMigrations addObject:@{ @"name":name, block:block }];
+    }
+    _migrationIndex += 1;
+}
+- (void)_finish {
+    [_newMigrations each:^(NSDictionary* migration, NSUInteger i) {
+        NSLog(@"Running migration %@", migration[@"name"]);
+        [SQL transact:^(SQLConn *conn, SQLRollbackBlock rollback) {
+            MigrationBlock migrationBlock = migration[@"block"];
+            @try {
+                migrationBlock(conn);
+            }
+            @catch (NSException *exception) {
+                [Log error:makeError(exception.reason)];
+                rollback();
+            }
+        }];
+        [_completedMigrations addObject:migration[@"name"]];
+    }];
+}
+@end
 
 @implementation SQL
 
 static FMDatabaseQueue* queue;
 
-+ (void) open:(NSString*)path {
++ (void) open:(NSString*)path withMigrations:(SQLRegisterMigrations)migrationsFn {
     queue = [FMDatabaseQueue databaseQueueWithPath:path];
     columnsCache = [NSMutableDictionary dictionary];
+    SQLMigrations* migrations = [[SQLMigrations alloc] init];
+    migrationsFn(migrations);
+    [migrations _finish];
 }
 
-+ (void)autocommit:(SQLConnBlock)block {
++ (void)autocommit:(SQLAutocommitBlock)block {
     [queue inDatabase:^(FMDatabase *db) {
         SQLConn* conn = [[SQLConn alloc] init];
         conn.db = db;
         block(conn);
+    }];
+}
+
++ (void)transact:(SQLTransactionBlock)block {
+    [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        SQLConn* conn = [[SQLConn alloc] init];
+        conn.db = db;
+        block(conn, ^{
+            *rollback = YES;
+        });
     }];
 }
 
@@ -50,14 +110,12 @@ static NSMutableDictionary* columns;
 
 @implementation SQLConn
 
-@synthesize db;
-
 - (SQLRes*)select:(NSString *)sql args:(NSArray *)args {
     SQLRes* result = [[SQLRes alloc] init];
 
-    FMResultSet* resultSet = [db executeQuery:sql withArgumentsInArray:args];
+    FMResultSet* resultSet = [_db executeQuery:sql withArgumentsInArray:args];
     if (!resultSet) {
-        result.error = db.lastError;
+        result.error = _db.lastError;
         return result;
     }
     
@@ -89,15 +147,15 @@ static NSMutableDictionary* columns;
 }
 
 - (NSError *)insert:(NSString *)sql args:(NSArray *)args {
-    BOOL success = [db executeUpdate:sql withArgumentsInArray:args];
-    if (!success) { return db.lastError; }
+    BOOL success = [_db executeUpdate:sql withArgumentsInArray:args];
+    if (!success) { return _db.lastError; }
     return nil;
 }
 
 - (NSError *)insertMultiple:(NSString *)sql argsList:(NSArray *)argsList {
     for (NSArray* args in argsList) {
-        BOOL success = [db executeUpdate:sql withArgumentsInArray:args];
-        if (!success) { return db.lastError; }
+        BOOL success = [_db executeUpdate:sql withArgumentsInArray:args];
+        if (!success) { return _db.lastError; }
     }
     return nil;
 }
@@ -118,16 +176,32 @@ static NSMutableDictionary* columns;
             [values addObject:item[column] ? item[column] : NSNull.null];
         }
 
-        BOOL success = [db executeUpdate:sql withArgumentsInArray:values];
-        if (!success) { return db.lastError; }
+        BOOL success = [_db executeUpdate:sql withArgumentsInArray:values];
+        if (!success) { return _db.lastError; }
     }
+    return nil;
+}
+
+- (NSError *)schema:(NSString *)sql {
+    return [self update:sql args:nil];
+}
+
+- (NSError *)update:(NSString *)sql args:(NSArray *)args {
+    BOOL success = [_db executeUpdate:sql withArgumentsInArray:args];
+    return (success ? nil : _db.lastError);
+}
+
+- (NSError *)updateOne:(NSString *)sql args:(NSArray *)args {
+    BOOL success = [_db executeUpdate:sql withArgumentsInArray:args];
+    if (!success) { return _db.lastError; }
+    if (_db.changes > 1) { return makeError(@"updateOne affected multipe rows"); }
     return nil;
 }
 
 - (NSArray*)_columns:(NSString*)table {
     if (columnsCache[table]) { return columnsCache[table]; }
     NSMutableArray* columns = [NSMutableArray array];
-    FMResultSet* rs = [db getTableSchema:table];
+    FMResultSet* rs = [_db getTableSchema:table];
     if (!rs) { return nil; }
     while ([rs next]) {
         [columns addObject:[rs stringForColumn:@"name"]];
