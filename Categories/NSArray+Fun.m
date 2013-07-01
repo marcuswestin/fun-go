@@ -58,5 +58,8 @@
     return [self joinBy:@", "];
 }
 
+- (NSString *)joinedByCommaNewline {
+    return [self joinBy:@",\n"];
+}
 
 @end

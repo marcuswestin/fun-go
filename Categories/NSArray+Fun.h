@@ -25,4 +25,5 @@ typedef BOOL (^Filter)(id val, NSUInteger i);
 - (NSString*)joinedBySpace;
 - (NSString*)joinedByComma;
 - (NSString*)joinedByCommaSpace;
+- (NSString*)joinedByCommaNewline;
 @end
