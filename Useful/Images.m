@@ -27,11 +27,16 @@ static CGSize noResize;
     noResize = CGSizeMake(0,0);
 }
 
-+ (void)load:(NSString *)url resize:(CGSize)resize callback:(ImageCallback)callback {
+
++ (void)load:(NSString *)url resize:(CGSize)size callback:(ImageCallback)callback {
+    [Images load:url resize:size radius:0 callback:callback];
+}
+
++ (void)load:(NSString *)url resize:(CGSize)resize radius:(NSUInteger)radius callback:(ImageCallback)callback {
     NSString* key;
     NSData* data;
     // Resized cached
-    key = [self _cacheKeyFor:url resize:resize];
+    key = [self _cacheKeyFor:url resize:resize radius:radius];
     data = [Cache get:key];
     if (data) {
 //        NSLog(@"Found resized cached %@", key);
@@ -39,17 +44,17 @@ static CGSize noResize;
     }
 
     // Original cached
-    key = [self _cacheKeyFor:url resize:noResize];
+    key = [self _cacheKeyFor:url resize:noResize radius:radius];
     data = [Cache get:key];
     if (data) {
 //        NSLog(@"Found original cached %@", key);
-        return [self _processAndCache:url data:data resize:resize callback:callback];
+        return [self _processAndCache:url data:data resize:resize radius:radius callback:callback];
     }
     
     // Fetch from network
     [self _fetch:url callback:^(id err, NSData* data) {
         if (err) { return callback(err,nil); }
-        return [self _processAndCache:url data:data resize:resize callback:callback];
+        return [self _processAndCache:url data:data resize:resize radius:radius callback:callback];
     }];
 }
 
@@ -86,23 +91,23 @@ static CGSize noResize;
     }
 }
 
-+ (void) _processAndCache:(NSString*)url data:(NSData*)data resize:(CGSize)resize callback:(ImageCallback)callback {
-    [self _cache:url resize:noResize data:data];
++ (void) _processAndCache:(NSString*)url data:(NSData*)data resize:(CGSize)resize radius:(NSUInteger)radius callback:(ImageCallback)callback {
+    [self _cache:url resize:noResize radius:radius data:data];
     UIImage* image = [UIImage imageWithData:data];
     if (resize.width && resize.height) {
 //        NSLog(@"Resize image %@", NSStringFromCGSize(resize));
-        image = [image thumbnailSize:CGSizeMake(resize.width*2, resize.height*2) transparentBorder:0 cornerRadius:10 interpolationQuality:kCGInterpolationDefault];
-        [self _cache:url resize:resize data:UIImageJPEGRepresentation(image, 1.0)];
+        image = [image thumbnailSize:CGSizeMake(resize.width*2, resize.height*2) transparentBorder:0 cornerRadius:radius interpolationQuality:kCGInterpolationDefault];
+        [self _cache:url resize:resize radius:radius data:UIImageJPEGRepresentation(image, 1.0)];
     }
     callback(nil, image);
 }
 
-+ (void) _cache:(NSString*)url resize:(CGSize)resize data:(NSData*)data {
-    [Cache store:[self _cacheKeyFor:url resize:resize] data:data];
++ (void) _cache:(NSString*)url resize:(CGSize)resize radius:(NSUInteger)radius data:(NSData*)data {
+    [Cache store:[self _cacheKeyFor:url resize:resize radius:radius] data:data];
 }
 
-+ (NSString*)_cacheKeyFor:(NSString*)url resize:(CGSize)resize {
-    return [NSString stringWithFormat:@"Images:url:%@+resize:%@", url, NSStringFromCGSize(resize)];
++ (NSString*)_cacheKeyFor:(NSString*)url resize:(CGSize)resize radius:(NSUInteger)radius {
+    return [NSString stringWithFormat:@"Images:url:%@+resize:%@+radius:%d", url, NSStringFromCGSize(resize), radius];
 }
 
 @end

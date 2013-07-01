@@ -12,6 +12,8 @@ typedef void (^ImageCallback)(id err, UIImage* image);
 
 @interface Images : FunBase
 
++ (void)load:(NSString*)url resize:(CGSize)size radius:(NSUInteger)radius callback:(ImageCallback)callback;
+
 + (void)load:(NSString*)url resize:(CGSize)size callback:(ImageCallback)callback;
 
 @end
