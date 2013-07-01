@@ -137,7 +137,7 @@ static int numRequests = 0;
     if ([contentType rangeOfString:@"application/json"].location == 0) {
         id jsonRes = [JSON parseData:data];
         if (!jsonRes) { return callback(makeError(@"Bad JSON format"), nil); }
-        NSLog(@"API got json: %@ %@ %@", method, path, jsonRes);
+        NSLog(@"API got json: %@ %@", method, path);
         callback(nil, jsonRes);
     } else if ([contentType rangeOfString:@"text/plain"].location == 0) {
         NSLog(@"API got text: %@ %@ %@", method, path, data.toString);
