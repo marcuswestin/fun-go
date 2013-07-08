@@ -14,6 +14,11 @@
     return [[ViewStyle alloc] initWithView:self];
 }
 
+- (void)moveX:(NSInteger)dx y:(NSInteger)dy {
+    CGFloat x = self.frame.origin.x + dx;
+    self.frame = CGRectMake(x, self.frame.origin.y + dy, self.frame.size.width, self.frame.size.height);
+}
+
 @end
 
 @implementation ViewStyle {

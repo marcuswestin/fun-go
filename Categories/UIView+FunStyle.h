@@ -46,5 +46,6 @@ typedef ViewStyle* (^StylerColor1)(UIColor* color);
 @interface UIView (FunStyle)
 
 - (ViewStyle*) style;
+- (void)moveX:(NSInteger)x y:(NSInteger)y;
 
 @end
