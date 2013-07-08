@@ -50,18 +50,22 @@ static NSString* cacheKeyBase;
     data = [Cache get:originalKey];
     if (data) {
 //        NSLog(@"Found original cached %@", originalKey);
-        return [self _processAndCache:url data:data resize:resize radius:radius key:processedKey callback:callback];
+        return [self _processAndCache:url data:data resize:resize radius:radius callback:callback];
     }
     
     // Fetch from network
-    [self _fetch:url callback:^(id err, NSData* data) {
+    [self _fetch:url cacheKey:originalKey callback:^(id err, NSData* data) {
         if (err) { return callback(err,nil); }
-        [Cache store:originalKey data:data];
-        return [self _processAndCache:url data:data resize:resize radius:radius key:processedKey callback:callback];
+        
+        // Multiple load calls could have been made for the same un-fetched image with the same processing parameters
+        NSData* processedData = [Cache get:processedKey];
+        if (processedData) { return callback(nil, [UIImage imageWithData:processedData]); }
+        
+        return [self _processAndCache:url data:data resize:resize radius:radius callback:callback];
     }];
 }
 
-+ (void)_fetch:(NSString*)url callback:(DataCallback)callback {
++ (void)_fetch:(NSString*)url cacheKey:(NSString*)key callback:(DataCallback)callback {
     @synchronized(loading) {
         if (loading[url]) {
             [loading[url] addObject:callback];
@@ -78,6 +82,9 @@ static NSString* cacheKeyBase;
         if (!netData || !netData.length) {
             return [self _onFetched:url error:@"Error getting image :(" data:nil];
         }
+        
+        [Cache store:key data:netData];
+
         [self _onFetched:url error:nil data:netData];
     }];
 }
@@ -94,12 +101,17 @@ static NSString* cacheKeyBase;
     }
 }
 
-+ (void) _processAndCache:(NSString*)url data:(NSData*)data resize:(CGSize)resize radius:(NSUInteger)radius key:(NSString*)processedKey callback:(ImageCallback)callback {
++ (void) _processAndCache:(NSString*)url data:(NSData*)data resize:(CGSize)resize radius:(NSUInteger)radius callback:(ImageCallback)callback {
     UIImage* image = [UIImage imageWithData:data];
-    if (resize.width && resize.height) {
-//        NSLog(@"Resize image %@", NSStringFromCGSize(resize));
+    if (resize.width || resize.height || radius) {
         image = [image thumbnailSize:CGSizeMake(resize.width*2, resize.height*2) transparentBorder:0 cornerRadius:radius interpolationQuality:kCGInterpolationDefault];
-        [Cache store:processedKey data:UIImageJPEGRepresentation(image, 1.0)];
+        NSString* key = [self _cacheKeyFor:url resize:resize radius:radius];
+        if (radius) {
+            // Radius require PNG transparency
+            [Cache store:key data:UIImagePNGRepresentation(image)];
+        } else {
+            [Cache store:key data:UIImageJPEGRepresentation(image, 1.0)];
+        }
     }
     callback(nil, image);
 }
