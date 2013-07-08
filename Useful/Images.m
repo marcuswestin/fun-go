@@ -8,9 +8,6 @@
 
 #import "Images.h"
 #import "Cache.h"
-#import "UIImage+Alpha.h"
-#import "UIImage+Resize.h"
-#import "UIImage+RoundedCorner.h"
 
 @implementation Images
 

@@ -7,6 +7,9 @@
 //
 
 #import "FunBase.h"
+#import "UIImage+Alpha.h"
+#import "UIImage+Resize.h"
+#import "UIImage+RoundedCorner.h"
 
 typedef void (^ImageCallback)(id err, UIImage* image);
 
