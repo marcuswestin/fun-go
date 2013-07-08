@@ -104,6 +104,13 @@
     };
 }
 
+- (StylerSize)size {
+    return ^(CGSize size) {
+        frame.size = size;
+        return self;
+    };
+}
+
 - (ViewStyle*)sizeToFit {
     [view sizeToFit];
     frame.size = view.frame.size;

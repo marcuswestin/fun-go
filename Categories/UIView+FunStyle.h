@@ -12,6 +12,7 @@
 
 typedef ViewStyle* (^Styler)();
 typedef ViewStyle* (^StylerView)(UIView* view);
+typedef ViewStyle* (^StylerSize)(CGSize size);
 typedef ViewStyle* (^StylerFloat1)(float num);
 typedef ViewStyle* (^StylerFloat2)(float f1, float f2);
 typedef ViewStyle* (^StylerColor1)(UIColor* color);
@@ -35,6 +36,7 @@ typedef ViewStyle* (^StylerColor1)(UIColor* color);
 - (StylerFloat1)w;
 - (StylerFloat1)h;
 - (StylerFloat2)wh;
+- (StylerSize)size;
 - (StylerView)centerIn;
 
 /* Color
