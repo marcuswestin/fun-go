@@ -44,6 +44,8 @@ typedef void (^SQLTransactionBlock)(SQLConn *conn, SQLRollbackBlock rollback);
 @interface SQL : FunBase
 + (void)autocommit:(SQLAutocommitBlock)block;
 + (void)transact:(SQLTransactionBlock)block;
++ (SQLRes*)select:(NSString*)sql args:(NSArray*)args;
++ (SQLRes*)selectOne:(NSString*)sql args:(NSArray*)args;
 + (void)open:(NSString*)path withMigrations:(SQLRegisterMigrations)migrationsFn;
 + (NSString*) joinSelect:(NSDictionary*)tableColumns;
 @end

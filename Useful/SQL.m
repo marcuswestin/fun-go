@@ -94,6 +94,22 @@ static FMDatabaseQueue* queue;
     }];
 }
 
++ (SQLRes *)select:(NSString *)sql args:(NSArray *)args {
+    __block SQLRes* result;
+    [SQL autocommit:^(SQLConn *conn) {
+        result = [conn select:sql args:args];
+    }];
+    return result;
+}
+
++ (SQLRes *)selectOne:(NSString *)sql args:(NSArray *)args {
+    __block SQLRes* result;
+    [SQL autocommit:^(SQLConn *conn) {
+        result = [conn selectOne:sql args:args];
+    }];
+    return result;
+}
+
 + (NSString *)joinSelect:(NSDictionary *)tableColumns {
     NSMutableArray* selections = [NSMutableArray array];
     [tableColumns each:^(NSString* columnList, NSString* tableName) {
