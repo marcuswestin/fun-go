@@ -9,18 +9,29 @@
 #import "UIControl+Fun.h"
 #import <objc/runtime.h>
 
-static char const * const KeyOnEditingChanged = "";
+static char const * const KeyOnEditingChanged = "OnEditingChanged";
+static char const * const KeyOnTap = "OnTap";
+static char const * const KeyHandlers = "Handlers";
 
 @implementation UIControl (Fun)
 
 - (void)onEditingChanged:(EventHandler)handler {
-    objc_setAssociatedObject(self, KeyOnEditingChanged, handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    [self addTarget:self action:@selector(_handleEditingChanged:event:) forControlEvents:UIControlEventEditingChanged];
+    [self on:UIControlEventEditingChanged handler:handler];
+}
+- (void)onTap:(EventHandler)handler {
+    [self on:UIControlEventTouchUpInside handler:handler];
+}
+- (void)on:(UIControlEvents)controlEvents handler:(EventHandler)handler {
+    UIControlHandler* controlHandler = [[UIControlHandler alloc] init];
+    controlHandler.handler = handler;
+    objc_setAssociatedObject(self, KeyHandlers, controlHandler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self addTarget:controlHandler action:@selector(_handle:event:) forControlEvents:controlEvents];
 }
 
-- (void)_handleEditingChanged:(id)target event:(UIEvent*)event {
-    EventHandler handler = objc_getAssociatedObject(self, KeyOnEditingChanged);
-    handler(event);
-}
+@end
 
+@implementation UIControlHandler
+- (void)_handle:(id)target event:(UIEvent*)event {
+    _handler(event);
+}
 @end

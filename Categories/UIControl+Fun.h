@@ -10,8 +10,14 @@
 
 typedef void (^EventHandler)(UIEvent* event);
 
+@interface UIControlHandler : NSObject
+@property (strong) EventHandler handler;
+@end
+
 @interface UIControl (Fun)
 
 - (void) onEditingChanged:(EventHandler)handler;
+- (void) onTap:(EventHandler)handler;
+- (void) on:(UIControlEvents)controlEvents handler:(EventHandler)handler;
 
 @end
