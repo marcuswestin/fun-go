@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+#define CLIP(X,min,max) MIN(MAX(X, min), max)
+
 void error(NSError* err);
 NSError* makeError(NSString* localMessage);
 
