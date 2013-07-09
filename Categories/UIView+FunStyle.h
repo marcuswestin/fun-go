@@ -59,4 +59,12 @@ typedef ViewStyle* (^StylerRadius)(CGFloat radius);
 - (void)insetShadowColor:(UIColor*)fillColor radius:(CGFloat)radius x:(CGFloat)offsetX y:(CGFloat)offsetY;
 - (void)borderColor:(UIColor*)color width:(CGFloat)width;
 
+/* Size
+ ******/
+- (CGFloat)height;
+
+/* Position
+ **********/
+- (void)centerVerticallyInView:(UIView*)view;
+
 @end

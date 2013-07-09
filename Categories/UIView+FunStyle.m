@@ -19,11 +19,21 @@ ViewStyle* makeView() {
     return [[ViewStyle alloc] initWithView:self];
 }
 
+/* Size
+ ******/
+- (CGFloat)height {
+    return CGRectGetHeight(self.frame);
+}
+
+/* Position
+ **********/
+- (void)centerVerticallyInView:(UIView *)view {
+    [self moveToY:CGRectGetMidY(view.frame)/2 - CGRectGetMidY(self.frame)/2];
+}
 - (void)moveByX:(NSInteger)dx y:(NSInteger)dy {
     CGFloat x = self.frame.origin.x + dx;
     self.frame = CGRectMake(x, self.frame.origin.y + dy, self.frame.size.width, self.frame.size.height);
 }
-
 - (void)moveToX:(CGFloat)x y:(CGFloat)y {
     self.frame = CGRectMake(x, y, self.frame.size.width, self.frame.size.height);
 }
@@ -32,6 +42,13 @@ ViewStyle* makeView() {
 }
 - (void)moveToX:(CGFloat)x {
     [self moveToX:x y:self.frame.origin.y];
+}
+
+/* Borders & Shadows
+ *******************/
+- (void)borderColor:(UIColor *)color width:(CGFloat)width {
+    self.layer.borderColor = color.CGColor;
+    self.layer.borderWidth = width;
 }
 
 - (void)outsetShadowColor:(UIColor *)color opacity:(CGFloat)opacity radius:(CGFloat)radius x:(CGFloat)offsetX y:(CGFloat)offsetY {
@@ -77,10 +94,6 @@ ViewStyle* makeView() {
     [self addSubview:shadowView];
 }
 
-- (void)borderColor:(UIColor *)color width:(CGFloat)width {
-    self.layer.borderColor = color.CGColor;
-    self.layer.borderWidth = width;
-}
 @end
 
 @implementation ViewStyle {
