@@ -21,6 +21,7 @@
 
 #import "API.h"
 #import "Cache.h"
+#import "Camera.h"
 #import "Events.h"
 #import "EmailAddresses.h"
 #import "Files.h"
