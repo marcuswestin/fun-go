@@ -28,7 +28,7 @@ ViewStyle* makeView() {
 /* Position
  **********/
 - (void)centerVerticallyInView:(UIView *)view {
-    [self moveToY:CGRectGetMidY(view.frame)/2 - CGRectGetMidY(self.frame)/2];
+    [self moveToY:CGRectGetMidY(view.frame) - CGRectGetMidY(self.frame)];
 }
 - (void)moveByX:(NSInteger)dx y:(NSInteger)dy {
     CGFloat x = self.frame.origin.x + dx;

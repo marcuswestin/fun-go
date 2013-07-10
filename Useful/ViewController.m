@@ -10,7 +10,6 @@
 
 UILabel* makeLabel(NSString* text) {
     UILabel* label = [[UILabel alloc] init];
-    label.font = [UIFont fontWithName:@"HelveticaNeue-Ultra Light" size:17];
     label.text = text;
     return label;
 }
