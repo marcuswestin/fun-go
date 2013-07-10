@@ -25,7 +25,7 @@ static UIWindow* overlayWindow;
     overlayWindow = [[UIWindow alloc] initWithFrame:frame];
     overlayWindow.windowLevel = UIWindowLevelStatusBar + 1;
     overlayWindow.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.75];
-    [overlayWindow addSubview:label.style.sizeToFit.centerIn(overlayWindow).apply];
+    [overlayWindow addSubview:label.styler.sizeToFit.centerInView(overlayWindow).apply];
     [overlayWindow setHidden:NO];
     
     [self _hideKeyboard];

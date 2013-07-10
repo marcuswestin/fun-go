@@ -7,16 +7,17 @@
 //
 
 #import "UIView+FunStyle.h"
+#import "FunAll.h"
 #import <QuartzCore/QuartzCore.h>
-
-ViewStyle* makeView() {
-    return [[UIView alloc] init].style;
-}
 
 @implementation UIView (FunStyle)
 
-- (ViewStyle*)style {
-    return [[ViewStyle alloc] initWithView:self];
++ (ViewStyler*)styler {
+    UIView* instance = [[[self class] alloc] init];
+    return instance.styler.bg([UIColor randomColor]);
+}
+- (ViewStyler*)styler {
+    return [[ViewStyler alloc] initWithView:self];
 }
 
 /* Size
@@ -44,26 +45,23 @@ ViewStyle* makeView() {
     [self moveToX:x y:self.frame.origin.y];
 }
 
-/* Borders & Shadows
- *******************/
-- (void)borderColor:(UIColor *)color width:(CGFloat)width {
+/* Borders, Shadows & Insets
+ ***************************/
+- (void)setBorderColor:(UIColor *)color width:(CGFloat)width {
     self.layer.borderColor = color.CGColor;
     self.layer.borderWidth = width;
 }
 
-- (void)outsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
-    return [self outsetShadowColor:color radius:radius spread:0 x:0 y:0];
+- (void)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
+    return [self setOutsetShadowColor:color radius:radius spread:0 x:0 y:0];
 }
-- (void)insetShadowColor:(UIColor *)color radius:(CGFloat)radius {
-    return [self insetShadowColor:color radius:radius spread:0 x:0 y:0];
+- (void)setInsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
+    return [self setInsetShadowColor:color radius:radius spread:0 x:0 y:0];
 }
 
 static CGFloat STATIC = 0.5f;
-- (void)outsetShadowColor:(UIColor *)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
-//    self.layer.shadowColor = color.CGColor;
-//    self.layer.shadowOpacity = opacity;
-//    self.layer.shadowRadius = radius;
-//    self.layer.shadowOffset = CGSizeMake(offsetX, offsetY);
+- (void)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
+    if (self.clipsToBounds) { NSLog(@"Warning: outset shadow put on view with clipped bounds"); }
     UIView *shadowView = [[UIView alloc] initWithFrame:self.frame];
     [shadowView moveToX:0 y:0];
     NSArray* colors = @[(id)color.CGColor, (id)[UIColor.clearColor CGColor]];
@@ -99,7 +97,7 @@ static CGFloat STATIC = 0.5f;
     [self addSubview:shadowView];
 }
 
-- (void)insetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
+- (void)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
     UIView *shadowView = [[UIView alloc] initWithFrame:self.frame];
     [shadowView moveToX:0 y:0];
     NSArray* colors = @[(id)color.CGColor, (id)[UIColor.clearColor CGColor]];
@@ -135,27 +133,45 @@ static CGFloat STATIC = 0.5f;
     [self addSubview:shadowView];
 }
 
+/* Empty
+ *******/
+- (void)empty {
+    [[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+}
+
 @end
 
-@implementation ViewStyle {
+@implementation ViewStyler {
     UIView* _view;
     CGRect _frame;
 }
 
 /* Create & apply
  ****************/
-- (instancetype)initWithView:(UIView *)view {
+- (id)initWithView:(UIView *)view {
     self = [self init];
     _view = view;
     _frame = view.frame;
     return self;
 }
 
-- (UIView *)apply {
+- (id)apply {
     _view.frame = _frame;
     return _view;
 }
 
+- (id)view {
+    return _view;
+}
+
+/* View Hierarchy
+ ****************/
+- (StylerView)appendToView {
+    return ^(UIView* view) {
+        [view addSubview:self.apply];
+        return self;
+    };
+}
 
 /* Position
  **********/
@@ -181,13 +197,21 @@ static CGFloat STATIC = 0.5f;
     };
 }
 
-- (StylerView)centerIn {
+- (StylerView)centerInView {
     return ^(UIView* parentView) {
         _view.frame = _frame;
         _view.center = parentView.center;
         _frame = _view.frame;
         return self;
     };
+}
+
+- (ViewStyler *)centerInSuperView {
+    return self.centerInView(_view.superview);
+}
+
+- (ViewStyler *)positionAboveSuperview {
+    return self.y(-_frame.size.height);
 }
 
 /* Size
@@ -221,7 +245,7 @@ static CGFloat STATIC = 0.5f;
     };
 }
 
-- (ViewStyle*)sizeToFit {
+- (ViewStyler*)sizeToFit {
     [_view sizeToFit];
     _frame.size = _view.frame.size;
     return self;
