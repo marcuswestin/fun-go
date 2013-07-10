@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #define CLIP(X,min,max) MIN(MAX(X, min), max)
+static UIColor* white;
 
 void error(NSError* err);
 NSError* makeError(NSString* localMessage);
