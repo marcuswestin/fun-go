@@ -9,7 +9,8 @@
 #import <Foundation/Foundation.h>
 
 #define CLIP(X,min,max) MIN(MAX(X, min), max)
-static UIColor* white;
+#define white [UIColor whiteColor]
+#define transparent [UIColor clearColor]
 
 void error(NSError* err);
 NSError* makeError(NSString* localMessage);

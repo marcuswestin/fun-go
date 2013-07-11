@@ -26,7 +26,7 @@ typedef ViewStyler* (^StylerColor1)(UIColor* color);
 
 /* View hierarchy
  ****************/
-- (StylerView)appendToView;
+- (StylerView)appendTo;
 
 /* Position
  **********/
@@ -37,6 +37,7 @@ typedef ViewStyler* (^StylerColor1)(UIColor* color);
 - (ViewStyler*)centerInSuperView;
 - (StylerView)centerInView;
 - (ViewStyler*)positionAboveSuperview;
+- (StylerFloat1)positionFromRight;
 
 /* Size
  ******/
@@ -64,6 +65,7 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 /* Position
  **********/
 - (void)centerVerticallyInView:(UIView*)view;
+- (void)centerVerticallyInSuperView;
 - (void)moveByX:(NSInteger)x y:(NSInteger)y;
 - (void)moveToX:(CGFloat)x y:(CGFloat)y;
 - (void)moveToX:(CGFloat)x;

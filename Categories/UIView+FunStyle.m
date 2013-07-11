@@ -28,9 +28,6 @@
 
 /* Position
  **********/
-- (void)centerVerticallyInView:(UIView *)view {
-    [self moveToY:CGRectGetMidY(view.frame) - CGRectGetMidY(self.frame)];
-}
 - (void)moveByX:(NSInteger)dx y:(NSInteger)dy {
     CGFloat x = self.frame.origin.x + dx;
     self.frame = CGRectMake(x, self.frame.origin.y + dy, self.frame.size.width, self.frame.size.height);
@@ -43,6 +40,12 @@
 }
 - (void)moveToX:(CGFloat)x {
     [self moveToX:x y:self.frame.origin.y];
+}
+- (void)centerVerticallyInView:(UIView *)view {
+    [self moveToY:CGRectGetMidY(view.frame) - CGRectGetMidY(self.frame)];
+}
+- (void)centerVerticallyInSuperView {
+    [self centerVerticallyInView:self.superview];
 }
 
 /* Borders, Shadows & Insets
@@ -166,7 +169,7 @@ static CGFloat STATIC = 0.5f;
 
 /* View Hierarchy
  ****************/
-- (StylerView)appendToView {
+- (StylerView)appendTo {
     return ^(UIView* view) {
         [view addSubview:self.apply];
         return self;
@@ -212,6 +215,12 @@ static CGFloat STATIC = 0.5f;
 
 - (ViewStyler *)positionAboveSuperview {
     return self.y(-_frame.size.height);
+}
+- (StylerFloat1)positionFromRight {
+    return ^(CGFloat offsetFromRight) {
+        return self.x(_view.superview.frame.size.width - _frame.size.width - offsetFromRight);
+        return self;
+    };
 }
 
 /* Size

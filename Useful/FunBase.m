@@ -27,7 +27,7 @@ NSString* concat(NSString* firstArg, ...) {
     return result;
 }
 
-NSNumber* num(int i) { return [NSNumber numberWithInt:i]; }
+NSNumber* num(NSInteger i) { return [NSNumber numberWithInt:i]; }
 
 NSError* makeError(NSString* localMessage) {
     return [NSError errorWithDomain:@"Global" code:1 userInfo:@{ NSLocalizedDescriptionKey:localMessage }];
@@ -68,8 +68,6 @@ static bool hasSetup = NO;
 
     double executionTime = (double)(clock()-start) / CLOCKS_PER_SEC;
     NSLog(@"FunBase setup: Done! Took %f(s)", executionTime);
-    
-    white = [UIColor whiteColor];
 }
 
 @end

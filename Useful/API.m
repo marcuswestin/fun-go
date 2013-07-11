@@ -83,8 +83,8 @@ static int numRequests = 0;
         // BOUNDARY
         [httpData appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
         // HEADERS
-        [httpData appendData:[[NSString stringWithFormat:@"Content-Disposition: %@\r\n", [part valueForKey:@"Content-Disposition"]] dataUsingEncoding:NSUTF8StringEncoding]];
-        [httpData appendData:[[NSString stringWithFormat:@"Content-Type: %@\r\n", [part valueForKey:@"Content-Type"]] dataUsingEncoding:NSUTF8StringEncoding]];
+        [httpData appendData:[[NSString stringWithFormat:@"content-disposition: %@\r\n", [part valueForKey:@"content-disposition"]] dataUsingEncoding:NSUTF8StringEncoding]];
+        [httpData appendData:[[NSString stringWithFormat:@"content-type: %@\r\n", [part valueForKey:@"content-type"]] dataUsingEncoding:NSUTF8StringEncoding]];
         // EMPTY
         [httpData appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
         // CONTENT + newline
