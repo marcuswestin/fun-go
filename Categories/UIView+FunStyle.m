@@ -10,6 +10,10 @@
 #import "FunAll.h"
 #import <QuartzCore/QuartzCore.h>
 
+#if defined DEBUG
+//#define RANDOM_COLOR
+#endif
+
 @implementation UIView (FunStyle)
 
 + (StylerView)appendTo {
@@ -22,7 +26,7 @@
 
 + (ViewStyler*)styler {
     UIView* instance = [[[self class] alloc] init];
-#if defined DEBUG
+#if defined RANDOM_COLOR
     return instance.styler.bg([UIColor randomColor]);
 #else
     return instance.styler;
