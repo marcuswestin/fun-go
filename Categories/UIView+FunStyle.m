@@ -155,10 +155,23 @@ static CGFloat STATIC = 0.5f;
     return shadowView;
 }
 
-/* Empty
- *******/
+/* Content
+ *********/
 - (void)empty {
     [[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+}
+- (UIImage *)captureToImage {
+    UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.opaque, 0.0);
+    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return img;
+}
+- (NSData *)captureToJpgData:(CGFloat)compressionQuality {
+    return UIImageJPEGRepresentation([self captureToImage], compressionQuality);
+}
+- (NSData *)captureToPngData {
+    return UIImagePNGRepresentation([self captureToImage]);
 }
 
 @end

@@ -87,4 +87,7 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 /* Content
  *********/
 - (void)empty;
+- (UIImage*)captureToImage;
+- (NSData*)captureToPngData;
+- (NSData*)captureToJpgData:(CGFloat)compressionQuality;
 @end
