@@ -74,18 +74,16 @@
     self.layer.borderWidth = width;
 }
 
-- (UIView*)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
+- (void)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
     return [self setOutsetShadowColor:color radius:radius spread:0 x:0 y:0];
 }
-- (UIView*)setInsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
+- (void)setInsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
     return [self setInsetShadowColor:color radius:radius spread:0 x:0 y:0];
 }
 
 static CGFloat STATIC = 0.5f;
-- (UIView*)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
+- (void)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
     if (self.clipsToBounds) { NSLog(@"Warning: outset shadow put on view with clipped bounds"); }
-    UIView *shadowView = [[UIView alloc] initWithFrame:self.frame];
-    [shadowView moveToX:0 y:0];
     NSArray* colors = @[(id)color.CGColor, (id)[UIColor.clearColor CGColor]];
     
     CAGradientLayer *top = [CAGradientLayer layer];
@@ -93,37 +91,31 @@ static CGFloat STATIC = 0.5f;
     top.colors = colors;
     top.startPoint = CGPointMake(STATIC, 1.0);
     top.endPoint = CGPointMake(STATIC, 0.0);
-    [shadowView.layer insertSublayer:top atIndex:0];
+    [self.layer insertSublayer:top atIndex:0];
     
     CAGradientLayer *right = [CAGradientLayer layer];
     right.frame = CGRectMake(self.bounds.size.width + radius + offsetX, 0 + offsetY, spread + radius, self.bounds.size.height);
     right.colors = colors;
     right.startPoint = CGPointMake(0.0, STATIC);
     right.endPoint = CGPointMake(1.0, STATIC);
-    [shadowView.layer insertSublayer:right atIndex:0];
+    [self.layer insertSublayer:right atIndex:0];
     
     CAGradientLayer *bottom = [CAGradientLayer layer];
     bottom.frame = CGRectMake(0 + offsetX, self.bounds.size.height + offsetY, self.bounds.size.width, spread + radius);
     bottom.colors = colors;
     bottom.startPoint = CGPointMake(STATIC, 0.0);
     bottom.endPoint = CGPointMake(STATIC, 1.0);
-    [shadowView.layer insertSublayer:bottom atIndex:0];
+    [self.layer insertSublayer:bottom atIndex:0];
     
     CAGradientLayer *left = [CAGradientLayer layer];
     left.frame = CGRectMake(-radius + offsetX, 0 + offsetY, spread + radius, self.bounds.size.height);
     left.colors = colors;
     left.startPoint = CGPointMake(1.0, STATIC);
     left.endPoint = CGPointMake(0.0, STATIC);
-    [shadowView.layer insertSublayer:left atIndex:0];
-    
-    [self addSubview:shadowView];
-    
-    return shadowView;
+    [self.layer insertSublayer:left atIndex:0];
 }
 
-- (UIView*)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
-    UIView *shadowView = [[UIView alloc] initWithFrame:self.frame];
-    [shadowView moveToX:0 y:0];
+- (void)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
     NSArray* colors = @[(id)color.CGColor, (id)[UIColor.clearColor CGColor]];
     
     CAGradientLayer *top = [CAGradientLayer layer];
@@ -131,32 +123,28 @@ static CGFloat STATIC = 0.5f;
     top.colors = colors;
     top.startPoint = CGPointMake(STATIC, 0.0);
     top.endPoint = CGPointMake(STATIC, 1.0);
-    [shadowView.layer insertSublayer:top atIndex:0];
+    [self.layer insertSublayer:top atIndex:0];
     
     CAGradientLayer *right = [CAGradientLayer layer];
     right.frame = CGRectMake(self.bounds.size.width - radius + offsetX, 0 + offsetY, spread + radius, self.bounds.size.height);
     right.colors = colors;
     right.startPoint = CGPointMake(1.0, STATIC);
     right.endPoint = CGPointMake(0.0, STATIC);
-    [shadowView.layer insertSublayer:right atIndex:0];
+    [self.layer insertSublayer:right atIndex:0];
 
     CAGradientLayer *bottom = [CAGradientLayer layer];
     bottom.frame = CGRectMake(0 + offsetX, self.bounds.size.height - radius + offsetY, self.bounds.size.width, spread + radius);
     bottom.colors = colors;
     bottom.startPoint = CGPointMake(STATIC, 1.0);
     bottom.endPoint = CGPointMake(STATIC, 0.0);
-    [shadowView.layer insertSublayer:bottom atIndex:0];
+    [self.layer insertSublayer:bottom atIndex:0];
 
     CAGradientLayer *left = [CAGradientLayer layer];
     left.frame = CGRectMake(0 + offsetX, 0 + offsetY, spread + radius, self.bounds.size.height);
     left.colors = colors;
     left.startPoint = CGPointMake(0.0, STATIC);
     left.endPoint = CGPointMake(1.0, STATIC);
-    [shadowView.layer insertSublayer:left atIndex:0];
-    
-    [self addSubview:shadowView];
-    
-    return shadowView;
+    [self.layer insertSublayer:left atIndex:0];
 }
 
 /* Content
