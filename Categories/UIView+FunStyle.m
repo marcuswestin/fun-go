@@ -55,15 +55,15 @@
     self.layer.borderWidth = width;
 }
 
-- (void)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
+- (UIView*)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
     return [self setOutsetShadowColor:color radius:radius spread:0 x:0 y:0];
 }
-- (void)setInsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
+- (UIView*)setInsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
     return [self setInsetShadowColor:color radius:radius spread:0 x:0 y:0];
 }
 
 static CGFloat STATIC = 0.5f;
-- (void)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
+- (UIView*)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
     if (self.clipsToBounds) { NSLog(@"Warning: outset shadow put on view with clipped bounds"); }
     UIView *shadowView = [[UIView alloc] initWithFrame:self.frame];
     [shadowView moveToX:0 y:0];
@@ -98,9 +98,11 @@ static CGFloat STATIC = 0.5f;
     [shadowView.layer insertSublayer:left atIndex:0];
     
     [self addSubview:shadowView];
+    
+    return shadowView;
 }
 
-- (void)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
+- (UIView*)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
     UIView *shadowView = [[UIView alloc] initWithFrame:self.frame];
     [shadowView moveToX:0 y:0];
     NSArray* colors = @[(id)color.CGColor, (id)[UIColor.clearColor CGColor]];
@@ -134,6 +136,8 @@ static CGFloat STATIC = 0.5f;
     [shadowView.layer insertSublayer:left atIndex:0];
     
     [self addSubview:shadowView];
+    
+    return shadowView;
 }
 
 /* Empty
@@ -172,6 +176,12 @@ static CGFloat STATIC = 0.5f;
 - (StylerView)appendTo {
     return ^(UIView* view) {
         [view addSubview:self.apply];
+        return self;
+    };
+}
+- (StylerView)prependTo {
+    return ^(UIView* view) {
+        [view insertSubview:self.apply atIndex:0];
         return self;
     };
 }

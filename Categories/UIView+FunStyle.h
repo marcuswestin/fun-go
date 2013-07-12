@@ -27,6 +27,7 @@ typedef ViewStyler* (^StylerColor1)(UIColor* color);
 /* View hierarchy
  ****************/
 - (StylerView)appendTo;
+- (StylerView)prependTo;
 
 /* Position
  **********/
@@ -73,10 +74,10 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 
 /* Borders, Shadows & Insets
  ***************************/
-- (void)setOutsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY;
-- (void)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY;
-- (void)setOutsetShadowColor:(UIColor*)color radius:(CGFloat)radius;
-- (void)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius;
+- (UIView*)setOutsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY;
+- (UIView*)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY;
+- (UIView*)setOutsetShadowColor:(UIColor*)color radius:(CGFloat)radius;
+- (UIView*)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius;
 - (void)setBorderColor:(UIColor*)color width:(CGFloat)width;
 
 /* Content
