@@ -26,6 +26,7 @@ static NSString* MigrationDoc = @"SQLMigrationInfo";
     if (self = [super init]) {
         NSDictionary* migrationInfo = [Files readJsonDocument:MigrationDoc];
         _migrationIndex = 0;
+        _newMigrations = [NSMutableArray array];
         if (migrationInfo) {
             _completedMigrations = [NSMutableArray arrayWithArray:migrationInfo[@"completedMigrations"]];
         } else {
@@ -42,7 +43,7 @@ static NSString* MigrationDoc = @"SQLMigrationInfo";
             [NSException raise:@"BadMigration" format:@"Expected migration named %@ but found %@", expectedMigraitonName, name];
         }
     } else {
-        [_newMigrations addObject:@{ @"name":name, block:block }];
+        [_newMigrations addObject:@{ @"name":name, @"block":block }];
     }
     _migrationIndex += 1;
 }
@@ -61,6 +62,8 @@ static NSString* MigrationDoc = @"SQLMigrationInfo";
         }];
         [_completedMigrations addObject:migration[@"name"]];
     }];
+    
+    [Files writeJsonDocument:MigrationDoc data:@{@"completedMigrations": _completedMigrations}];
 }
 @end
 
