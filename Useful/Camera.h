@@ -8,13 +8,14 @@
 
 #import "FunBase.h"
 
-typedef void (^CameraCaptureCallback)(NSError* err, id result);
+typedef void (^CameraCaptureCallback)(NSError* err, NSDictionary* result);
 
-@interface Camera : FunBase
+@interface Camera : FunBase <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 @property UIImagePickerController* picker;
 @property (strong) CameraCaptureCallback callback;
 @property UIViewController* modalViewController;
-
+@property BOOL saveToAlbum;
+@property BOOL allowsEditing;
 
 //+ (void)showModalVideoCaptureAnimated:(BOOL)animated
 //                              quality:(UIImagePickerControllerQualityType)quality
@@ -23,6 +24,7 @@ typedef void (^CameraCaptureCallback)(NSError* err, id result);
 //+ (void)showModalPictureCaptureAnimated:(BOOL)animated
 //                               callback:(CameraCaptureCallback)callback;
 //
+
 + (void)showModalPickerInViewController:(UIViewController*)viewController
                              sourceType:(UIImagePickerControllerSourceType)sourceType
                            allowEditing:(BOOL)allowEditing
@@ -30,13 +32,26 @@ typedef void (^CameraCaptureCallback)(NSError* err, id result);
                                callback:(CameraCaptureCallback)callback
 ;
 
-+ (void)showCameraCaptureInView:(UIView *)inView
++ (void)showCameraForPhotoInView:(UIView *)inView
                          device:(UIImagePickerControllerCameraDevice)device
                       flashMode:(UIImagePickerControllerCameraFlashMode)flashMode
              showCameraControls:(BOOL)showCameraControls
+                    saveToAlbum:(BOOL)saveToAlbum
                        callback:(CameraCaptureCallback)callback
 ;
 
++ (void)showCameraForVideoInView:(UIView *)inView
+                          device:(UIImagePickerControllerCameraDevice)device
+                       flashMode:(UIImagePickerControllerCameraFlashMode)flashMode
+                         quality:(UIImagePickerControllerQualityType)quality
+                     maxDuration:(NSTimeInterval)maxDuration
+              showCameraControls:(BOOL)showCameraControls
+                     saveToAlbum:(BOOL)saveToAlbum
+                        callback:(CameraCaptureCallback)callback
+;
+
 + (void)hide;
+
++ (UIImage*)thumbnailForVideoResult:(NSDictionary*)videoResult atTime:(double)time;
 
 @end

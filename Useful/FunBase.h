@@ -12,6 +12,7 @@
 #define white [UIColor whiteColor]
 #define yellow [UIColor yellowColor]
 #define transparent [UIColor clearColor]
+#define black [UIColor blackColor]
 
 void error(NSError* err);
 NSError* makeError(NSString* localMessage);
