@@ -11,6 +11,14 @@
 typedef void (^EventHandler)(UIEvent* event);
 typedef void (^Block)();
 
+typedef void (^TapHandler)(UITapGestureRecognizer* sender);
+typedef void (^PanHandler)(UIPanGestureRecognizer* sender);
+
+@interface UIView (Fun)
+- (UITapGestureRecognizer*) onTap:(TapHandler)handler;
+- (UIPanGestureRecognizer*) onPan:(PanHandler)handler;
+@end
+
 @interface UIControlHandler : NSObject
 @property (strong) EventHandler handler;
 @end
