@@ -12,9 +12,21 @@
 
 @implementation UIView (FunStyle)
 
++ (StylerView)appendTo {
+    return self.styler.appendTo;
+}
+
++ (StylerView)prependTo {
+    return self.styler.prependTo;
+}
+
 + (ViewStyler*)styler {
     UIView* instance = [[[self class] alloc] init];
+#if defined DEBUG
     return instance.styler.bg([UIColor randomColor]);
+#else
+    return instance.styler;
+#endif
 }
 - (ViewStyler*)styler {
     return [[ViewStyler alloc] initWithView:self];
@@ -24,6 +36,9 @@
  ******/
 - (CGFloat)height {
     return CGRectGetHeight(self.frame);
+}
+- (CGFloat)width {
+    return CGRectGetWidth(self.frame);
 }
 
 /* Position
@@ -267,6 +282,11 @@ static CGFloat STATIC = 0.5f;
 - (ViewStyler*)sizeToFit {
     [_view sizeToFit];
     _frame.size = _view.frame.size;
+    return self;
+}
+
+- (ViewStyler*)sizeToParent {
+    _frame.size = _view.superview.bounds.size;
     return self;
 }
 

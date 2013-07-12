@@ -34,7 +34,6 @@ typedef ViewStyler* (^StylerColor1)(UIColor* color);
 - (StylerFloat1)x;
 - (StylerFloat1)y;
 - (StylerFloat2)xy;
-- (ViewStyler*)sizeToFit;
 - (ViewStyler*)centerInSuperView;
 - (StylerView)centerInView;
 - (ViewStyler*)positionAboveSuperview;
@@ -46,6 +45,8 @@ typedef ViewStyler* (^StylerColor1)(UIColor* color);
 - (StylerFloat1)h;
 - (StylerFloat2)wh;
 - (StylerSize)size;
+- (ViewStyler*)sizeToFit;
+- (ViewStyler*)sizeToParent;
 
 /* Misc
  ******/
@@ -56,12 +57,15 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 
 @interface UIView (FunStyle)
 
++ (StylerView) appendTo;
++ (StylerView) prependTo;
 + (ViewStyler*) styler;
 - (ViewStyler*) styler;
 
 /* Size
  ******/
 - (CGFloat)height;
+- (CGFloat)width;
 
 /* Position
  **********/

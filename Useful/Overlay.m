@@ -18,14 +18,13 @@ static UIWindow* overlayWindow;
     [Overlay hide];
     CGRect frame = [[UIScreen mainScreen] bounds];
 
-    UILabel* label = [[UILabel alloc] init];
+    UILabel* label = [UILabel.appendTo(overlayWindow).sizeToFit.centerInSuperView apply];
     label.text = message;
     label.textColor = UIColor.whiteColor;
 
     overlayWindow = [[UIWindow alloc] initWithFrame:frame];
     overlayWindow.windowLevel = UIWindowLevelStatusBar + 1;
     overlayWindow.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.75];
-    [overlayWindow addSubview:label.styler.sizeToFit.centerInView(overlayWindow).apply];
     [overlayWindow setHidden:NO];
     
     [self _hideKeyboard];

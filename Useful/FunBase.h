@@ -10,6 +10,7 @@
 
 #define CLIP(X,min,max) MIN(MAX(X, min), max)
 #define white [UIColor whiteColor]
+#define yellow [UIColor yellowColor]
 #define transparent [UIColor clearColor]
 
 void error(NSError* err);
