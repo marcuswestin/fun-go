@@ -13,5 +13,6 @@
 + (NSUInteger)height;
 + (NSUInteger)width;
 + (CGSize)size;
++ (CGFloat)resolution;
 
 @end

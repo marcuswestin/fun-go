@@ -16,6 +16,10 @@ static CGSize size;
     size = [[UIScreen mainScreen] bounds].size;
 }
 
++ (CGFloat)resolution {
+    return [UIScreen mainScreen].scale;
+}
+
 + (NSUInteger)height { return [Viewport size].height; }
 + (NSUInteger)width { return [Viewport size].width; }
 + (CGSize)size { return size; }
