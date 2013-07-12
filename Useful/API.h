@@ -16,6 +16,6 @@ typedef void (^APICallback)(NSError* err, id res);
 + (void)setHeaders:(NSDictionary*)headers;
 + (void)post:(NSString*)path json:(NSDictionary*)json callback:(APICallback)callback;
 + (void)get:(NSString*)path queries:(NSDictionary*)queries callback:(APICallback)callback;
-+ (void)upload:(NSString*)path json:(NSDictionary*)json attachments:(NSArray*)attachments callback:(APICallback)callback;
++ (void)upload:(NSString*)path json:(NSDictionary*)json attachments:(NSDictionary*)attachments callback:(APICallback)callback;
 
 @end
