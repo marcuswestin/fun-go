@@ -44,14 +44,14 @@ static Camera* camera;
     camera.picker.mediaTypes = [UIImagePickerController availableMediaTypesForSourceType:sourceType];
     camera.picker.allowsEditing = allowEditing;
     
-    [viewController presentModalViewController:camera.picker animated:animated];
+    [viewController presentViewController:camera.picker animated:animated completion:nil];
 }
 
 + (void)hide {
     if (!camera) { return; }
     
     if (camera.modalViewController) {
-        [camera.modalViewController dismissModalViewControllerAnimated:YES];
+        [camera.modalViewController dismissViewControllerAnimated:YES completion:nil];
     } else {
         [camera.picker.view removeFromSuperview];
     }
