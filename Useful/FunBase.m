@@ -16,6 +16,11 @@ void error(NSError* err) {
     NSLog(@"ERROR %@", err);
 }
 
+void after(CGFloat delayInSeconds, Block block) {
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    dispatch_after(popTime, dispatch_get_main_queue(), block);
+}
+
 NSString* concat(NSString* firstArg, ...) {
     NSMutableString *result = [NSMutableString string];
     va_list args;

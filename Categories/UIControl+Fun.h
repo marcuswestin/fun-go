@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 
 typedef void (^EventHandler)(UIEvent* event);
-typedef void (^Block)();
 
 typedef void (^TapHandler)(UITapGestureRecognizer* sender);
 typedef void (^PanHandler)(UIPanGestureRecognizer* sender);
