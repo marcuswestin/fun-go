@@ -141,9 +141,11 @@ static int numRequests = 0;
         callback(nil, jsonRes);
     } else if ([contentType rangeOfString:@"text/plain"].location == 0) {
         NSLog(@"API got text: %@ %@ %@", method, path, data.toString);
-        callback(nil, data.toString);
+        callback(makeError(@"Received unexpected content type from server"), nil);
+//        callback(nil, data.toString);
     } else {
         NSLog(@"API got unknown: %@ %@ %@", method, path, contentType);
+        callback(makeError(@"Received unexpected content type from server"), nil);
     }
 }
 

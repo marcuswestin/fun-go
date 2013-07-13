@@ -14,10 +14,10 @@ static Videos* instance;
 
 @implementation Videos {
     MPMoviePlayerController* _moviePlayer;
-    Callback _playbackCallback;
+    StringCallback _playbackCallback;
 }
 
-- initWithUrl:(NSString*)url fromView:(UIView*)fromView callback:(Callback)callback {
+- initWithUrl:(NSString*)url fromView:(UIView*)fromView callback:(StringCallback)callback {
     _moviePlayer = [[MPMoviePlayerController alloc] initWithContentURL:[NSURL URLWithString:url]];
 //    _moviePlayer.controlStyle = MPMovieControlStyleFullscreen;
     [_moviePlayer prepareToPlay];
@@ -33,7 +33,7 @@ static Videos* instance;
     return self;
 }
 
-+ (instancetype)playVideo:(NSString *)url fromView:(UIView*)fromView callback:(Callback)callback {
++ (instancetype)playVideo:(NSString *)url fromView:(UIView*)fromView callback:(StringCallback)callback {
     return instance = [[Videos alloc] initWithUrl:url fromView:fromView callback:callback];
 }
 
@@ -47,7 +47,7 @@ static Videos* instance;
     } else if (reason == MPMovieFinishReasonUserExited) {
         _playbackCallback(nil, @"User exited");
     } else if (reason == MPMovieFinishReasonPlaybackError) {
-        _playbackCallback(@"Playback error", nil);
+        _playbackCallback(makeError(@"Playback error"), nil);
     }
 }
 

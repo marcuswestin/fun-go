@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "FunTypes.h"
 
 typedef void (^EventHandler)(UIEvent* event);
 

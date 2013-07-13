@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "FunBase.h"
+#import "FunTypes.h"
 
 #import "NSArray+Fun.h"
 #import "NSData+Fun.h"

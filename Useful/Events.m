@@ -11,16 +11,36 @@
 @implementation Events
 
 static NSMutableDictionary* signals;
+static NSInteger unique = 1;
+static NSString* RefKey = @"Ref";
+static NSString* CbKey = @"Cb";
 
 + (void)setup {
     signals = [NSMutableDictionary dictionary];
 }
 
-+ (void)on:(NSString *)signal callback:(EventCallback)callback {
++ (EventsRef)on:(NSString *)signal callback:(EventCallback)callback {
+    id ref = num(unique += 1);
+    [self on:signal ref:ref callback:callback];
+    return ref;
+}
+
++ (EventsRef)on:(NSString *)signal ref:(EventsRef)ref callback:(EventCallback)callback {
     if (!signals[signal]) {
         signals[signal] = [NSMutableArray array];
     }
-    [signals[signal] addObject:callback];
+    [signals[signal] addObject:@{RefKey:ref, CbKey:callback}];
+    return ref;
+}
+
++ (void)off:(NSString *)signal ref:(EventsRef)ref {
+    NSMutableArray* callbacks = signals[signal];
+    for (NSDictionary* obj in callbacks) {
+        if (obj[RefKey] == ref) {
+            [callbacks removeObject:obj];
+            break;
+        }
+    }
 }
 
 + (void)emit:(NSString *)signal {
@@ -29,7 +49,9 @@ static NSMutableDictionary* signals;
 
 + (void)emit:(NSString *)signal info:(id)info {
     NSLog(@"Emit %@ %@", signal, info);
-    for (EventCallback callback in signals[signal]) {
+    NSArray* callbacks = [signals[signal] copy];
+    for (NSDictionary* obj in callbacks) {
+        EventCallback callback = obj[CbKey];
         callback(info);
     }
 }

@@ -8,7 +8,7 @@
 
 #import "FunBase.h"
 
-typedef void (^APICallback)(NSError* err, id res);
+typedef Callback APICallback;
 
 @interface API : FunBase
 

@@ -9,10 +9,13 @@
 #import "FunBase.h"
 
 typedef void (^EventCallback)(id info);
+typedef id EventsRef;
 
 @interface Events : FunBase
 
-+ (void)on:(NSString*)signal callback:(EventCallback)callback;
++ (EventsRef)on:(NSString*)signal callback:(EventCallback)callback;
++ (EventsRef)on:(NSString*)signal ref:(EventsRef)ref callback:(EventCallback)callback;
++ (void)off:(NSString*)signal ref:(EventsRef)ref;
 + (void)emit:(NSString*)signal info:(id)info;
 + (void)emit:(NSString*)signal;
 
