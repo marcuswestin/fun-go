@@ -36,10 +36,11 @@ static Callback registerCallback;
         registerCallback = nil;
     }];
     [Events on:@"Application.didReceiveRemoteNotification" callback:^(NSDictionary* notification) {
-        NSLog(@"NOTIFICATION %@", notification);
+        [Events emit:@"Notifications.notification" info:@{ @"notification":notification }];
     }];
     [Events on:@"Application.didLaunchWithNotification" callback:^(NSDictionary* notification) {
-        NSLog(@"NOTIFICATION FROM LAUNCH %@", notification);
+        [Events emit:@"Notifications.notification" info:@{ @"notification":notification,
+                                                           @"didBringAppIntoForeground":num(1) }];
     }];
 }
 

@@ -53,4 +53,17 @@
     return (val == [NSNull null] ? 0 : [val integerValue]);
 }
 
+- (NSDictionary *)reverse {
+    NSMutableDictionary* res = [NSMutableDictionary dictionaryWithCapacity:self.count];
+    for (id key in self) {
+        id val = self[key];
+        if (res[val]) {
+            [NSException raise:@"DuplicateKey" format:@"Duplicate value in NSDictionary.reverse"];
+            return nil;
+        }
+        res[val] = key;
+    }
+    return res;
+}
+
 @end

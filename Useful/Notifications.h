@@ -9,6 +9,8 @@
 #import "FunBase.h"
 #import "Events.h"
 
+typedef NSDictionary* Notification;
+
 @interface Notifications : FunBase
 + (void) register:(Callback)callback;
 + (NSDictionary*) status;

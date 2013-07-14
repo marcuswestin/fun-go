@@ -7,7 +7,8 @@
 //
 
 #import "FunAppDelegate.h"
-#import "FunAll.h"
+#import "FunBase.h"
+#import "Events.h"
 
 @implementation FunAppDelegate
 

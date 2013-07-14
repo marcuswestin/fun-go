@@ -21,8 +21,17 @@ static NSString* _cachesDirectory;
 + (id)readJsonDocument:(NSString *)filename {
     return [Files readDocument:filename].toJsonObject;
 }
++ (id)readJsonDocument:(NSString *)filename property:(NSString *)property {
+    return [Files readJsonDocument:filename][property];
+}
 + (void)writeJsonDocument:(NSString *)filename data:(id)data {
     [Files writeDocument:filename data:[JSON toData:data]];
+}
++ (void)writeJsonDocument:(NSString *)filename property:(NSString *)property data:(id)data {
+    id readDoc = [Files readJsonDocument:filename];
+    NSMutableDictionary* doc = [(readDoc ? readDoc : @{}) mutableCopy];
+    doc[property] = data;
+    [Files writeJsonDocument:filename data:doc];
 }
 + (NSData*)readDocument:(NSString*)name {
     return [NSData dataWithContentsOfFile:[self documentPath:name]];

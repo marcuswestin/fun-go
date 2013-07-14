@@ -12,7 +12,9 @@
 @interface Files : FunBase
 
 + (id)readJsonDocument:(NSString*)filename;
++ (id)readJsonDocument:(NSString*)filename property:(NSString*)property;
 + (void)writeJsonDocument:(NSString*)filename data:(id)data;
++ (void)writeJsonDocument:(NSString*)filename property:(NSString*)property data:(id)data;
 + (NSData*)readDocument:(NSString*)filename;
 + (NSData*)readCache:(NSString*)filename;
 + (BOOL)writeDocument:(NSString*)filename data:(NSData*)data;

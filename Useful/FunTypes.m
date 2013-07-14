@@ -7,6 +7,7 @@
 //
 
 #import "FunTypes.h"
+#import <AudioToolbox/AudioToolbox.h>
 
 #include <stdio.h>
 
@@ -18,6 +19,10 @@ void error(NSError* err) {
 void after(CGFloat delayInSeconds, Block block) {
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), block);
+}
+
+void vibrateDevice() {
+    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 }
 
 NSString* concat(NSString* firstArg, ...) {

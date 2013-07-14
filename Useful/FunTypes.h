@@ -39,6 +39,7 @@ typedef void (^ImageCallback)(NSError* err, UIImage* image);
 typedef void (^ViewCallback)(NSError* err, UIView* view);
 
 void after(CGFloat delayInSeconds, Block block);
+void vibrateDevice();
 
 NSString* concat(id arg1, ...);
 NSNumber* num(int i);

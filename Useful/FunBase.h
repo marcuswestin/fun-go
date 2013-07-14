@@ -7,10 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FunTypes.h"
 
 @interface FunBase : NSObject
 
 + (void) setup;
 
 @end
+
+#import "FunAll.h"

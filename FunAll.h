@@ -34,3 +34,4 @@
 #import "SQL.h"
 #import "Videos.h"
 #import "Viewport.h"
+#import "Encoder.h"

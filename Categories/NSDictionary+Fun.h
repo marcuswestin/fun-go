@@ -24,5 +24,7 @@ typedef id (^DictionaryMapFn)(id val, id key);
 
 - (NSUInteger)integerFor:(NSString*)property;
 
+- (NSDictionary*)reverse;
+
 @end
 
