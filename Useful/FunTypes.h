@@ -1,13 +1,14 @@
+#define MODE_DEV 1
+#define MODE_TESTFLIGHT 2
+#define MODE_DISTRIBUTION 3
 #if defined TESTFLIGHT
-#define TESTFLIGHT YES
-#define DISTRIBUTION NO
+    #define MODE MODE_TESTFLIGHT
 #elif defined DEBUG
-#define TESTFLIGHT NO
-#define DISTRIBUTION NO
+    #define MODE MODE_DEV
 #else
-#define TESTFLIGHT NO
-#define DISTRIBUTION YES
+    #define MODE MODE_DISTRIBUTION
 #endif
+#define IS_DISTRIBUTION (MODE == MODE_DISTRIBUTION)
 
 
 #define CLIP(X,min,max) MIN(MAX(X, min), max)
