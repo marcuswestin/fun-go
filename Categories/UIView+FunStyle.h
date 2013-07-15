@@ -16,6 +16,7 @@ typedef ViewStyler* (^StylerSize)(CGSize size);
 typedef ViewStyler* (^StylerFloat1)(float num);
 typedef ViewStyler* (^StylerFloat2)(float f1, float f2);
 typedef ViewStyler* (^StylerColor1)(UIColor* color);
+typedef ViewStyler* (^StylerPoint)(CGPoint point);
 
 @interface ViewStyler : NSObject
 
@@ -38,6 +39,7 @@ typedef ViewStyler* (^StylerColor1)(UIColor* color);
 - (StylerView)centerInView;
 - (ViewStyler*)positionAboveSuperview;
 - (StylerFloat1)positionFromRight;
+- (StylerPoint)position;
 
 /* Size
  ******/
@@ -66,6 +68,8 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
  ******/
 - (CGFloat)height;
 - (CGFloat)width;
+- (void)resizeByAddingWidth:(CGFloat)width height:(CGFloat)height;
+- (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height;
 
 /* Position
  **********/

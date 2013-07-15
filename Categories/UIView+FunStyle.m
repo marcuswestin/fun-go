@@ -44,15 +44,29 @@
 - (CGFloat)width {
     return CGRectGetWidth(self.frame);
 }
+- (void)resizeByAddingWidth:(CGFloat)width height:(CGFloat)height {
+    CGRect frame = self.frame;
+    frame.size.height += height;
+    frame.size.width += width;
+    self.frame = frame;
+}
+- (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height {
+    [self resizeByAddingWidth:-width height:-height];
+}
 
 /* Position
  **********/
 - (void)moveByX:(NSInteger)dx y:(NSInteger)dy {
-    CGFloat x = self.frame.origin.x + dx;
-    self.frame = CGRectMake(x, self.frame.origin.y + dy, self.frame.size.width, self.frame.size.height);
+    CGRect frame = self.frame;
+    frame.origin.x += dx;
+    frame.origin.y += dy;
+    self.frame = frame;
 }
 - (void)moveToX:(CGFloat)x y:(CGFloat)y {
-    self.frame = CGRectMake(x, y, self.frame.size.width, self.frame.size.height);
+    CGRect frame = self.frame;
+    frame.origin.x = x;
+    frame.origin.y = y;
+    self.frame = frame;
 }
 - (void)moveToY:(CGFloat)y {
     [self moveToX:self.frame.origin.x y:y];
@@ -226,6 +240,12 @@ static CGFloat STATIC = 0.5f;
     return ^(float x, float y) {
         _frame.origin.x = x;
         _frame.origin.y = y;
+        return self;
+    };
+}
+- (StylerPoint)position {
+    return ^(CGPoint position) {
+        _frame.origin = position;
         return self;
     };
 }
