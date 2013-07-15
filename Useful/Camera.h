@@ -54,4 +54,6 @@ typedef void (^CameraCaptureCallback)(NSError* err, NSDictionary* result);
 
 + (UIImage*)thumbnailForVideoResult:(NSDictionary*)videoResult atTime:(double)time;
 
++ (UIImagePickerController*)picker;
+
 @end

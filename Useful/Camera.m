@@ -14,6 +14,10 @@
 
 static Camera* camera;
 
++ (UIImagePickerController *)picker {
+    return camera.picker;
+}
+
 + (void)showCameraForPhotoInView:(UIView *)inView
                   device:(UIImagePickerControllerCameraDevice)device
                flashMode:(UIImagePickerControllerCameraFlashMode)flashMode
