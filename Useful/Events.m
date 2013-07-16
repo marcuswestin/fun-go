@@ -48,11 +48,13 @@ static NSString* CbKey = @"Cb";
 }
 
 + (void)emit:(NSString *)signal info:(id)info {
-    NSLog(@"Emit %@ %@", signal, info);
     NSArray* callbacks = [signals[signal] copy];
-    for (NSDictionary* obj in callbacks) {
-        EventCallback callback = obj[CbKey];
-        callback(info);
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"Emit %@ %@", signal, info);
+        for (NSDictionary* obj in callbacks) {
+            EventCallback callback = obj[CbKey];
+            callback(info);
+        }
+    });
 }
 @end
