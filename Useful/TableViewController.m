@@ -82,7 +82,7 @@
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     NSUInteger height = [self tableView:tableView heightForHeaderInSection:section];
     NSUInteger width = Viewport.width;
-    UIView* view = UIView.styler.wh(width,height).apply;
+    UIView* view = [UIView.styler.wh(width,height) render];
     view.backgroundColor = [UIColor randomColor];
     [_delegate renderHeader:section inView:view width:width height:height];
     return view;

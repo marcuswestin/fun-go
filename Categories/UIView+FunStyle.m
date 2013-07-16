@@ -14,7 +14,164 @@
 //#define RANDOM_COLOR
 #endif
 
+@implementation ViewStyler {
+    UIView* _view;
+    CGRect _frame;
+}
+
+/* Create & apply
+ ****************/
+- (ViewStyler*)initWithView:(UIView*)view {
+    _view = view;
+    _frame = view.frame;
+    return self;
+}
+
+- (id)apply {
+    _view.frame = _frame;
+    return _view;
+}
+
+- (id)render {
+    [self apply];
+    [_view render];
+    return _view;
+}
+
+- (id)view {
+    return _view;
+}
+
+/* View Hierarchy
+ ****************/
+- (StylerView)appendTo {
+    return ^(UIView* view) {
+        [view addSubview:_view];
+        return self;
+    };
+}
+- (StylerView)prependTo {
+    return ^(UIView* view) {
+        [view insertSubview:_view atIndex:0];
+        return self;
+    };
+}
+
+/* Position
+ **********/
+- (StylerFloat1)x {
+    return ^(float x) {
+        self.xy(x, _view.frame.origin.y);
+        return self;
+    };
+}
+
+- (StylerFloat1)y {
+    return ^(float y) {
+        self.xy(_view.frame.origin.x, y);
+        return self;
+    };
+}
+
+- (StylerFloat2)xy {
+    return ^(float x, float y) {
+        _frame.origin.x = x;
+        _frame.origin.y = y;
+        return self;
+    };
+}
+- (StylerPoint)position {
+    return ^(CGPoint position) {
+        _frame.origin = position;
+        return self;
+    };
+}
+
+- (StylerView)centerInView {
+    return ^(UIView* parentView) {
+        _view.frame = _frame;
+        _view.center = parentView.center;
+        _frame = _view.frame;
+        return self;
+    };
+}
+
+- (ViewStyler *)centerInSuperView {
+    return self.centerInView(_view.superview);
+}
+
+- (ViewStyler *)positionAboveSuperview {
+    return self.y(-_frame.size.height);
+}
+- (StylerFloat1)positionFromRight {
+    return ^(CGFloat offsetFromRight) {
+        return self.x(_view.superview.frame.size.width - _frame.size.width - offsetFromRight);
+        return self;
+    };
+}
+
+/* Size
+ ******/
+- (StylerFloat1)w {
+    return ^(float width) {
+        _frame.size.width = width;
+        return self;
+    };
+}
+
+- (StylerFloat1)h {
+    return ^(float height) {
+        _frame.size.height = height;
+        return self;
+    };
+}
+
+- (StylerFloat2)wh {
+    return ^(float width, float height) {
+        _frame.size.width = width;
+        _frame.size.height = height;
+        return self;
+    };
+}
+
+- (StylerSize)size {
+    return ^(CGSize size) {
+        _frame.size = size;
+        return self;
+    };
+}
+
+- (ViewStyler*)sizeToFit {
+    [_view sizeToFit];
+    _frame.size = _view.frame.size;
+    return self;
+}
+
+- (ViewStyler*)sizeToParent {
+    _frame.size = _view.superview.bounds.size;
+    return self;
+}
+
+/* Misc
+ ******/
+- (StylerColor1)bg {
+    return ^(UIColor* color) {
+        _view.backgroundColor = color;
+        return self;
+    };
+}
+
+- (StylerRadius)radius {
+    return ^(CGFloat radius) {
+        _view.layer.cornerRadius = radius;
+        return self;
+    };
+}
+@end
+
 @implementation UIView (FunStyle)
+
+- (void)render {}
 
 + (StylerView)appendTo {
     return self.styler.appendTo;
@@ -180,154 +337,4 @@ static CGFloat STATIC = 0.5f;
     return UIImagePNGRepresentation([self captureToImage]);
 }
 
-@end
-
-@implementation ViewStyler {
-    UIView* _view;
-    CGRect _frame;
-}
-
-/* Create & apply
- ****************/
-- (id)initWithView:(UIView *)view {
-    self = [self init];
-    _view = view;
-    _frame = view.frame;
-    return self;
-}
-
-- (id)apply {
-    _view.frame = _frame;
-    return _view;
-}
-
-- (id)view {
-    return _view;
-}
-
-/* View Hierarchy
- ****************/
-- (StylerView)appendTo {
-    return ^(UIView* view) {
-        [view addSubview:self.apply];
-        return self;
-    };
-}
-- (StylerView)prependTo {
-    return ^(UIView* view) {
-        [view insertSubview:self.apply atIndex:0];
-        return self;
-    };
-}
-
-/* Position
- **********/
-- (StylerFloat1)x {
-    return ^(float x) {
-        self.xy(x, _view.frame.origin.y);
-        return self;
-    };
-}
-
-- (StylerFloat1)y {
-    return ^(float y) {
-        self.xy(_view.frame.origin.x, y);
-        return self;
-    };
-}
-
-- (StylerFloat2)xy {
-    return ^(float x, float y) {
-        _frame.origin.x = x;
-        _frame.origin.y = y;
-        return self;
-    };
-}
-- (StylerPoint)position {
-    return ^(CGPoint position) {
-        _frame.origin = position;
-        return self;
-    };
-}
-
-- (StylerView)centerInView {
-    return ^(UIView* parentView) {
-        _view.frame = _frame;
-        _view.center = parentView.center;
-        _frame = _view.frame;
-        return self;
-    };
-}
-
-- (ViewStyler *)centerInSuperView {
-    return self.centerInView(_view.superview);
-}
-
-- (ViewStyler *)positionAboveSuperview {
-    return self.y(-_frame.size.height);
-}
-- (StylerFloat1)positionFromRight {
-    return ^(CGFloat offsetFromRight) {
-        return self.x(_view.superview.frame.size.width - _frame.size.width - offsetFromRight);
-        return self;
-    };
-}
-
-/* Size
- ******/
-- (StylerFloat1)w {
-    return ^(float width) {
-        _frame.size.width = width;
-        return self;
-    };
-}
-
-- (StylerFloat1)h {
-    return ^(float height) {
-        _frame.size.height = height;
-        return self;
-    };
-}
-
-- (StylerFloat2)wh {
-    return ^(float width, float height) {
-        _frame.size.width = width;
-        _frame.size.height = height;
-        return self;
-    };
-}
-
-- (StylerSize)size {
-    return ^(CGSize size) {
-        _frame.size = size;
-        return self;
-    };
-}
-
-- (ViewStyler*)sizeToFit {
-    [_view sizeToFit];
-    _frame.size = _view.frame.size;
-    return self;
-}
-
-- (ViewStyler*)sizeToParent {
-    _frame.size = _view.superview.bounds.size;
-    return self;
-}
-
-/* Misc
- ******/
-- (StylerColor1)bg {
-    return ^(UIColor* color) {
-        _view.backgroundColor = color;
-        return self;
-    };
-}
-
-- (StylerRadius)radius {
-    return ^(CGFloat radius) {
-        _view.layer.cornerRadius = radius;
-        return self;
-    };
-}
 @end

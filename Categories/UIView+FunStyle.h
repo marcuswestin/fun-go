@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "FunBase.h"
 
 @class ViewStyler;
 
@@ -18,12 +19,12 @@ typedef ViewStyler* (^StylerFloat2)(float f1, float f2);
 typedef ViewStyler* (^StylerColor1)(UIColor* color);
 typedef ViewStyler* (^StylerPoint)(CGPoint point);
 
-@interface ViewStyler : NSObject
+@interface ViewStyler : FunBase
 
 /* Create & apply
  ****************/
-- (id)initWithView:(UIView*)view;
 - (id)apply;
+- (id)render;
 
 /* View hierarchy
  ****************/
@@ -58,11 +59,11 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 @end
 
 @interface UIView (FunStyle)
-
 + (StylerView) appendTo;
 + (StylerView) prependTo;
 + (ViewStyler*) styler;
 - (ViewStyler*) styler;
+- (void)render;
 
 /* Size
  ******/

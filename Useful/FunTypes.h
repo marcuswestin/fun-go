@@ -12,10 +12,12 @@
 
 
 #define CLIP(X,min,max) MIN(MAX(X, min), max)
-#define white [UIColor whiteColor]
-#define yellow [UIColor yellowColor]
-#define transparent [UIColor clearColor]
-#define black [UIColor blackColor]
+#define WHITE [UIColor whiteColor]
+#define YELLOW [UIColor yellowColor]
+#define TRANSPARENT [UIColor clearColor]
+#define BLACK [UIColor blackColor]
+#define RED [UIColor redColor]
+#define BLUE [UIColor blueColor]
 
 
 #if defined __MAC_OS_X_VERSION_MAX_ALLOWED

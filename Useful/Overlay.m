@@ -18,7 +18,7 @@ static UIWindow* overlayWindow;
     [Overlay hide];
     CGRect frame = [[UIScreen mainScreen] bounds];
 
-    UILabel* label = [UILabel.appendTo(overlayWindow).sizeToFit.centerInSuperView apply];
+    UILabel* label = [UILabel.appendTo(overlayWindow).sizeToFit.centerInSuperView render];
     label.text = message;
     label.textColor = UIColor.whiteColor;
 
