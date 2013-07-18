@@ -40,6 +40,8 @@ typedef void (^ArrayCallback)(NSError* err, NSArray* res);
 typedef void (^DataCallback)(NSError* err, NSData* data);
 typedef void (^ImageCallback)(NSError* err, UIImage* image);
 typedef void (^ViewCallback)(NSError* err, UIView* view);
+typedef void (^CGPointBlock)(CGPoint point);
+typedef void (^CGPointVectorBlock)(CGPoint point, CGPoint vector);
 
 void after(CGFloat delayInSeconds, Block block);
 void vibrateDevice();
