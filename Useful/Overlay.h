@@ -10,7 +10,8 @@
 
 @interface Overlay : FunBase
 
-+ (void)show:(NSString*)message;
++ (UIWindow*)show;
++ (UIWindow*)showMessage:(NSString*)message;
 + (void)hide;
 
 @end

@@ -12,35 +12,36 @@
 @implementation Overlay
 
 static UIWindow* overlayWindow;
+static UIWindow* previousWindow;
 
-+ (void)show:(NSString *)message {
-    return;
-    [Overlay hide];
-    CGRect frame = [[UIScreen mainScreen] bounds];
-
-    UILabel* label = [UILabel.appendTo(overlayWindow).sizeToFit.centerInSuperView render];
-    label.text = message;
-    label.textColor = UIColor.whiteColor;
-
-    overlayWindow = [[UIWindow alloc] initWithFrame:frame];
++ (UIWindow *)show {
+    previousWindow = [UIApplication sharedApplication].keyWindow;
+    overlayWindow = [[UIWindow alloc] initWithFrame:previousWindow.frame];
     overlayWindow.windowLevel = UIWindowLevelStatusBar + 1;
-    overlayWindow.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.75];
-    [overlayWindow setHidden:NO];
-    
-    [self _hideKeyboard];
+    overlayWindow.backgroundColor = [UIColor colorWithWhite:0 alpha:0.75];
+    [overlayWindow makeKeyAndVisible];
+    [overlayWindow onTap:^(UITapGestureRecognizer *sender) {
+        [Overlay hide];
+    }];
+    return overlayWindow;
+}
+
++ (UIWindow*)showMessage:(NSString *)message {
+    [Overlay show];
+    UILabel* label = [[UILabel alloc] initWithFrame:overlayWindow.frame];
+    label.text = message;
+    label.textAlignment = NSTextAlignmentCenter;
+    label.textColor = WHITE;
+    [overlayWindow addSubview:label];
+    return overlayWindow;
 }
 
 + (void)hide {
-    return;
     if (!overlayWindow) { return; }
+    [previousWindow makeKeyAndVisible];
     [overlayWindow setHidden:YES];
     overlayWindow = nil;
-}
-
-+ (void)_hideKeyboard {
-    UITextField* input = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
-    [input becomeFirstResponder];
-    [input resignFirstResponder];
+    previousWindow = nil;
 }
 
 @end
