@@ -29,11 +29,14 @@ typedef void (^PanHandler)(UIPanGestureRecognizer* sender);
 - (void) on:(UIControlEvents)controlEvents handler:(EventHandler)handler;
 @end
 
-
+typedef BOOL (^TextViewShouldChangeBlock)(UITextView* textView, NSRange range, NSString* replacementText);
+typedef void (^TextViewBlock)(UITextView* textView);
 @interface UITextViewDelegate : NSObject <UITextViewDelegate>
 @end
 @interface UITextView (Fun) <UITextViewDelegate>
-- (void) onUserEdit:(Block)handler;
+- (void) onTextDidChange:(TextViewBlock)handler;
+- (void) onTextShouldChange:(TextViewShouldChangeBlock)handler;
+- (void) onSelectionDidChange:(TextViewBlock)handler;
 @end
 
 // Prevent emojis:

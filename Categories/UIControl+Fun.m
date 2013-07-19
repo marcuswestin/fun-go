@@ -7,6 +7,7 @@
 //
 
 #import "UIControl+Fun.h"
+#import "NSArray+Fun.h"
 #import <objc/runtime.h>
 
 static char const * const KeyOnEditingChanged = "Fun_OnEditingChanged";
@@ -75,13 +76,51 @@ static char const * const KeyPanHandler = "Fun_PanHandler";
 /* UITextViews
  *************/
 @implementation UITextView (Fun)
-- (void)onUserEdit:(Block)handlerBlock {
-    if (!self.delegate) { self.delegate = self; }
-    objc_setAssociatedObject(self, KeyBlock, handlerBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+
+static char const * const KeyTextDidChange = "FunKeyTextDidChange";
+- (void)onTextDidChange:(TextViewBlock)handler {
+    [self _addHandlerForKey:KeyTextDidChange handler:handler];
+}
+- (void)textViewDidChange:(UITextView *)textView {
+    [[self _handlersForKey:KeyTextDidChange] each:^(TextViewBlock handler, NSUInteger i) {
+        handler(textView);
+    }];
 }
 
-- (void)textViewDidChange:(UITextView *)textView {
-    Block handlerBlock = objc_getAssociatedObject(self, KeyBlock);
-    handlerBlock();
+static char const * const KeyTextShouldChance = "FunKeyTextShouldChange";
+- (void)onTextShouldChange:(TextViewShouldChangeBlock)handler {
+    [self _addHandlerForKey:KeyTextShouldChance handler:handler];
 }
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+    __block BOOL shouldChange = YES;
+    [[self _handlersForKey:KeyTextShouldChance] each:^(TextViewShouldChangeBlock val, NSUInteger i) {
+        shouldChange = val(textView, range, text) && shouldChange;
+    }];
+    return shouldChange;
+}
+
+static char const * const KeySelectionChange = "FunKeySelectionChange";
+- (void)onSelectionDidChange:(TextViewBlock)handler {
+    [self _addHandlerForKey:KeySelectionChange handler:handler];
+}
+- (void)textViewDidChangeSelection:(UITextView *)textView {
+    [[self _handlersForKey:KeySelectionChange] each:^(TextViewBlock handler, NSUInteger i) {
+        handler(textView);
+    }];
+}
+
+- (void) _addHandlerForKey:(char const * const)Key handler:(id)handler {
+    if (self.delegate && self.delegate != self) {
+        [NSException raise:@"BadDelegate" format:@"Delegate already set"];
+    }
+    self.delegate = self;
+    NSMutableArray* handlers = objc_getAssociatedObject(self, Key);
+    if (!handlers) { handlers = [NSMutableArray array]; }
+    [handlers addObject:handler];
+    objc_setAssociatedObject(self, Key, handlers, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+- (NSArray*)_handlersForKey:(char const * const)Key {
+    return objc_getAssociatedObject(self, Key);
+}
+
 @end
