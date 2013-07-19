@@ -71,6 +71,7 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 - (CGFloat)width;
 - (void)resizeByAddingWidth:(CGFloat)width height:(CGFloat)height;
 - (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height;
+- (CGSize)resizeToContainSubviews;
 
 /* Position
  **********/

@@ -201,6 +201,9 @@
 - (CGFloat)width {
     return CGRectGetWidth(self.frame);
 }
+- (void)setSize:(CGSize)size {
+    self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, size.width, size.height);
+}
 - (void)resizeByAddingWidth:(CGFloat)width height:(CGFloat)height {
     CGRect frame = self.frame;
     frame.size.height += height;
@@ -209,6 +212,17 @@
 }
 - (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height {
     [self resizeByAddingWidth:-width height:-height];
+}
+- (CGSize)resizeToContainSubviews {
+    CGSize size = self.bounds.size;
+    for (UIView* view in self.subviews) {
+        CGSize subSize = [view resizeToContainSubviews];
+        CGFloat maxX = view.frame.origin.x + subSize.width;
+        CGFloat maxY = view.frame.origin.y + subSize.height;
+        if (maxX > size.width) { size.width = maxX; }
+        if (maxY > size.height) { size.height = maxY; }
+    }
+    return self.size = size;
 }
 
 /* Position
