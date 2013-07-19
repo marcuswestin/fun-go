@@ -10,6 +10,14 @@
 #import "Overlay.h"
 #import <objc/runtime.h>
 
+NSRange NSRangeMake(NSUInteger location, NSUInteger length) {
+    return (NSRange){ .location = location, .length = length };
+}
+
+NSString* NSStringFromRange(NSRange range) {
+    return [NSString stringWithFormat:@"{ .location=%d, .length=%d }", range.location, range.length];
+}
+
 @implementation FunBase
 
 static bool hasSetup = NO;
