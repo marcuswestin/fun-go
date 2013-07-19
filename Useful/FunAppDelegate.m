@@ -16,7 +16,7 @@
     [FunBase setup];
 
     _window = [[UIWindow alloc] initWithFrame:[self _appRect]];
-    _window.backgroundColor = [UIColor greenColor];
+    _window.backgroundColor = STEELBLUE;
     [self start];
     
     [_window makeKeyAndVisible];

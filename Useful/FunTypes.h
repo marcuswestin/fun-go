@@ -18,7 +18,7 @@
 #define BLACK [UIColor blackColor]
 #define RED [UIColor redColor]
 #define BLUE [UIColor blueColor]
-
+#define STEELBLUE [UIColor colorWithRed:70/256.f green:130/256.f blue:180/256.f alpha:1]
 
 #if defined __MAC_OS_X_VERSION_MAX_ALLOWED
 #define PLATFORM_OSX
