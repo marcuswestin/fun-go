@@ -15,6 +15,7 @@ static UIWindow* overlayWindow;
 static UIWindow* previousWindow;
 
 + (UIWindow *)show {
+    [Overlay hide];
     previousWindow = [UIApplication sharedApplication].keyWindow;
     overlayWindow = [[UIWindow alloc] initWithFrame:previousWindow.frame];
     overlayWindow.windowLevel = UIWindowLevelStatusBar + 1;
