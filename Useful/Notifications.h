@@ -12,6 +12,7 @@
 typedef NSDictionary* Notification;
 
 @interface Notifications : FunBase
++ (BOOL) deviceSupportsRemoteNotifications;
 + (void) register:(Callback)callback;
 + (NSDictionary*) status;
 + (NSInteger) getBadgeNumber;

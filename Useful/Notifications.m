@@ -22,6 +22,10 @@
 
 static Callback registerCallback;
 
++ (BOOL)deviceSupportsRemoteNotifications {
+    return !isSimulator;
+}
+
 + (void)setup {
     [Events on:@"Application.didRegisterForRemoteNotificationsWithDeviceToken" callback:^(NSData* deviceToken) {
         NSString* tokenAsString = [deviceToken description];
