@@ -30,6 +30,14 @@
 #define PLATFORM_IOS
 #endif
 
+#include "TargetConditionals.h"
+
+#if TARGET_IPHONE_SIMULATOR
+static const BOOL isSimulator = YES;
+#else
+static const BOOL isSimulator = NO;
+#endif
+
 void error(NSError* err);
 NSError* makeError(NSString* localMessage);
 
