@@ -109,6 +109,7 @@
 /* Scrolling
  ***********/
 - (void)scrollToBottomAnimated:(BOOL)animated {
+    if (_sectionCount == 0) { return; }
     NSUInteger section = _sectionCount - 1;
     NSUInteger row = _rowCountPerSection[section] - 1;
     [_tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:section] atScrollPosition:UITableViewScrollPositionTop animated:animated];
