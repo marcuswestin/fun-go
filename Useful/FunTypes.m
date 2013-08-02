@@ -8,12 +8,23 @@
 
 #import "FunTypes.h"
 #import <AudioToolbox/AudioToolbox.h>
+#import "Overlay.h"
+#import "Viewport.h"
 
 #include <stdio.h>
 
 void error(NSError* err) {
     if (!err) { return; }
-    NSLog(@"ERROR %@", err);
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NSString* message = err.localizedDescription;
+        NSLog(@"ERROR %@ %@", message, err);
+        UITextView* view = [UITextView.appendTo([Overlay show]).w(Viewport.width) render];
+        [view setText:message];
+        view.backgroundColor = TRANSPARENT;
+        view.textColor = RED;
+        [view sizeToFit];
+        [view centerInSuperview];
+    });
 }
 
 void after(CGFloat delayInSeconds, Block block) {
