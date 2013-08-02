@@ -75,6 +75,7 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 
 /* Position
  **********/
+- (void)centerInSuperview;
 - (void)centerVerticallyInView:(UIView*)view;
 - (void)centerVerticallyInSuperView;
 - (void)moveByX:(NSInteger)x y:(NSInteger)y;

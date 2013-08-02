@@ -251,6 +251,9 @@
 - (void)centerVerticallyInSuperView {
     [self centerVerticallyInView:self.superview];
 }
+- (void)centerInSuperview {
+    [self.styler.centerInSuperView apply];
+}
 
 /* Borders, Shadows & Insets
  ***************************/
