@@ -18,14 +18,14 @@
     NSArray* sectionCounts = [_delegate loadSectionCounts];
     _sectionCount = sectionCounts.count;
     _headerHeights = calloc(_sectionCount, sizeof(NSUInteger));
-    _rowCountPerSection = malloc(_sectionCount * sizeof(NSUInteger));
-    _rowCountBeforeSection = malloc(_sectionCount * sizeof(NSUInteger));
+    _rowCountsPerSection = malloc(_sectionCount * sizeof(NSUInteger));
+    _rowCountsBeforeSection = malloc(_sectionCount * sizeof(NSUInteger));
     [sectionCounts each:^(id val, NSUInteger i) {
-        _rowCountPerSection[i] = [sectionCounts[i] integerFor:@"count"];
+        _rowCountsPerSection[i] = [sectionCounts[i] integerFor:@"count"];
         if (i == 0) {
-            _rowCountBeforeSection[i] = 0;
+            _rowCountsBeforeSection[i] = 0;
         } else {
-            _rowCountBeforeSection[i] = _rowCountBeforeSection[i - 1] + _rowCountPerSection[i - 1];
+            _rowCountsBeforeSection[i] = _rowCountsBeforeSection[i - 1] + _rowCountsPerSection[i - 1];
         }
     }];
     
@@ -37,7 +37,7 @@
 }
 
 - (NSUInteger)indexForPath:(NSIndexPath*)indexPath {
-    return _rowCountBeforeSection[indexPath.section] + indexPath.row;
+    return _rowCountsBeforeSection[indexPath.section] + indexPath.row;
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -45,26 +45,35 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _rowCountPerSection[section];
+    return _rowCountsPerSection[section];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     id item = [self itemForPath:indexPath];
     NSUInteger width = Viewport.width;
     NSUInteger height = [_delegate heightForItem:item width:width];
-    UITableViewCell* cell = [[UITableViewCell alloc] initWithFrame:CGRectMake(0, 0, width, height)];
-    cell.backgroundColor = [UIColor whiteColor];
+    UITableViewCell* cell = [UITableViewCell.styler.wh(width, height).bg(WHITE) render];
     [_delegate renderItem:item inCell:cell width:width height:height];
     return cell;
 }
 
 - (void)forEachRowIndexInSection:(NSUInteger)section block:(ForEachIndexBlock)block {
-    NSUInteger index = _rowCountBeforeSection[section];
-    NSUInteger lastIndex = _rowCountBeforeSection[section] + _rowCountPerSection[section];
+    NSUInteger index = _rowCountsBeforeSection[section];
+    NSUInteger lastIndex = _rowCountsBeforeSection[section] + _rowCountsPerSection[section];
     while (index < lastIndex) {
         block(index);
         index += 1;
     }
+}
+
+- (id)firstItemInSection:(NSUInteger)section {
+    NSUInteger rowCountBeforeSection = self.rowCountsBeforeSection[section];
+    return self.items[rowCountBeforeSection];
+}
+- (id)lastItemInSection:(NSUInteger)section {
+    NSUInteger rowCountBeforeSection = self.rowCountsBeforeSection[section];
+    NSUInteger rowCountForSection = self.rowCountsPerSection[section];
+    return self.items[rowCountBeforeSection + rowCountForSection - 1];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -111,7 +120,7 @@
 - (void)scrollToBottomAnimated:(BOOL)animated {
     if (_sectionCount == 0) { return; }
     NSUInteger section = _sectionCount - 1;
-    NSUInteger row = _rowCountPerSection[section] - 1;
+    NSUInteger row = _rowCountsPerSection[section] - 1;
     [_tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:section] atScrollPosition:UITableViewScrollPositionTop animated:animated];
 }
 

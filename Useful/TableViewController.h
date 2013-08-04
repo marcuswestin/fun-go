@@ -25,8 +25,8 @@ typedef void (^ForEachIndexBlock)(NSUInteger rowIndex);
 @interface TableViewController : ViewController <UITableViewDataSource, UITableViewDelegate>
 @property UITableView* tableView;
 @property NSUInteger sectionCount;
-@property NSUInteger* rowCountPerSection;
-@property NSUInteger* rowCountBeforeSection;
+@property NSUInteger* rowCountsPerSection;
+@property NSUInteger* rowCountsBeforeSection;
 @property NSUInteger* rowHeights;
 @property NSUInteger* headerHeights;
 @property NSArray* items;
@@ -34,6 +34,9 @@ typedef void (^ForEachIndexBlock)(NSUInteger rowIndex);
 
 - (NSUInteger)indexForPath:(NSIndexPath*)indexPath;
 - (void)forEachRowIndexInSection:(NSUInteger)section block:(ForEachIndexBlock)block;
+- (id)firstItemInSection:(NSUInteger)section;
+- (id)lastItemInSection:(NSUInteger)section;
+
 - (id)itemForPath:(NSIndexPath*)indexPath;
 - (void)scrollToBottomAnimated:(BOOL)animated;
 
