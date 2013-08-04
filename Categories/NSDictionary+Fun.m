@@ -48,9 +48,14 @@
     return [arr joinBy:@"&"];
 }
 
-- (NSUInteger)integerFor:(NSString *)property {
+- (NSInteger)integerFor:(NSString *)property {
     id val = self[property];
     return (val == [NSNull null] ? 0 : [val integerValue]);
+}
+
+- (id)nullSafeObjectForKey:(NSString*)key {
+    id val = self[key];
+    return (val && val != [NSNull null] ? val : nil);
 }
 
 - (NSDictionary *)reverse {

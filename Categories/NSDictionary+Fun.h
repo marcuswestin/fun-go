@@ -22,7 +22,8 @@ typedef id (^DictionaryMapFn)(id val, id key);
 
 - (NSString *)toQueryString;
 
-- (NSUInteger)integerFor:(NSString*)property;
+- (NSInteger)integerFor:(NSString*)property;
+- (id)nullSafeObjectForKey:(NSString*)key;
 
 - (NSDictionary*)reverse;
 
