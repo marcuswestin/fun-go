@@ -19,6 +19,8 @@
 #define RED [UIColor redColor]
 #define BLUE [UIColor blueColor]
 #define STEELBLUE [UIColor colorWithRed:70/256.f green:130/256.f blue:180/256.f alpha:1]
+UIColor* rgba(NSUInteger r, NSUInteger g, NSUInteger b, CGFloat a);
+UIColor* rgb(NSUInteger r, NSUInteger g, NSUInteger b);
 
 #if defined __MAC_OS_X_VERSION_MAX_ALLOWED
 #define PLATFORM_OSX
