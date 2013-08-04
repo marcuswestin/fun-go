@@ -42,12 +42,10 @@ static int numRequests = 0;
 
 + (void)post:(NSString *)path json:(NSDictionary *)json callback:(APICallback)callback {
     [self send:@"POST" path:path contentType:@"application/json" data:json.toJsonData callback:callback];
-    NSLog(@"API POST %@ %@", path, json);
 }
 
 + (void)get:(NSString *)path queries:(NSDictionary *)queries callback:(APICallback)callback {
     path = [NSString stringWithFormat:@"%@?%@", path, queries.toQueryString];
-    NSLog(@"API GET %@", path);
     [self send:@"GET" path:path contentType:nil data:nil callback:callback];
 }
 
@@ -94,13 +92,13 @@ static int numRequests = 0;
     
     [httpData appendData:[[NSString stringWithFormat:@"--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
     
-    NSLog(@"API Upload %@", path);
     [self send:@"POST" path:path contentType:contentType data:httpData callback:callback];
 }
 
 
 + (void) send:(NSString*)method path:(NSString*)path contentType:(NSString*)contentType data:(NSData*)data callback:(APICallback)callback {
 
+    NSLog(@"API %@ %@", method, path);
     NSDictionary* devInterceptRes = [API _devIntercept:path];
     if (devInterceptRes) {
         return dispatch_async(dispatch_get_main_queue(), ^{
