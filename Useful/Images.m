@@ -64,7 +64,11 @@ static NSString* cacheKeyBase;
             
             // Multiple load calls could have been made for the same un-fetched image with the same processing parameters
             NSData* processedData = [Cache get:processedKey];
-            if (processedData) { return callback(nil, [UIImage imageWithData:processedData]); }
+            if (processedData) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    callback(nil, [UIImage imageWithData:processedData]);
+                });
+            }
             
             return [self _processAndCache:url data:data resize:resize radius:radius callback:callback];
         }];
@@ -115,7 +119,7 @@ static NSString* cacheKeyBase;
         [Cache store:key data:UIImagePNGRepresentation(image)]; // Radius require PNG transparency
     }
     
-    dispatch_sync(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         callback(nil, image);
     });
 }
