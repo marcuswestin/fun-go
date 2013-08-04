@@ -15,7 +15,7 @@
 
 void error(NSError* err) {
     if (!err) { return; }
-    dispatch_sync(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         NSString* message = err.localizedDescription;
         NSLog(@"ERROR %@ %@", message, err);
         UITextView* view = [UITextView.appendTo([Overlay show]).w(Viewport.width) render];
