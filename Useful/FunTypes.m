@@ -22,6 +22,7 @@ void error(NSError* err) {
         [view setText:message];
         view.backgroundColor = TRANSPARENT;
         view.textColor = RED;
+        view.editable = NO;
         [view sizeToFit];
         [view centerInSuperview];
     });
