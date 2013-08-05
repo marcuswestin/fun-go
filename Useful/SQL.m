@@ -187,10 +187,9 @@ static NSMutableDictionary* columns;
     NSString* columnNames = [columns map:^id(id name, NSUInteger i) { return name; }].joinedByCommaSpace;
     NSString* sql = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)", table, columnNames, questionMarks];
 
-    NSMutableArray* values;
+    NSMutableArray* values = [NSMutableArray arrayWithCapacity:columns.count];
     for (id item in items) {
-        values = [NSMutableArray arrayWithCapacity:items.count];
-        
+        [values removeAllObjects];
         for (NSString* column in columns) {
             [values addObject:item[column] ? item[column] : NSNull.null];
         }
