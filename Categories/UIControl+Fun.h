@@ -19,6 +19,11 @@ typedef void (^PanHandler)(UIPanGestureRecognizer* sender);
 - (UIPanGestureRecognizer*) onPan:(PanHandler)handler;
 @end
 
+@interface UIButton (Fun)
+- (void)setTitle:(NSString *)title;
+- (void)setTitleColor:(UIColor *)color;
+@end
+
 @interface UIControlHandler : NSObject
 @property (strong) EventHandler handler;
 @end

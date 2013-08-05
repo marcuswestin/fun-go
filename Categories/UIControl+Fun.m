@@ -50,6 +50,17 @@ static char const * const KeyPanHandler = "Fun_PanHandler";
 }
 @end
 
+/* UIButton
+ **********/
+@implementation UIButton (Fun)
+- (void)setTitle:(NSString *)title {
+    [self setTitle:title forState:UIControlStateNormal];
+}
+- (void)setTitleColor:(UIColor *)color {
+    [self setTitleColor:color forState:UIControlStateNormal];
+}
+@end
+
 /* UIControls
  ************/
 @implementation UIControl (Fun)
