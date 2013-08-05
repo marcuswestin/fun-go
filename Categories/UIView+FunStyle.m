@@ -27,9 +27,8 @@
     return self;
 }
 
-- (id)apply {
+- (void)apply {
     _view.frame = _frame;
-    return _view;
 }
 
 - (id)render {

@@ -23,7 +23,7 @@ typedef ViewStyler* (^StylerPoint)(CGPoint point);
 
 /* Create & apply
  ****************/
-- (id)apply;
+- (void)apply;
 - (id)render;
 
 /* View hierarchy
