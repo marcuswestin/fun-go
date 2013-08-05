@@ -123,5 +123,7 @@
     NSUInteger row = _rowCountsPerSection[section] - 1;
     [_tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:section] atScrollPosition:UITableViewScrollPositionTop animated:animated];
 }
-
+- (void)scrollToSection:(NSUInteger)section animated:(BOOL)animated {
+    [_tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:section] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+}
 @end

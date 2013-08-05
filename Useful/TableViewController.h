@@ -39,5 +39,6 @@ typedef void (^ForEachIndexBlock)(NSUInteger rowIndex);
 
 - (id)itemForPath:(NSIndexPath*)indexPath;
 - (void)scrollToBottomAnimated:(BOOL)animated;
+- (void)scrollToSection:(NSUInteger)section animated:(BOOL)animated;
 
 @end
