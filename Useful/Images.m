@@ -42,14 +42,15 @@ static NSString* cacheKeyBase;
 
 + (void)load:(NSString *)url resize:(CGSize)resize radius:(NSUInteger)radius callback:(ImageCallback)callback {
     // Processed cached
-    NSString* processedKey = [self _cacheKeyFor:url resize:resize radius:radius];
-    NSData* processedData = [Cache get:processedKey];
-    if (processedData) {
-        callback(nil, [UIImage imageWithData:processedData]);
-        return;
-    }
-
+    callback = [self _mainThreadCallback:callback];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString* processedKey = [self _cacheKeyFor:url resize:resize radius:radius];
+        NSData* processedData = [Cache get:processedKey];
+        if (processedData) {
+            callback(nil, [UIImage imageWithData:processedData]);
+            return;
+        }
+
         // Original cached
         NSString* originalKey = [self _cacheKeyFor:url resize:noResize radius:noRadius];
         NSData* originalData = [Cache get:originalKey];
@@ -65,14 +66,20 @@ static NSString* cacheKeyBase;
             // Multiple load calls could have been made for the same un-fetched image with the same processing parameters
             NSData* processedData = [Cache get:processedKey];
             if (processedData) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    callback(nil, [UIImage imageWithData:processedData]);
-                });
+                callback(nil, [UIImage imageWithData:processedData]);
             }
             
             return [self _processAndCache:url data:data resize:resize radius:radius callback:callback];
         }];
     });
+}
+
++ (ImageCallback)_mainThreadCallback:(ImageCallback)callback {
+    return ^(NSError* err, UIImage* image) {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            callback(err, image);
+        });
+    };
 }
 
 + (void)_fetch:(NSString*)url cacheKey:(NSString*)key callback:(DataCallback)callback {
@@ -119,9 +126,7 @@ static NSString* cacheKeyBase;
         [Cache store:key data:UIImagePNGRepresentation(image)]; // Radius require PNG transparency
     }
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        callback(nil, image);
-    });
+    callback(nil, image);
 }
 
 + (NSString*)_cacheKeyFor:(NSString*)url resize:(CGSize)resize radius:(NSUInteger)radius {
