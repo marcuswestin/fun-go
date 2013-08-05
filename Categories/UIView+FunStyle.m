@@ -201,6 +201,12 @@
 - (CGFloat)width {
     return CGRectGetWidth(self.frame);
 }
+- (void)setWidth:(CGFloat)width {
+    [self setSize:CGSizeMake(width, self.height)];
+}
+- (void)setHeight:(CGFloat)height {
+    [self setSize:CGSizeMake(self.width, height)];
+}
 - (void)setSize:(CGSize)size {
     self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, size.width, size.height);
 }
@@ -232,6 +238,12 @@
     frame.origin.x += dx;
     frame.origin.y += dy;
     self.frame = frame;
+}
+- (void)moveByX:(NSInteger)x {
+    [self moveByX:x y:0];
+}
+- (void)moveByY:(NSInteger)y {
+    [self moveByX:0 y:y];
 }
 - (void)moveToX:(CGFloat)x y:(CGFloat)y {
     CGRect frame = self.frame;

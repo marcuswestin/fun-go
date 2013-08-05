@@ -69,6 +69,8 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
  ******/
 - (CGFloat)height;
 - (CGFloat)width;
+- (void)setWidth:(CGFloat)width;
+- (void)setHeight:(CGFloat)height;
 - (void)resizeByAddingWidth:(CGFloat)width height:(CGFloat)height;
 - (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height;
 - (CGSize)resizeToContainSubviews;
@@ -79,6 +81,8 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 - (void)centerVerticallyInView:(UIView*)view;
 - (void)centerVerticallyInSuperView;
 - (void)moveByX:(NSInteger)x y:(NSInteger)y;
+- (void)moveByY:(NSInteger)y;
+- (void)moveByX:(NSInteger)x;
 - (void)moveToX:(CGFloat)x y:(CGFloat)y;
 - (void)moveToX:(CGFloat)x;
 - (void)moveToY:(CGFloat)y;
