@@ -143,10 +143,9 @@ static NSMutableDictionary* columns;
         [rows addObject:[resultSet resultDictionary]];
     }
     
+    result.rows = rows;
     if (rows.count == 1) {
         result.row = rows[0];
-    } else {
-        result.rows = rows;
     }
     
     return result;
