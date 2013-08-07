@@ -26,7 +26,7 @@ static Callback registerCallback;
     return !isSimulator;
 }
 
-+ (void)setup {
++ (void)load {
     [Events on:@"Application.didRegisterForRemoteNotificationsWithDeviceToken" callback:^(NSData* deviceToken) {
         NSString* tokenAsString = [deviceToken description];
         tokenAsString = [tokenAsString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
@@ -40,10 +40,10 @@ static Callback registerCallback;
         registerCallback = nil;
     }];
     [Events on:@"Application.didReceiveRemoteNotification" callback:^(NSDictionary* notification) {
-        [Events emit:@"Notifications.notification" info:@{ @"notification":notification }];
+        [Events fire:@"Notifications.notification" info:@{ @"notification":notification }];
     }];
     [Events on:@"Application.didLaunchWithNotification" callback:^(NSDictionary* notification) {
-        [Events emit:@"Notifications.notification" info:@{ @"notification":notification,
+        [Events fire:@"Notifications.notification" info:@{ @"notification":notification,
                                                            @"didBringAppIntoForeground":num(1) }];
     }];
 }

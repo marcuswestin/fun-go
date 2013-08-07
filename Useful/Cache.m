@@ -14,7 +14,7 @@
 static NSCharacterSet* illegalFileNameCharacters = nil;
 //static NSString* _path;
 
-+ (void)setup {
++ (void)load {
     illegalFileNameCharacters = [NSCharacterSet characterSetWithCharactersInString:@"/\\?%*|\"<>"];
 //    _path = [Files cachePath:@"Caches"];
 //    [[NSFileManager defaultManager] createDirectoryAtPath:_path withIntermediateDirectories:YES attributes:NULL error:NULL];

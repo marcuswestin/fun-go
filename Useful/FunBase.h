@@ -12,9 +12,6 @@ NSRange NSRangeMake(NSUInteger location, NSUInteger length);
 NSString* NSStringFromRange(NSRange range);
 
 @interface FunBase : NSObject
-
-+ (void) setup;
-
 @end
 
 #import "FunAll.h"

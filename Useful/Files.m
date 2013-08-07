@@ -14,7 +14,7 @@
 static NSString* _documentsDirectory;
 static NSString* _cachesDirectory;
 
-+ (void)setup {
++ (void)load {
     _documentsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     _cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
 }

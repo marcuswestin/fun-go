@@ -12,7 +12,7 @@
 
 static CGSize size;
 
-+ (void)setup {
++ (void)load {
     size = [[UIScreen mainScreen] bounds].size;
 }
 

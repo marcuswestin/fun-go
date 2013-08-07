@@ -14,7 +14,7 @@
 
 static NSString* locale;
 
-+ (void)setup {
++ (void)load {
     locale = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
 }
 

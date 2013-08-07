@@ -28,13 +28,6 @@ void error(NSError* err) {
     });
 }
 
-UIColor* rgba(NSUInteger r, NSUInteger g, NSUInteger b, CGFloat a) {
-    return [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a];
-}
-UIColor* rgb(NSUInteger r, NSUInteger g, NSUInteger b) {
-    return rgba(r, g, b, 1.0);
-}
-
 void after(NSTimeInterval delayInSeconds, Block block) {
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), block);

@@ -245,7 +245,7 @@
 + (ViewStyler*)styler {
     UIView* instance = [[[self class] alloc] init];
 #if defined DEBUG && FALSE
-    return instance.styler.bg([UIColor randomColor]);
+    return instance.styler.bg(RANDOM_COLOR);
 #else
     return instance.styler;
 #endif

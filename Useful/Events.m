@@ -15,7 +15,7 @@ static NSInteger unique = 1;
 static NSString* RefKey = @"Ref";
 static NSString* CbKey = @"Cb";
 
-+ (void)setup {
++ (void)load {
     signals = [NSMutableDictionary dictionary];
 }
 
@@ -43,11 +43,11 @@ static NSString* CbKey = @"Cb";
     }
 }
 
-+ (void)emit:(NSString *)signal {
-    [Events emit:signal info:nil];
++ (void)fire:(NSString *)signal {
+    [Events fire:signal info:nil];
 }
 
-+ (void)emit:(NSString *)signal info:(id)info {
++ (void)fire:(NSString *)signal info:(id)info {
     NSArray* callbacks = [signals[signal] copy];
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"Emit %@ %@", signal, info);

@@ -34,7 +34,7 @@ static int numRequests = 0;
     }
 }
 
-+ (void)setup {
++ (void)load {
     multipartBoundary = @"_____FUNOBJ_BNDRY__";
     queue = [[NSOperationQueue alloc] init];
     queue.maxConcurrentOperationCount = 10;

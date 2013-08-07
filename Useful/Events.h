@@ -16,7 +16,7 @@ typedef id EventsRef;
 + (EventsRef)on:(NSString*)signal callback:(EventCallback)callback;
 + (EventsRef)on:(NSString*)signal ref:(EventsRef)ref callback:(EventCallback)callback;
 + (void)off:(NSString*)signal ref:(EventsRef)ref;
-+ (void)emit:(NSString*)signal info:(id)info;
-+ (void)emit:(NSString*)signal;
++ (void)fire:(NSString*)signal info:(id)info;
++ (void)fire:(NSString*)signal;
 
 @end

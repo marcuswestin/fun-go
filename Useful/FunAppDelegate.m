@@ -13,7 +13,6 @@
 @implementation FunAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [FunBase setup];
 
     _window = [[UIWindow alloc] initWithFrame:[self _appRect]];
     _window.backgroundColor = STEELBLUE;
@@ -50,20 +49,20 @@
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    [Events emit:@"Application.didRegisterForRemoteNotificationsWithDeviceToken" info:deviceToken];
+    [Events fire:@"Application.didRegisterForRemoteNotificationsWithDeviceToken" info:deviceToken];
 }
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)err {
-    [Events emit:@"Application.didFailToRegisterForRemoteNotificationsWithError" info:err];
+    [Events fire:@"Application.didFailToRegisterForRemoteNotificationsWithError" info:err];
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)notification {
-    [Events emit:@"Application.didReceiveRemoteNotification" info:notification];
+    [Events fire:@"Application.didReceiveRemoteNotification" info:notification];
 }
 
 - (void)handleLaunchNotification:(NSDictionary*)launchNotification {
     if (launchNotification) {
-        [Events emit:@"Application.didLaunchWithNotification" info:launchNotification];
+        [Events fire:@"Application.didLaunchWithNotification" info:launchNotification];
     }
 }
 

@@ -18,7 +18,7 @@ static CGSize noResize;
 static NSUInteger noRadius;
 static NSString* cacheKeyBase;
 
-+ (void)setup {
++ (void)load {
     loading = [NSMutableDictionary dictionary];
     processing = [NSMutableDictionary dictionary];
     queue = [[NSOperationQueue alloc] init];
@@ -43,7 +43,7 @@ static NSString* cacheKeyBase;
 + (void)load:(NSString *)url resize:(CGSize)resize radius:(NSUInteger)radius callback:(ImageCallback)callback {
     // Processed cached
     callback = [self _mainThreadCallback:callback];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    asyncDefault(^{
         NSString* processedKey = [self _cacheKeyFor:url resize:resize radius:radius];
         NSData* processedData = [Cache get:processedKey];
         if (processedData) {
@@ -76,7 +76,7 @@ static NSString* cacheKeyBase;
 
 + (ImageCallback)_mainThreadCallback:(ImageCallback)callback {
     return ^(NSError* err, UIImage* image) {
-        dispatch_sync(dispatch_get_main_queue(), ^{
+        asyncMain(^{
             callback(err, image);
         });
     };
