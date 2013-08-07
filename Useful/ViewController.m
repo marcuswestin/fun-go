@@ -8,12 +8,6 @@
 
 #import "ViewController.h"
 
-UILabel* makeLabel(NSString* text) {
-    UILabel* label = [[UILabel alloc] init];
-    label.text = text;
-    return label;
-}
-
 @implementation ViewController
 
 @synthesize state;

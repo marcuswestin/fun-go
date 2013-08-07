@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 #import "All.h"
 
-UILabel* makeLabel(NSString*);
-
 @interface ViewController : UIViewController
 
 @property (strong) NSDictionary* state;
