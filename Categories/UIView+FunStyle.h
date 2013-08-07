@@ -14,11 +14,14 @@
 typedef ViewStyler* (^Styler)();
 typedef ViewStyler* (^StylerView)(UIView* view);
 typedef ViewStyler* (^StylerSize)(CGSize size);
-typedef ViewStyler* (^StylerFloat1)(float num);
-typedef ViewStyler* (^StylerFloat2)(float f1, float f2);
+typedef ViewStyler* (^StylerFloat1)(CGFloat num);
+typedef ViewStyler* (^StylerFloat2)(CGFloat f1, CGFloat f2);
+typedef ViewStyler* (^StylerFloat3)(CGFloat f1, CGFloat f2, CGFloat f3);
+typedef ViewStyler* (^StylerFloat4)(CGFloat f1, CGFloat f2, CGFloat f3, CGFloat f4);
 typedef ViewStyler* (^StylerColor1)(UIColor* color);
 typedef ViewStyler* (^StylerPoint)(CGPoint point);
-
+typedef ViewStyler* (^StylerRect)(CGRect rect);
+typedef ViewStyler* (^StylerString1)(NSString* string);
 @interface ViewStyler : FunBase
 
 /* Create & apply
@@ -40,7 +43,9 @@ typedef ViewStyler* (^StylerPoint)(CGPoint point);
 - (StylerView)centerInView;
 - (ViewStyler*)positionAboveSuperview;
 - (StylerFloat1)positionFromRight;
+- (StylerFloat1)positionFromBottom;
 - (StylerPoint)position;
+- (StylerRect)frame;
 
 /* Size
  ******/
@@ -51,11 +56,18 @@ typedef ViewStyler* (^StylerPoint)(CGPoint point);
 - (ViewStyler*)sizeToFit;
 - (ViewStyler*)sizeToParent;
 
-/* Misc
- ******/
+/* Styling
+ *********/
 - (StylerColor1)bg;
-typedef ViewStyler* (^StylerRadius)(CGFloat radius);
-- (StylerRadius)radius;
+- (StylerFloat3)shadow;
+- (StylerFloat1)radius;
+- (StylerFloat4)borderWidths;
+- (StylerColor1)borderColor;
+- (ViewStyler*)hide;
+
+/* Labels
+ ********/
+- (StylerString1)text;
 @end
 
 @interface UIView (FunStyle)
@@ -74,18 +86,22 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 - (void)resizeByAddingWidth:(CGFloat)width height:(CGFloat)height;
 - (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height;
 - (CGSize)resizeToContainSubviews;
+- (void)setSize:(CGSize)size;
 
 /* Position
  **********/
 - (void)centerInSuperview;
 - (void)centerVerticallyInView:(UIView*)view;
 - (void)centerVerticallyInSuperView;
-- (void)moveByX:(NSInteger)x y:(NSInteger)y;
-- (void)moveByY:(NSInteger)y;
-- (void)moveByX:(NSInteger)x;
+- (void)moveByX:(CGFloat)x y:(CGFloat)y;
+- (void)moveByY:(CGFloat)y;
+- (void)moveByX:(CGFloat)x;
 - (void)moveToX:(CGFloat)x y:(CGFloat)y;
 - (void)moveToX:(CGFloat)x;
 - (void)moveToY:(CGFloat)y;
+- (void)moveToPosition:(CGPoint)origin;
+- (void)moveByVector:(CGPoint)vector;
+- (CGPoint)topRightCorner;
 
 /* Borders, Shadows & Insets
  ***************************/
@@ -95,10 +111,15 @@ typedef ViewStyler* (^StylerRadius)(CGFloat radius);
 - (void)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius;
 - (void)setBorderColor:(UIColor*)color width:(CGFloat)width;
 
-/* Content
- *********/
+/* View hierarchy
+ ****************/
+- (UIView*)appendTo:(UIView*)superview;
 - (void)empty;
+
+/* Screenshot
+ ************/
 - (UIImage*)captureToImage;
+- (UIImage*)captureToImageWithScale:(CGFloat)scale;
 - (NSData*)captureToPngData;
 - (NSData*)captureToJpgData:(CGFloat)compressionQuality;
 @end

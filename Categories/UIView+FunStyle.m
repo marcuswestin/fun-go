@@ -10,13 +10,11 @@
 #import "FunAll.h"
 #import <QuartzCore/QuartzCore.h>
 
-#if defined DEBUG
-//#define RANDOM_COLOR
-#endif
-
 @implementation ViewStyler {
     UIView* _view;
     CGRect _frame;
+    UIEdgeInsets _borderWidths;
+    UIColor* _borderColor;
 }
 
 /* Create & apply
@@ -29,6 +27,7 @@
 
 - (void)apply {
     _view.frame = _frame;
+    [self _makeBorders];
 }
 
 - (id)render {
@@ -60,14 +59,14 @@
  **********/
 - (StylerFloat1)x {
     return ^(float x) {
-        self.xy(x, _view.frame.origin.y);
+        self.xy(x, _frame.origin.y);
         return self;
     };
 }
 
 - (StylerFloat1)y {
     return ^(float y) {
-        self.xy(_view.frame.origin.x, y);
+        self.xy(_frame.origin.x, y);
         return self;
     };
 }
@@ -105,10 +104,19 @@
 - (StylerFloat1)positionFromRight {
     return ^(CGFloat offsetFromRight) {
         return self.x(_view.superview.frame.size.width - _frame.size.width - offsetFromRight);
+    };
+}
+- (StylerFloat1)positionFromBottom {
+    return ^(CGFloat offsetFromBottom) {
+        return self.y(_view.superview.frame.size.height - _frame.size.height - offsetFromBottom);
+    };
+}
+- (StylerRect)frame {
+    return ^(CGRect frame) {
+        _frame = frame;
         return self;
     };
 }
-
 /* Size
  ******/
 - (StylerFloat1)w {
@@ -151,18 +159,72 @@
     return self;
 }
 
-/* Misc
- ******/
+/* Styling
+ *********/
 - (StylerColor1)bg {
     return ^(UIColor* color) {
         _view.backgroundColor = color;
         return self;
     };
 }
-
-- (StylerRadius)radius {
+- (StylerFloat3)shadow {
+    return ^(CGFloat xOffset, CGFloat yOffset, CGFloat radius) {
+        _view.layer.shadowColor = [UIColor colorWithWhite:0.5 alpha:1].CGColor;
+        _view.layer.shadowOffset = CGSizeMake(xOffset, yOffset);
+        _view.layer.shadowRadius = radius;
+        _view.layer.shadowOpacity = 0.5;
+        return self;
+    };
+}
+- (StylerFloat1)radius {
     return ^(CGFloat radius) {
         _view.layer.cornerRadius = radius;
+        return self;
+    };
+}
+- (StylerFloat4)borderWidths {
+    return ^(CGFloat top, CGFloat right, CGFloat bottom, CGFloat left) {
+        _borderWidths = UIEdgeInsetsMake(top, left, bottom, right);
+        return self;
+    };
+}
+- (StylerColor1)borderColor {
+    return ^(UIColor* borderColor) {
+        _borderColor = borderColor;
+        return self;
+    };
+}
+- (void)_makeBorders {
+    if (_borderWidths.top) {
+        [self _addBorder:CGRectMake(0, 0, _frame.size.width, _borderWidths.top)];
+    }
+    if (_borderWidths.right) {
+        [self _addBorder:CGRectMake(_frame.size.width - _borderWidths.right, 0, _borderWidths.right, _frame.size.height)];
+    }
+    if (_borderWidths.bottom) {
+        [self _addBorder:CGRectMake(0, _frame.size.height - _borderWidths.bottom, _frame.size.width, _borderWidths.bottom)];
+    }
+    if (_borderWidths.left) {
+        [self _addBorder:CGRectMake(0, 0, _borderWidths.left, _frame.size.height)];
+    }
+}
+- (void)_addBorder:(CGRect)rect {
+    CALayer* border = [CALayer layer];
+    border.frame = rect;
+    border.backgroundColor = _borderColor.CGColor;
+    [_view.layer addSublayer:border];
+}
+- (ViewStyler *)hide {
+    return ^(){
+        _view.hidden = YES;
+        return self;
+    };
+}
+/* Labels
+ ********/
+- (StylerString1)text {
+    return ^(NSString* text) {
+        ((UILabel*) _view).text = text;
         return self;
     };
 }
@@ -232,16 +294,16 @@
 
 /* Position
  **********/
-- (void)moveByX:(NSInteger)dx y:(NSInteger)dy {
+- (void)moveByX:(CGFloat)dx y:(CGFloat)dy {
     CGRect frame = self.frame;
     frame.origin.x += dx;
     frame.origin.y += dy;
     self.frame = frame;
 }
-- (void)moveByX:(NSInteger)x {
+- (void)moveByX:(CGFloat)x {
     [self moveByX:x y:0];
 }
-- (void)moveByY:(NSInteger)y {
+- (void)moveByY:(CGFloat)y {
     [self moveByX:0 y:y];
 }
 - (void)moveToX:(CGFloat)x y:(CGFloat)y {
@@ -256,6 +318,15 @@
 - (void)moveToX:(CGFloat)x {
     [self moveToX:x y:self.frame.origin.y];
 }
+- (void)moveToPosition:(CGPoint)origin {
+    [self moveToX:origin.x y:origin.y];
+}
+- (void)moveByVector:(CGPoint)vector {
+    CGPoint newOrigin = self.frame.origin;
+    newOrigin.x += vector.x;
+    newOrigin.y += vector.y;
+    [self moveToPosition:newOrigin];
+}
 - (void)centerVerticallyInView:(UIView *)view {
     [self moveToY:CGRectGetMidY(view.frame) - CGRectGetMidY(self.frame)];
 }
@@ -264,6 +335,11 @@
 }
 - (void)centerInSuperview {
     [self.styler.centerInSuperView apply];
+}
+- (CGPoint)topRightCorner {
+    CGPoint point = self.frame.origin;
+    point.x += self.width;
+    return point;
 }
 
 /* Borders, Shadows & Insets
@@ -346,13 +422,23 @@ static CGFloat STATIC = 0.5f;
     [self.layer insertSublayer:left atIndex:0];
 }
 
-/* Content
- *********/
+/* View hierarchy
+ ****************/
 - (void)empty {
     [[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
 }
+- (UIView *)appendTo:(UIView *)superview {
+    [superview addSubview:self];
+    return self;
+}
+
+/* Screenshot
+ ************/
 - (UIImage *)captureToImage {
-    UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.opaque, 0.0);
+    return [self captureToImageWithScale:0.0];
+}
+- (UIImage *)captureToImageWithScale:(CGFloat)scale {
+    UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.opaque, scale);
     [self.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
