@@ -20,8 +20,12 @@ static CGSize size;
     return [UIScreen mainScreen].scale;
 }
 
-+ (NSUInteger)height { return [Viewport size].height; }
-+ (NSUInteger)width { return [Viewport size].width; }
++ (CGFloat)height { return [Viewport size].height; }
++ (CGFloat)width { return [Viewport size].width; }
 + (CGSize)size { return size; }
+
++ (CGRect)bounds {
+    return [[UIScreen mainScreen] bounds];
+}
 
 @end

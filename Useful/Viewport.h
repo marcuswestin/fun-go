@@ -10,9 +10,10 @@
 
 @interface Viewport : FunBase
 
-+ (NSUInteger)height;
-+ (NSUInteger)width;
++ (CGFloat)height;
++ (CGFloat)width;
 + (CGSize)size;
 + (CGFloat)resolution;
++ (CGRect)bounds;
 
 @end
