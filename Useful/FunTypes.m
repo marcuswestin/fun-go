@@ -35,9 +35,25 @@ UIColor* rgb(NSUInteger r, NSUInteger g, NSUInteger b) {
     return rgba(r, g, b, 1.0);
 }
 
-void after(CGFloat delayInSeconds, Block block) {
+void after(NSTimeInterval delayInSeconds, Block block) {
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), block);
+}
+
+void asyncDefault(Block block) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), block);
+}
+void asyncHigh(Block block) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), block);
+}
+void asyncLow(Block block) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), block);
+}
+void asyncMain(Block block) {
+    dispatch_async(dispatch_get_main_queue(), block);
+}
+void asyncBackground(Block block) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), block);
 }
 
 void vibrateDevice() {
@@ -56,6 +72,12 @@ NSString* concat(NSString* firstArg, ...) {
 }
 
 NSNumber* num(NSInteger i) { return [NSNumber numberWithInt:i]; }
+
+void repeat(NSUInteger times, NSUIntegerBlock block) {
+    for (NSUInteger i=0; i<times; i++) {
+        block(i);
+    }
+}
 
 NSError* makeError(NSString* localMessage) {
     return [NSError errorWithDomain:@"Global" code:1 userInfo:@{ NSLocalizedDescriptionKey:localMessage }];

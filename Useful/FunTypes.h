@@ -41,9 +41,6 @@ static const BOOL isSimulator = YES;
 static const BOOL isSimulator = NO;
 #endif
 
-void error(NSError* err);
-NSError* makeError(NSString* localMessage);
-
 typedef void (^Block)();
 typedef void (^Callback)(NSError* err, NSDictionary* res);
 typedef void (^StringCallback)(NSError* err, NSString* res);
@@ -53,9 +50,17 @@ typedef void (^ImageCallback)(NSError* err, UIImage* image);
 typedef void (^ViewCallback)(NSError* err, UIView* view);
 typedef void (^CGPointBlock)(CGPoint point);
 typedef void (^CGPointVectorBlock)(CGPoint point, CGPoint vector);
+typedef void (^NSUIntegerBlock)(NSUInteger i);
 
-void after(CGFloat delayInSeconds, Block block);
+void error(NSError* err);
+NSError* makeError(NSString* localMessage);
+void after(NSTimeInterval delayInSeconds, Block block);
+void asyncDefault(Block block);
+void asyncHigh(Block block);
+void asyncLow(Block block);
+void asyncMain(Block block);
+void asyncBackground(Block block);
 void vibrateDevice();
-
 NSString* concat(id arg1, ...);
 NSNumber* num(int i);
+void repeat(NSUInteger times, NSUIntegerBlock block);
