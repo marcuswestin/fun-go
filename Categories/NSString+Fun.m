@@ -31,4 +31,8 @@
                                                                         (CFStringRef)@"!*'\"();:@&=+$,/?%#[]% ", kCFStringEncodingUTF8 );
 }
 
+- (NSString *)stringByTrimmingWhitespace {
+    return [self stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" \n\t\r"]];
+}
+
 @end
