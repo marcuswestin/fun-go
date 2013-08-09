@@ -15,7 +15,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     _window = [[UIWindow alloc] initWithFrame:[self _appRect]];
-    _window.backgroundColor = STEELBLUE;
+    _window.backgroundColor = rgb(250,252,255);
     [self start];
     
     [_window makeKeyAndVisible];
