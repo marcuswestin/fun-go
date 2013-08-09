@@ -10,10 +10,10 @@
 
 @protocol TableViewDelegate <NSObject>
 @required
-- (void)renderItem:(id)item inCell:(UITableViewCell*)cell width:(NSUInteger)width height:(NSUInteger)height;
-- (void)renderHeader:(NSInteger)section inView:(UIView*)view width:(NSUInteger)width height:(NSUInteger)height;
-- (NSUInteger)heightForItem:(id)item width:(NSUInteger)width;
-- (NSUInteger)heightForHeader:(NSUInteger)index;
+- (void)renderItem:(id)item inCell:(UITableViewCell*)cell width:(CGFloat)width height:(CGFloat)height;
+- (void)renderHeader:(NSInteger)section inView:(UIView*)view width:(CGFloat)width height:(CGFloat)height;
+- (CGFloat)heightForItem:(id)item width:(CGFloat)width;
+- (CGFloat)heightForHeader:(NSUInteger)index;
 - (NSArray*)loadItems;
 - (NSArray*)loadSectionCounts;
 - (void)selectItem:(id)item cell:(UITableViewCell*)cell;
@@ -40,5 +40,4 @@ typedef void (^ForEachIndexBlock)(NSUInteger rowIndex);
 - (id)itemForPath:(NSIndexPath*)indexPath;
 - (void)scrollToBottomAnimated:(BOOL)animated;
 - (void)scrollToSection:(NSUInteger)section animated:(BOOL)animated;
-
 @end

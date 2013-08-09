@@ -11,7 +11,8 @@
 @implementation TableViewController
 
 - (void)viewDidLoad {
-    if (!_delegate) { _delegate = (NSObject<TableViewDelegate>*) self; }
+    if (!_delegate) { _delegate = (id<TableViewDelegate>) self; }
+
     _items = [_delegate loadItems];
     _rowHeights = calloc(_items.count, sizeof(NSUInteger));
 
