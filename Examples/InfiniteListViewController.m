@@ -35,4 +35,8 @@
     return @0; // all in one big family
 }
 
+- (void)selectItem:(id)item {
+    NSLog(@"Select %@", item);
+}
+
 @end

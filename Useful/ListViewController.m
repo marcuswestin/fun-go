@@ -32,6 +32,16 @@ static CGFloat START_Y = 99999.0f;
     [self.view addSubview:self.scrollView];
     
     self.scrollView.delegate = self;
+    [self.scrollView onTap:^(UITapGestureRecognizer *sender) {
+        CGPoint tapLocation = [sender locationInView:self.scrollView];
+        for (NSInteger index = self.topItemIndex; index <= self.bottomItemIndex; index++) {
+            UIView* view = self.scrollView.subviews[index - self.topItemIndex];
+            if (CGRectContainsPoint(view.frame, tapLocation)) {
+                id item = [self.delegate itemForIndex:index];
+                [self.delegate selectItem:item];
+            }
+        }
+    }];
 }
 
 - (void) _renderFirstItem {
@@ -126,35 +136,9 @@ static CGFloat START_Y = 99999.0f;
     self.previousContentOffsetY = scrollView.contentOffset.y;
 }
 
-//- (void)_checkVisibleViews {
-//    CGFloat targetTop = self.scrollView.contentOffset.y;
-//    CGFloat targetBottom = targetTop + self.scrollView.height;
-//    // Remove views that are out-of-bound
-//    CGFloat topViewBottomY = CGRectGetMinY(self.topView.frame);
-//    while (topViewBottomY > targetTop) {
-//        [topView removeFromSuperview];
-//        topViewbottomY = self.topView;
-//    }
-//    CGFloat bottomY = CGRectGetMaxY(self.bottomView.frame);
-//    while (bottomView && CGRectGetMinY(bottomView.frame) > targetBottom) {
-//        [bottomView removeFromSuperview];
-//        bottomView = self.bottomView;
-//    }
-//    // Render views to fill visible space
-//    while (topView && CGRectGetMinY(topView.frame) > targetTop) {
-//        id item = [self.delegate itemForIndex:self.topItemIndex - 1];
-//        if (!item) {
-//            break;
-//        }
-//        topView = [self _addItemTo:TOP];
-//    }
-//    while (bottomView && CGRectGetMaxY(bottomView.frame) < targetBottom) {
-//        id item = [self.delegate itemForIndex:self.bottomItemIndex + 1];
-//        if (!item) {
-//        }
-//        bottomView = [self _addItemTo:BOTTOM];
-//    }
-//}
+- (void)stopScrolling {
+    [self.scrollView setContentOffset:self.scrollView.contentOffset animated:NO];
+}
 
 - (UIView*)topView {
     return self.scrollView.subviews.firstObject;
