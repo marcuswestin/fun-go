@@ -85,17 +85,12 @@
     };
 }
 
-- (StylerView)centerInView {
-    return ^(UIView* parentView) {
-        _view.frame = _frame;
-        _view.center = parentView.center;
-        _frame = _view.frame;
+- (ViewStyler *)centerInSuperView {
+    return ^{
+        _frame.origin.x = CGRectGetMidX(_view.superview.bounds) - _frame.size.width/2;
+        _frame.origin.y = CGRectGetMidY(_view.superview.bounds) - _frame.size.height/2;
         return self;
     };
-}
-
-- (ViewStyler *)centerInSuperView {
-    return self.centerInView(_view.superview);
 }
 
 - (ViewStyler *)positionAboveSuperview {
@@ -116,6 +111,10 @@
         _frame = frame;
         return self;
     };
+}
+#define Float1Styler(code) return ^(CGFloat f1) { code; return self; }
+- (StylerFloat1)moveDown {
+    Float1Styler(_frame.origin.y += f1);
 }
 /* Size
  ******/
@@ -331,7 +330,7 @@
     [self moveToY:CGRectGetMidY(view.frame) - CGRectGetMidY(self.frame)];
 }
 - (void)centerVerticallyInSuperView {
-    [self centerVerticallyInView:self.superview];
+    [self moveToY:CGRectGetMinY(self.superview.bounds) - CGRectGetMidY(self.bounds)];
 }
 - (void)centerInSuperview {
     [self.styler.centerInSuperView apply];

@@ -40,12 +40,12 @@ typedef ViewStyler* (^StylerString1)(NSString* string);
 - (StylerFloat1)y;
 - (StylerFloat2)xy;
 - (ViewStyler*)centerInSuperView;
-- (StylerView)centerInView;
 - (ViewStyler*)positionAboveSuperview;
 - (StylerFloat1)positionFromRight;
 - (StylerFloat1)positionFromBottom;
 - (StylerPoint)position;
 - (StylerRect)frame;
+- (StylerFloat1)moveDown;
 
 /* Size
  ******/
@@ -91,7 +91,6 @@ typedef ViewStyler* (^StylerString1)(NSString* string);
 /* Position
  **********/
 - (void)centerInSuperview;
-- (void)centerVerticallyInView:(UIView*)view;
 - (void)centerVerticallyInSuperView;
 - (void)moveByX:(CGFloat)x y:(CGFloat)y;
 - (void)moveByY:(CGFloat)y;
