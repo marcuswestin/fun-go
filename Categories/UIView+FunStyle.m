@@ -86,11 +86,9 @@
 }
 
 - (ViewStyler *)centerInSuperView {
-    return ^{
-        _frame.origin.x = CGRectGetMidX(_view.superview.bounds) - _frame.size.width/2;
-        _frame.origin.y = CGRectGetMidY(_view.superview.bounds) - _frame.size.height/2;
-        return self;
-    };
+    _frame.origin.x = CGRectGetMidX(_view.superview.bounds) - _frame.size.width/2;
+    _frame.origin.y = CGRectGetMidY(_view.superview.bounds) - _frame.size.height/2;
+    return self;
 }
 
 - (ViewStyler *)positionAboveSuperview {
@@ -236,11 +234,12 @@
 + (StylerView)appendTo {
     return self.styler.appendTo;
 }
-
 + (StylerView)prependTo {
     return self.styler.prependTo;
 }
-
++ (StylerRect)frame {
+    return self.styler.frame;
+}
 + (ViewStyler*)styler {
     UIView* instance = [[[self class] alloc] init];
 #if defined DEBUG && FALSE

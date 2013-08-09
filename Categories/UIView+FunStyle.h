@@ -74,6 +74,7 @@ typedef ViewStyler* (^StylerString1)(NSString* string);
 + (StylerView) appendTo;
 + (StylerView) prependTo;
 + (ViewStyler*) styler;
++ (StylerRect) frame;
 - (ViewStyler*) styler;
 - (void)render;
 
