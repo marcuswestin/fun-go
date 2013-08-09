@@ -10,6 +10,7 @@
 
 #import "FunBase.h"
 #import "FunTypes.h"
+#import "ViewController.h"
 
 #import "NSArray+Fun.h"
 #import "NSData+Fun.h"
