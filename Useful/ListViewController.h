@@ -17,9 +17,9 @@ typedef enum ListViewLocation ListViewLocation;
 @required
 - (NSInteger) startAtIndex;
 - (id)itemForIndex:(NSInteger)index;
-- (UIView*) viewForItem:(id)item;
-- (id) groupForItem:(id)item;
-- (void) selectItem:(id)item;
+- (UIView*) viewForItem:(id)item atIndex:(NSInteger)itemIndex withWidth:(CGFloat)width;
+- (id) groupIdForItem:(id)item atIndex:(NSInteger)itemIndex;
+- (void) selectItem:(id)item atIndex:(NSInteger)itemIndex;
 @end
 
 
@@ -31,5 +31,6 @@ typedef enum ListViewLocation ListViewLocation;
 @property CGFloat previousContentOffsetY;
 @property (readonly) UIView* topView;
 @property (readonly) UIView* bottomView;
+@property CGFloat width;
 - (void) stopScrolling;
 @end
