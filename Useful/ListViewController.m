@@ -103,6 +103,7 @@ static CGFloat START_Y = 99999.0f;
     if (![groupId isEqual:currentGroupId]) {
         UIView* view = [_delegate viewForGroupId:groupId withItem:item withWidth:_width];
         ListGroupHeadView* groupView = [[ListGroupHeadView alloc] initWithFrame:view.bounds];
+        [groupView addSubview:view];
         [self _addView:groupView at:location];
         if (location == TOP) {
             _topGroupId = groupId;
