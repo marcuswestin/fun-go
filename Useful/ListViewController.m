@@ -228,4 +228,21 @@ static CGFloat START_Y = 99999.0f;
     return self.views.lastObject;
 }
 
+//- (UIView*)topView {
+//    return [self _firstRealSubviewFromIndex:0 step:1];
+//}
+//- (UIView*)bottomView {
+//    return [self _firstRealSubviewFromIndex:_scrollView.subviews.count-1 step:-1];
+//}
+//- (UIView*)_firstRealSubviewFromIndex:(NSUInteger)index step:(NSInteger)step {
+//    // Why is a random UIImageView hanging in the scroll view? Asch.
+//    UIView* view;
+//    NSArray* views = _scrollView.subviews;
+//    do {
+//        view = views[index];
+//        index += step;
+//    } while ([view isKindOfClass:UIImageView.class] && index > 0 && index < views.count);
+//    return view;
+//}
+
 @end
