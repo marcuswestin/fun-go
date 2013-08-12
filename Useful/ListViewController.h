@@ -34,8 +34,6 @@ typedef enum ListViewLocation ListViewLocation;
 @property NSInteger bottomItemIndex;
 @property NSUInteger numberVisibleViews;
 @property CGFloat previousContentOffsetY;
-@property (readonly) UIView* topView;
-@property (readonly) UIView* bottomView;
 @property (readonly) id bottomGroupId;
 @property (readonly) id topGroupId;
 @property CGFloat topY;

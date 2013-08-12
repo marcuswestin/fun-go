@@ -22,7 +22,6 @@ static CGFloat START_Y = 99999.0f;
     _width = view.width;
     _height = view.height;
     _scrollView = [[UIScrollView alloc] initWithFrame:view.bounds];
-    [_scrollView empty];
     _scrollView.showsVerticalScrollIndicator = NO;
     _scrollView.contentSize = CGSizeMake(_width, MAX_Y);
     _scrollView.contentOffset = CGPointMake(0, START_Y);
@@ -48,7 +47,7 @@ static CGFloat START_Y = 99999.0f;
     [_scrollView onTap:^(UITapGestureRecognizer *sender) {
         CGPoint tapPoint = [sender locationInView:_scrollView];
         NSInteger itemIndex = _topItemIndex;
-        for (UIView* view in _scrollView.subviews) {
+        for (UIView* view in self.views) {
             BOOL isGroupView = [self _isGroupView:view];
             if (CGRectContainsPoint(view.frame, tapPoint)) {
                 id item = [_delegate itemForIndex:itemIndex];
@@ -192,7 +191,7 @@ static CGFloat START_Y = 99999.0f;
     // so remove ourselves as delegate while the swap is made
     _scrollView.delegate = nil;
     _scrollView.contentOffset = CGPointZero;
-    for (UIView* subView in _scrollView.subviews) {
+    for (UIView* subView in self.views) {
         [subView moveByY:-changeInHeight];
     }
     _scrollView.delegate = self;
@@ -215,20 +214,17 @@ static CGFloat START_Y = 99999.0f;
     [_scrollView setContentOffset:_scrollView.contentOffset animated:NO];
 }
 
+- (NSArray*)views {
+    return [_scrollView.subviews filter:^BOOL(UIView* view, NSUInteger i) {
+        // Why is a random UIImageView hanging in the scroll view? Asch.
+        return ![view isKindOfClass:UIImageView.class];
+    }];
+}
 - (UIView*)topView {
-    return [self _firstRealSubviewFromIndex:0 step:1];
+    return self.views.firstObject;
 }
 - (UIView*)bottomView {
-    return [self _firstRealSubviewFromIndex:_scrollView.subviews.count-1 step:01];
-}
-- (UIView*)_firstRealSubviewFromIndex:(NSUInteger)index step:(NSInteger)step {
-    // Why is a random UIImageView hanging in the scroll view? Asch.
-    UIView* view;
-    do {
-        view = _scrollView.subviews[index];
-        index += step;
-    } while ([view isKindOfClass:UIImageView.class]);
-    return view;
+    return self.views.lastObject;
 }
 
 @end
