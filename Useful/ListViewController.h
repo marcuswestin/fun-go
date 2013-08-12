@@ -12,14 +12,18 @@
 enum ListViewLocation { TOP=1, BOTTOM=2 };
 typedef enum ListViewLocation ListViewLocation;
 
+@interface ListGroupHeadView : UIView;
+@end
 
 @protocol ListViewDelegate <NSObject>
 @required
 - (NSInteger) startAtIndex;
 - (id)itemForIndex:(NSInteger)index;
 - (UIView*) viewForItem:(id)item atIndex:(NSInteger)itemIndex withWidth:(CGFloat)width;
-- (id) groupIdForItem:(id)item atIndex:(NSInteger)itemIndex;
+- (UIView*) viewForGroupId:(id)groupId withItem:(id)item withWidth:(CGFloat)width;
+- (id) groupIdForItem:(id)item;
 - (void) selectItem:(id)item atIndex:(NSInteger)itemIndex;
+- (void) selectGroupWithId:(id)groupId withItem:(id)item;
 @end
 
 
@@ -28,9 +32,15 @@ typedef enum ListViewLocation ListViewLocation;
 @property (weak) id<ListViewDelegate> delegate;
 @property NSInteger topItemIndex;
 @property NSInteger bottomItemIndex;
+@property NSUInteger numberVisibleViews;
 @property CGFloat previousContentOffsetY;
 @property (readonly) UIView* topView;
 @property (readonly) UIView* bottomView;
+@property (readonly) id bottomGroupId;
+@property (readonly) id topGroupId;
+@property CGFloat topY;
+@property CGFloat bottomY;
 @property CGFloat width;
+@property CGFloat height;
 - (void) stopScrolling;
 @end

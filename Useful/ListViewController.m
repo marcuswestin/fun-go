@@ -11,139 +11,224 @@
 static CGFloat MAX_Y = 9999999.0f;
 static CGFloat START_Y = 99999.0f;
 
-@implementation ListViewController
+@implementation ListGroupHeadView
+@end
 
+@implementation ListViewController
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (!self.delegate) { self.delegate = (id<ListViewDelegate>)self; }
-    self.width = self.view.width;
-    self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
-    self.scrollView.backgroundColor = RED;
-    self.scrollView.showsVerticalScrollIndicator = NO;
-    self.scrollView.contentSize = CGSizeMake(self.width, MAX_Y);
-    self.scrollView.contentOffset = CGPointMake(0, START_Y);
-    self.previousContentOffsetY = self.scrollView.contentOffset.y;
+    UIView* view = self.view;
+    if (!_delegate) { _delegate = (id<ListViewDelegate>)self; }
+    _width = view.width;
+    _height = view.height;
+    _scrollView = [[UIScrollView alloc] initWithFrame:view.bounds];
+    [_scrollView empty];
+    _scrollView.showsVerticalScrollIndicator = NO;
+    _scrollView.contentSize = CGSizeMake(_width, MAX_Y);
+    _scrollView.contentOffset = CGPointMake(0, START_Y);
+    _previousContentOffsetY = _scrollView.contentOffset.y;
     
-    NSInteger index = self.delegate.startAtIndex;
-    self.topItemIndex = index;
-    self.bottomItemIndex = index;
+    // Load data in next tick to ensure subclass viewDidLoad finished
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self _loadData];
+    });
+}
 
-    [self.scrollView empty];
-    [self _addViewForItemIndex:self.topItemIndex withOffsetY:START_Y at:TOP];
+- (void)_loadData {
+    _topY = START_Y;
+    _bottomY = START_Y;
+    _topItemIndex = _delegate.startAtIndex;
+    _bottomItemIndex = _delegate.startAtIndex - 1;
+
+    [self _addViewForNextItemAtLocation:BOTTOM];
     [self _extendBottom];
-    [self.view addSubview:self.scrollView];
+    [self.view insertSubview:_scrollView atIndex:0];
     
-    [self.scrollView setDelegate:self];
-    [self.scrollView onTap:^(UITapGestureRecognizer *sender) {
-        CGPoint tapLocation = [sender locationInView:self.scrollView];
-        for (NSInteger index = self.topItemIndex; index <= self.bottomItemIndex; index++) {
-            UIView* view = self.scrollView.subviews[index - self.topItemIndex];
-            if (CGRectContainsPoint(view.frame, tapLocation)) {
-                id item = [self.delegate itemForIndex:index];
-                [self.delegate selectItem:item atIndex:index];
+    [_scrollView setDelegate:self];
+    [_scrollView onTap:^(UITapGestureRecognizer *sender) {
+        CGPoint tapPoint = [sender locationInView:_scrollView];
+        NSInteger itemIndex = _topItemIndex;
+        for (UIView* view in _scrollView.subviews) {
+            BOOL isGroupView = [self _isGroupView:view];
+            if (CGRectContainsPoint(view.frame, tapPoint)) {
+                id item = [_delegate itemForIndex:itemIndex];
+                if (isGroupView) {
+                    id groupId = [_delegate groupIdForItem:item];
+                    [_delegate selectGroupWithId:(id)groupId withItem:(id)item];
+                } else {
+                    [_delegate selectItem:item atIndex:itemIndex];
+                }
+                break;
+            }
+            if (!isGroupView) {
+                itemIndex += 1; // Don't count group heads against item indices.
             }
         }
     }];
 }
 
-- (UIView*)_addViewForItemIndex:(NSInteger)itemIndex withOffsetY:(CGFloat)offsetY at:(ListViewLocation)location {
-    id item = [self.delegate itemForIndex:itemIndex];
-    if (!item) { return nil; }
-    UIView* view = [self.delegate viewForItem:item atIndex:itemIndex withWidth:self.width];
+- (BOOL)_isGroupView:(UIView*)view {
+    return [view isMemberOfClass:[ListGroupHeadView class]];
+}
+
+- (BOOL)_addViewForNextItemAtLocation:(ListViewLocation)location {
+    NSInteger index;
     if (location == TOP) {
-        [view moveToY:offsetY - view.height];
-        [self.scrollView insertSubview:view atIndex:0];
+        index = _topItemIndex - 1;
     } else {
-        [view moveToY:offsetY];
-        [self.scrollView addSubview:view];
+        index = _bottomItemIndex + 1;
     }
-    return view;
+
+    id item = [_delegate itemForIndex:index];
+    if (!item) {
+        return NO;
+    }
+    
+    [self _checkGroupForItem:item atLocation:location];
+
+    UIView* view = [_delegate viewForItem:item atIndex:index withWidth:_width];
+    [self _addView:view at:location];
+    
+    if (location == TOP) {
+        _topItemIndex = index;
+    } else {
+        _bottomItemIndex = index;
+    }
+    
+    return YES;
+}
+
+- (void)_checkGroupForItem:(id)item atLocation:(ListViewLocation)location {
+    id groupId = [_delegate groupIdForItem:item];
+    id currentGroupId = (location == TOP ? _topGroupId : _bottomGroupId);
+    if (![groupId isEqual:currentGroupId]) {
+        UIView* view = [_delegate viewForGroupId:groupId withItem:item withWidth:_width];
+        ListGroupHeadView* groupView = [[ListGroupHeadView alloc] initWithFrame:view.bounds];
+        [self _addView:groupView at:location];
+        if (location == TOP) {
+            _topGroupId = groupId;
+        } else {
+            _bottomGroupId = groupId;
+        }
+    }
+}
+
+- (void)_addView:(UIView*)view at:(ListViewLocation)location {
+    if (location == TOP) {
+        _topY -= view.height;
+        [view moveToY:_topY];
+        [_scrollView insertSubview:view atIndex:0];
+    } else {
+        [view moveToY:_bottomY];
+        _bottomY += view.height;
+        [_scrollView addSubview:view];
+    }
 }
 
 - (void)_extendBottom {
-    CGFloat targetY = self.scrollView.contentOffset.y + self.scrollView.height;
-    CGFloat bottomY = CGRectGetMaxY(self.bottomView.frame);
-    while (bottomY < targetY) {
-        UIView* view = [self _addViewForItemIndex:self.bottomItemIndex+1 withOffsetY:bottomY at:BOTTOM];
-        if (!view) {
-            return [self _didReachEnd];
+    CGFloat targetY = _scrollView.contentOffset.y + _scrollView.height;
+    while (_bottomY < targetY) {
+        BOOL didAddItem = [self _addViewForNextItemAtLocation:BOTTOM];
+        if (!didAddItem) {
+            [self _didReachTheVeryBottom];
+            break;
         }
-        self.bottomItemIndex += 1;
-        bottomY += view.height;
     }
     [self _cleanupTop];
 }
 
 - (void)_extendTop {
-    CGFloat targetY = self.scrollView.contentOffset.y;
-    CGFloat topY = CGRectGetMinY(self.topView.frame);
-    while (topY > targetY) {
-        UIView* view = [self _addViewForItemIndex:self.topItemIndex-1 withOffsetY:topY at:TOP];
-        if (!view) {
-            return [self _didReachBeginning];
+    CGFloat targetY = _scrollView.contentOffset.y;
+    while (_topY > targetY) {
+        BOOL didAddItem = [self _addViewForNextItemAtLocation:TOP];
+        if (!didAddItem) {
+            [self _didReachTheVeryTop];
+            break;
         }
-        topY -= view.height;
-        self.topItemIndex -= 1;
     }
     [self _cleanupBottom];
 }
 
 - (void)_cleanupTop {
-    CGFloat targetY = self.scrollView.contentOffset.y;
-    while (CGRectGetMaxY(self.topView.frame) < targetY) {
-        [self.topView removeFromSuperview];
-        self.topItemIndex += 1;
+    CGFloat targetY = _scrollView.contentOffset.y;
+    UIView* view;
+    while (CGRectGetMaxY((view = [self topView]).frame) < targetY) {
+        [view removeFromSuperview];
+        _topY += view.height;
+        if ([self _isGroupView:view]) {
+            id item = [_delegate itemForIndex:_topItemIndex];
+            _topGroupId = [_delegate groupIdForItem:item];
+        } else {
+            _topItemIndex += 1;
+        }
     }
 }
 
 - (void) _cleanupBottom {
-    CGFloat targetY = self.scrollView.contentOffset.y + self.scrollView.height;
-    while (CGRectGetMinY(self.bottomView.frame) > targetY) {
-        [self.bottomView removeFromSuperview];
-        self.bottomItemIndex -= 1;
+    CGFloat targetY = _scrollView.contentOffset.y + _scrollView.height;
+    UIView* view;
+    while (CGRectGetMinY((view = [self bottomView]).frame) > targetY) {
+        [view removeFromSuperview];
+        _bottomY -= view.height;
+        if ([self _isGroupView:view]) {
+            id item = [_delegate itemForIndex:_bottomItemIndex];
+            _bottomGroupId = [_delegate groupIdForItem:item];
+        } else {
+            _bottomItemIndex -= 1;
+        }
     }
 }
 
-- (void)_didReachEnd {
-    self.scrollView.contentSize = CGSizeMake(self.scrollView.width, CGRectGetMaxY(self.bottomView.frame));
+- (void)_didReachTheVeryBottom {
+    _scrollView.contentSize = CGSizeMake(_scrollView.width, CGRectGetMaxY([self bottomView].frame));
 }
 
-- (void)_didReachBeginning {
-    if (self.scrollView.contentOffset.y <= 0) { return; }
-    CGFloat changeInHeight = CGRectGetMinY(self.topView.frame);
+- (void)_didReachTheVeryTop {
+    if (_scrollView.contentOffset.y <= 0) { return; }
+    CGFloat changeInHeight = CGRectGetMinY([self topView].frame);
+    _topY -= changeInHeight;
+    _bottomY -= changeInHeight;
     // We don't want to fire another scroll event,
     // so remove ourselves as delegate while the swap is made
-    self.scrollView.delegate = nil;
-    self.scrollView.contentOffset = CGPointZero;
-    for (UIView* subView in self.scrollView.subviews) {
+    _scrollView.delegate = nil;
+    _scrollView.contentOffset = CGPointZero;
+    for (UIView* subView in _scrollView.subviews) {
         [subView moveByY:-changeInHeight];
     }
-    self.scrollView.delegate = self;
+    _scrollView.delegate = self;
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     CGFloat contentOffsetY = scrollView.contentOffset.y;
-    if (contentOffsetY == self.previousContentOffsetY) {
+    if (contentOffsetY == _previousContentOffsetY) {
         return;
     }
-    if (contentOffsetY > self.previousContentOffsetY) {
+    if (contentOffsetY > _previousContentOffsetY) {
         [self _extendBottom];
     } else {
         [self _extendTop];
     }
-    self.previousContentOffsetY = scrollView.contentOffset.y;
+    _previousContentOffsetY = scrollView.contentOffset.y;
 }
 
 - (void)stopScrolling {
-    [self.scrollView setContentOffset:self.scrollView.contentOffset animated:NO];
+    [_scrollView setContentOffset:_scrollView.contentOffset animated:NO];
 }
 
 - (UIView*)topView {
-    return self.scrollView.subviews.firstObject;
+    return [self _firstRealSubviewFromIndex:0 step:1];
 }
-
 - (UIView*)bottomView {
-    return self.scrollView.subviews.lastObject;
+    return [self _firstRealSubviewFromIndex:_scrollView.subviews.count-1 step:01];
+}
+- (UIView*)_firstRealSubviewFromIndex:(NSUInteger)index step:(NSInteger)step {
+    // Why is a random UIImageView hanging in the scroll view? Asch.
+    UIView* view;
+    do {
+        view = _scrollView.subviews[index];
+        index += step;
+    } while ([view isKindOfClass:UIImageView.class]);
+    return view;
 }
 
 @end
