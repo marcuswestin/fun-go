@@ -14,11 +14,21 @@ static CGFloat START_Y = 99999.0f;
 @implementation ListGroupHeadView
 @end
 
-@implementation ListViewController
+@implementation ListViewController {
+    UIView* _topGroupView;
+    BOOL _trackTopGroupView;
+}
 - (void)viewDidLoad {
+    _groupHeadBoundary = 0;
+    
     [super viewDidLoad];
     UIView* view = self.view;
-    if (!_delegate) { _delegate = (id<ListViewDelegate>)self; }
+    if (!_delegate) {
+        _delegate = (id<ListViewDelegate>)self;
+    }
+    if ([_delegate respondsToSelector:@selector(listViewTopGroupViewDidMove:)]) {
+        _trackTopGroupView = YES;
+    }
     _width = view.width;
     _height = view.height;
     _scrollView = [[UIScrollView alloc] initWithFrame:view.bounds];
@@ -33,6 +43,14 @@ static CGFloat START_Y = 99999.0f;
     });
 }
 
+- (void)_setTopGroupItem:(id)item {
+    _topGroupItem = item;
+    _topGroupId = [_delegate groupIdForItem:item];
+    if ([_delegate respondsToSelector:@selector(listViewTopGroupDidChange:)]) {
+        [_delegate listViewTopGroupDidChange:item];
+    }
+}
+
 - (void)_loadData {
     _topY = START_Y;
     _bottomY = START_Y;
@@ -40,6 +58,8 @@ static CGFloat START_Y = 99999.0f;
     _bottomItemIndex = _delegate.startAtIndex - 1;
 
     [self _addViewForNextItemAtLocation:BOTTOM];
+    [self _setTopGroupItem:[_delegate itemForIndex:_topItemIndex]];
+    _bottomGroupId = _topGroupId;
     [self _extendBottom];
     [self.view insertSubview:_scrollView atIndex:0];
     
@@ -106,11 +126,19 @@ static CGFloat START_Y = 99999.0f;
         [groupView addSubview:view];
         [self _addView:groupView at:location];
         if (location == TOP) {
-            _topGroupId = groupId;
+            [self _setTopGroupItem:item];
         } else {
             _bottomGroupId = groupId;
         }
+        [self _checkTopGroupView];
     }
+}
+
+- (void) _checkTopGroupView {
+    if (!_trackTopGroupView) { return; }
+    _topGroupView = [self.views pickOne:^BOOL(id view, NSUInteger i) {
+        return [self _isGroupView:view];
+    }];
 }
 
 - (void)_addView:(UIView*)view at:(ListViewLocation)location {
@@ -157,7 +185,8 @@ static CGFloat START_Y = 99999.0f;
         _topY += view.height;
         if ([self _isGroupView:view]) {
             id item = [_delegate itemForIndex:_topItemIndex];
-            _topGroupId = [_delegate groupIdForItem:item];
+            [self _setTopGroupItem:item];
+            [self _checkTopGroupView];
         } else {
             _topItemIndex += 1;
         }
@@ -209,6 +238,12 @@ static CGFloat START_Y = 99999.0f;
         [self _extendTop];
     }
     _previousContentOffsetY = scrollView.contentOffset.y;
+    
+    if (_topGroupView) {
+        CGRect frame = _topGroupView.frame;
+        frame.origin.y -= _scrollView.contentOffset.y;
+        [_delegate listViewTopGroupViewDidMove:frame];
+    }
 }
 
 - (void)stopScrolling {
