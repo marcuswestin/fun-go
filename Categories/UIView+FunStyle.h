@@ -22,6 +22,8 @@ typedef ViewStyler* (^StylerColor1)(UIColor* color);
 typedef ViewStyler* (^StylerPoint)(CGPoint point);
 typedef ViewStyler* (^StylerRect)(CGRect rect);
 typedef ViewStyler* (^StylerString1)(NSString* string);
+typedef ViewStyler* (^StylerInteger1)(NSInteger integer);
+typedef ViewStyler* (^StylerTextAlignment)(NSTextAlignment textAlignment);
 @interface ViewStyler : FunBase
 
 /* Create & apply
@@ -33,6 +35,7 @@ typedef ViewStyler* (^StylerString1)(NSString* string);
  ****************/
 - (StylerView)appendTo;
 - (StylerView)prependTo;
+- (StylerInteger1)tag;
 
 /* Position
  **********/
@@ -64,10 +67,13 @@ typedef ViewStyler* (^StylerString1)(NSString* string);
 - (StylerFloat4)borderWidths;
 - (StylerColor1)borderColor;
 - (ViewStyler*)hide;
+- (ViewStyler*)clipToBounds;
 
 /* Labels
  ********/
 - (StylerString1)text;
+- (StylerColor1)textColor;
+- (StylerTextAlignment)textAlignment;
 @end
 
 @interface UIView (FunStyle)
@@ -102,6 +108,11 @@ typedef ViewStyler* (^StylerString1)(NSString* string);
 - (void)moveToPosition:(CGPoint)origin;
 - (void)moveByVector:(CGPoint)vector;
 - (CGPoint)topRightCorner;
+- (CGFloat)x;
+- (CGFloat)y;
+- (CGFloat)x2;
+- (CGFloat)y2;
+- (CGRect)frameInWindow;
 
 /* Borders, Shadows & Insets
  ***************************/

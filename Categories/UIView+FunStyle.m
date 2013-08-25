@@ -54,6 +54,12 @@
         return self;
     };
 }
+- (StylerInteger1)tag {
+    return ^(NSInteger tag) {
+        _view.tag = tag;
+        return self;
+    };
+}
 
 /* Position
  **********/
@@ -212,16 +218,31 @@
     [_view.layer addSublayer:border];
 }
 - (ViewStyler *)hide {
-    return ^(){
-        _view.hidden = YES;
-        return self;
-    };
+    _view.hidden = YES;
+    return self;
+}
+- (ViewStyler *)clipToBounds {
+    _view.clipsToBounds = YES;
+    return self;
 }
 /* Labels
  ********/
+#define _labelView ((UILabel*)_view)
 - (StylerString1)text {
     return ^(NSString* text) {
-        ((UILabel*) _view).text = text;
+        _labelView.text = text;
+        return self;
+    };
+}
+- (StylerColor1)textColor {
+    return ^(UIColor* textColor) {
+        _labelView.textColor = textColor;
+        return self;
+    };
+}
+- (StylerTextAlignment)textAlignment {
+    return ^(NSTextAlignment textAlignment) {
+        _labelView.textAlignment = textAlignment;
         return self;
     };
 }
@@ -338,6 +359,28 @@
     CGPoint point = self.frame.origin;
     point.x += self.width;
     return point;
+}
+- (CGFloat)x {
+    return CGRectGetMinX(self.frame);
+}
+- (CGFloat)y {
+    return CGRectGetMinY(self.frame);
+}
+- (CGFloat)x2 {
+    return CGRectGetMaxX(self.frame);
+}
+- (CGFloat)y2 {
+    return CGRectGetMaxY(self.frame);
+}
+- (CGRect)frameInWindow {
+    CGRect frame = self.frame;
+    UIView* view = self;
+    UIWindow* window = view.window;
+    while ((view = view.superview) != window) {
+        frame.origin.x += view.x;
+        frame.origin.y += view.y;
+    }
+    return frame;
 }
 
 /* Borders, Shadows & Insets
