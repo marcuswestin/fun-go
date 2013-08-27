@@ -92,8 +92,18 @@
 }
 
 - (ViewStyler *)centerInSuperView {
-    _frame.origin.x = CGRectGetMidX(_view.superview.bounds) - _frame.size.width/2;
+    [self centerHorizontallyInSuperview];
+    [self centerVerticallyInSuperview];
+    return self;
+}
+
+- (ViewStyler *)centerVerticallyInSuperview {
     _frame.origin.y = CGRectGetMidY(_view.superview.bounds) - _frame.size.height/2;
+    return self;
+}
+
+- (ViewStyler *)centerHorizontallyInSuperview {
+    _frame.origin.x = CGRectGetMidX(_view.superview.bounds) - _frame.size.width/2;
     return self;
 }
 

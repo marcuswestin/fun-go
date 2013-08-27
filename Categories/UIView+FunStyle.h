@@ -43,6 +43,8 @@ typedef ViewStyler* (^StylerTextAlignment)(NSTextAlignment textAlignment);
 - (StylerFloat1)y;
 - (StylerFloat2)xy;
 - (ViewStyler*)centerInSuperView;
+- (ViewStyler*)centerVerticallyInSuperview;
+- (ViewStyler*)centerHorizontallyInSuperview;
 - (ViewStyler*)positionAboveSuperview;
 - (StylerFloat1)positionFromRight;
 - (StylerFloat1)positionFromBottom;
