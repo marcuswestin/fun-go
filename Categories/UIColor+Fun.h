@@ -15,9 +15,11 @@
 #define RED [UIColor redColor]
 #define BLUE [UIColor blueColor]
 #define RANDOM_COLOR [UIColor randomColor]
-#define STEELBLUE [UIColor colorWithRed:70/256.f green:130/256.f blue:180/256.f alpha:1]
 UIColor* rgba(NSUInteger r, NSUInteger g, NSUInteger b, CGFloat a);
 UIColor* rgb(NSUInteger r, NSUInteger g, NSUInteger b);
+
+#define LIGHT_GRAY rgb(230,230,230)
+#define STEELBLUE rgb(70,130,180)
 
 @interface UIColor (Fun)
 
