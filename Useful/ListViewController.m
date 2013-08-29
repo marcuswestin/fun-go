@@ -54,8 +54,9 @@ static CGFloat START_Y = 99999.0f;
 - (void)_loadData {
     _topY = START_Y;
     _bottomY = START_Y;
-    _topItemIndex = _delegate.startAtIndex;
-    _bottomItemIndex = _delegate.startAtIndex - 1;
+    NSUInteger startAtIndex = [_delegate startAtIndex];
+    _topItemIndex = startAtIndex;
+    _bottomItemIndex = startAtIndex - 1;
 
     [self _addViewForNextItemAtLocation:BOTTOM];
     [self _setTopGroupItem:[_delegate itemForIndex:_topItemIndex]];
