@@ -17,16 +17,16 @@ typedef enum ListViewLocation ListViewLocation;
 
 @protocol ListViewDelegate <NSObject>
 @required
-- (NSInteger) startAtIndex;
-- (id)itemForIndex:(NSInteger)index;
-- (UIView*) viewForItem:(id)item atIndex:(NSInteger)itemIndex withWidth:(CGFloat)width;
-- (UIView*) viewForGroupId:(id)groupId withItem:(id)item withWidth:(CGFloat)width;
-- (id) groupIdForItem:(id)item;
-- (void) selectItem:(id)item atIndex:(NSInteger)itemIndex;
-- (void) selectGroupWithId:(id)groupId withItem:(id)item;
+- (NSInteger) listStartIndex;
+- (id) listItemForIndex:(NSInteger)index;
+- (UIView*) listViewForItem:(id)item atIndex:(NSInteger)itemIndex withWidth:(CGFloat)width;
+- (UIView*) listViewForGroupId:(id)groupId withItem:(id)item withWidth:(CGFloat)width;
+- (id) listGroupIdForItem:(id)item;
+- (void) listSelectItem:(id)item atIndex:(NSInteger)itemIndex;
+- (void) listSelectGroupWithId:(id)groupId withItem:(id)item;
 @optional
-- (void)listViewTopGroupViewDidMove:(CGRect)frame;
-- (void)listViewTopGroupDidChange:(id)topGroupItem;
+- (void) listTopGroupViewDidMove:(CGRect)frame;
+- (void) listTopGroupDidChange:(id)topGroupItem;
 @end
 
 

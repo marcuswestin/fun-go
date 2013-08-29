@@ -117,7 +117,7 @@ static int numRequests = 0;
     
     [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
         
-        dispatch_async(dispatch_get_main_queue(), ^{
+        asyncMain(^{
             [API _handleResponse:(NSHTTPURLResponse*)response forMethod:method path:path data:data error:connectionError callback:callback];
         });
     }];
