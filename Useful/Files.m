@@ -7,7 +7,7 @@
 //
 
 #import "Files.h"
-#import "FunAll.h"
+#import "FunObjc.h"
 
 @implementation Files
 

@@ -63,6 +63,11 @@ static char const * const KeyPanHandler = "Fun_PanHandler";
 
 /* UIControls
  ************/
+@implementation UIControlHandler
+- (void)_handle:(id)target event:(UIEvent*)event {
+    _handler(event);
+}
+@end
 @implementation UIControl (Fun)
 - (void)onEditingChanged:(EventHandler)handler {
     [self on:UIControlEventEditingChanged handler:handler];
@@ -75,12 +80,6 @@ static char const * const KeyPanHandler = "Fun_PanHandler";
     controlHandler.handler = handler;
     objc_setAssociatedObject(self, KeyHandlers, controlHandler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     [self addTarget:controlHandler action:@selector(_handle:event:) forControlEvents:controlEvents];
-}
-@end
-
-@implementation UIControlHandler
-- (void)_handle:(id)target event:(UIEvent*)event {
-    _handler(event);
 }
 @end
 

@@ -14,4 +14,4 @@ NSString* NSStringFromRange(NSRange range);
 @interface FunBase : NSObject
 @end
 
-#import "FunAll.h"
+#import "FunObjc.h"

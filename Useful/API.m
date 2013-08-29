@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Flutterby Labs Inc. All rights reserved.
 //
 
-#import "FunAll.h"
+#import "FunObjc.h"
 
 #define log NSLog
 

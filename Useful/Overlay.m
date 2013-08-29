@@ -7,7 +7,7 @@
 //
 
 #import "Overlay.h"
-#import "FunAll.h"
+#import "FunObjc.h"
 
 @implementation Overlay
 

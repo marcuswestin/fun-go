@@ -7,7 +7,7 @@
 //
 
 #import "UIView+FunStyle.h"
-#import "FunAll.h"
+#import "FunObjc.h"
 #import <QuartzCore/QuartzCore.h>
 
 @implementation ViewStyler {

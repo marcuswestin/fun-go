@@ -7,7 +7,6 @@
 //
 
 #import "Videos.h"
-#import "All.h"
 #import <MediaPlayer/MediaPlayer.h>
 
 static Videos* instance;
