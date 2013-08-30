@@ -12,6 +12,9 @@
 enum ListViewLocation { TOP=1, BOTTOM=2 };
 typedef enum ListViewLocation ListViewLocation;
 
+enum ListViewDirection { UP=-1, DOWN=1 };
+typedef enum ListViewDirection ListViewDirection;
+
 @interface ListGroupHeadView : UIView;
 @end
 
@@ -24,8 +27,8 @@ typedef enum ListViewLocation ListViewLocation;
 - (id) listGroupIdForItem:(id)item;
 - (void) listSelectItem:(id)item atIndex:(NSInteger)itemIndex;
 @optional
-- (void) listTopGroupViewDidMove:(CGRect)frame;
-- (void) listTopGroupDidChange:(id)topGroupItem;
+- (void) listViewTopGroupViewDidMove:(CGRect)frame;
+- (void) listViewTopGroupDidChange:(id)topGroupItem withDirection:(ListViewDirection)direction;
 - (void) listSelectGroupWithId:(id)groupId withItem:(id)item;
 @end
 

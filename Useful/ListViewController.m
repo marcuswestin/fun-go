@@ -16,7 +16,6 @@ static CGFloat START_Y = 99999.0f;
 
 @implementation ListViewController {
     UIView* _topGroupView;
-    BOOL _trackTopGroupView;
 }
 - (void)viewDidLoad {
     _groupHeadBoundary = 0;
@@ -26,12 +25,10 @@ static CGFloat START_Y = 99999.0f;
     if (!_delegate) {
         _delegate = (id<ListViewDelegate>)self;
     }
-    if ([_delegate respondsToSelector:@selector(listTopGroupViewDidMove:)]) {
-        _trackTopGroupView = YES;
-    }
     _width = view.width;
     _height = view.height;
     _scrollView = [[UIScrollView alloc] initWithFrame:view.bounds];
+        
     _scrollView.showsVerticalScrollIndicator = NO;
     _scrollView.contentSize = CGSizeMake(_width, MAX_Y);
     _scrollView.contentOffset = CGPointMake(0, START_Y);
@@ -43,11 +40,11 @@ static CGFloat START_Y = 99999.0f;
     });
 }
 
-- (void)_setTopGroupItem:(id)item {
+- (void)_setTopGroupItem:(id)item withDirection:(ListViewDirection)direction {
     _topGroupItem = item;
     _topGroupId = [_delegate listGroupIdForItem:item];
     if ([_delegate respondsToSelector:@selector(listTopGroupDidChange:)]) {
-        [_delegate listTopGroupDidChange:item];
+        [_delegate listViewTopGroupDidChange:item withDirection:direction];
     }
 }
 
@@ -59,7 +56,7 @@ static CGFloat START_Y = 99999.0f;
     _bottomItemIndex = startAtIndex - 1;
 
     [self _addViewForNextItemAtLocation:BOTTOM];
-    [self _setTopGroupItem:[_delegate listItemForIndex:_topItemIndex]];
+    [self _setTopGroupItem:[_delegate listItemForIndex:_topItemIndex] withDirection:DOWN];
     _bottomGroupId = _topGroupId;
     [self _extendBottom];
     [self.view insertSubview:_scrollView atIndex:0];
@@ -129,7 +126,7 @@ static CGFloat START_Y = 99999.0f;
         [groupView addSubview:view];
         [self _addView:groupView at:location];
         if (location == TOP) {
-            [self _setTopGroupItem:item];
+            [self _setTopGroupItem:item withDirection:UP];
         } else {
             _bottomGroupId = groupId;
         }
@@ -138,7 +135,6 @@ static CGFloat START_Y = 99999.0f;
 }
 
 - (void) _checkTopGroupView {
-    if (!_trackTopGroupView) { return; }
     _topGroupView = [self.views pickOne:^BOOL(id view, NSUInteger i) {
         return [self _isGroupView:view];
     }];
@@ -188,7 +184,7 @@ static CGFloat START_Y = 99999.0f;
         _topY += view.height;
         if ([self _isGroupView:view]) {
             id item = [_delegate listItemForIndex:_topItemIndex];
-            [self _setTopGroupItem:item];
+            [self _setTopGroupItem:item withDirection:DOWN];
             [self _checkTopGroupView];
         } else {
             _topItemIndex += 1;
@@ -242,10 +238,10 @@ static CGFloat START_Y = 99999.0f;
     }
     _previousContentOffsetY = scrollView.contentOffset.y;
     
-    if (_topGroupView) {
+    if (_topGroupView && [_delegate respondsToSelector:@selector(listViewTopGroupViewDidMove:)]) {
         CGRect frame = _topGroupView.frame;
         frame.origin.y -= _scrollView.contentOffset.y;
-        [_delegate listTopGroupViewDidMove:frame];
+        [_delegate listViewTopGroupViewDidMove:frame];
     }
 }
 
