@@ -9,14 +9,21 @@
 #import "FunBase.h"
 
 typedef void (^EventCallback)(id info);
-typedef id EventsRef;
+typedef id EventSubscriber;
 
 @interface Events : FunBase
 
-+ (EventsRef)on:(NSString*)signal callback:(EventCallback)callback;
-+ (EventsRef)on:(NSString*)signal ref:(EventsRef)ref callback:(EventCallback)callback;
-+ (void)off:(NSString*)signal ref:(EventsRef)ref;
++ (EventSubscriber)on:(NSString*)signal callback:(EventCallback)callback;
+// Pass in e.g `self` for subscriber
++ (void)on:(NSString*)signal subscriber:(EventSubscriber)subscriber callback:(EventCallback)callback;
+// Pass in e.g `self` for subscriber
++ (void)off:(NSString*)signal subscriber:(EventSubscriber)subscriber;
 + (void)fire:(NSString*)signal info:(id)info;
 + (void)fire:(NSString*)signal;
 
+// Keyboard
++ (void)onKeyboardWillShowSubscriber:(EventSubscriber)subscriber callback:(EventCallback)callback;
++ (void)onKeyboardWillHideSubscriber:(EventSubscriber)subscriber callback:(EventCallback)callback;
++ (void)offKeyboardWillShowSubscriber:(EventSubscriber)subscriber;
++ (void)offKeyboardWillHideSubscriber:(EventSubscriber)subscriber;
 @end

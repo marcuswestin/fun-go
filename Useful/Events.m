@@ -12,31 +12,39 @@
 
 static NSMutableDictionary* signals;
 static NSInteger unique = 1;
-static NSString* RefKey = @"Ref";
-static NSString* CbKey = @"Cb";
+static const NSString* RefKey = @"Sub";
+static const NSString* CbKey = @"Cb";
+static Events* instance;
 
 + (void)load {
     signals = [NSMutableDictionary dictionary];
+    instance = [[Events alloc] init];
 }
 
-+ (EventsRef)on:(NSString *)signal callback:(EventCallback)callback {
-    id ref = num(unique += 1);
-    [self on:signal ref:ref callback:callback];
-    return ref;
+- (id)init {
+    [self _keyboardSetup];
+    return self;
 }
 
-+ (EventsRef)on:(NSString *)signal ref:(EventsRef)ref callback:(EventCallback)callback {
+#pragma mark - API
+
++ (EventSubscriber)on:(NSString *)signal callback:(EventCallback)callback {
+    id subscriber = num(unique += 1);
+    [self on:signal subscriber:subscriber callback:callback];
+    return subscriber;
+}
+
++ (void)on:(NSString *)signal subscriber:(EventSubscriber)subscriber callback:(EventCallback)callback {
     if (!signals[signal]) {
         signals[signal] = [NSMutableArray array];
     }
-    [signals[signal] addObject:@{RefKey:ref, CbKey:callback}];
-    return ref;
+    [signals[signal] addObject:@{RefKey:subscriber, CbKey:callback}];
 }
 
-+ (void)off:(NSString *)signal ref:(EventsRef)ref {
++ (void)off:(NSString *)signal subscriber:(EventSubscriber)subscriber {
     NSMutableArray* callbacks = signals[signal];
     for (NSDictionary* obj in callbacks) {
-        if (obj[RefKey] == ref) {
+        if (obj[RefKey] == subscriber) {
             [callbacks removeObject:obj];
             break;
         }
@@ -57,4 +65,44 @@ static NSString* CbKey = @"Cb";
         }
     });
 }
+
+#pragma mark - Keyboard events
+
++ (void)onKeyboardWillShowSubscriber:(EventSubscriber)subscriber callback:(EventCallback)callback {
+    [Events on:@"KeyboardWillShow" subscriber:subscriber callback:callback];
+}
+
++ (void)onKeyboardWillHideSubscriber:(EventSubscriber)subscriber callback:(EventCallback)callback {
+    [Events on:@"KeyboardWillHide" subscriber:subscriber callback:callback];
+}
+
++ (void)offKeyboardWillShowSubscriber:(EventSubscriber)subscriber {
+    [Events off:@"KeyboardWillShow" subscriber:subscriber];
+}
+
++ (void)offKeyboardWillHideSubscriber:(EventSubscriber)subscriber {
+    [Events off:@"KeyboardWillHide" subscriber:subscriber];
+}
+
+- (void)_keyboardSetup {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)_keyboardWillShow:(NSNotification*)notification {
+    [Events fire:@"KeyboardWillShow" info:[self _keyboardInfo:notification]];
+}
+
+- (void)_keyboardWillHide:(NSNotification*)notification {
+    [Events fire:@"KeyboardWillHide" info:[self _keyboardInfo:notification]];
+}
+
+- (NSDictionary*)_keyboardInfo:(NSNotification*)notification {
+    NSDictionary* userInfo = notification.userInfo;
+    return @{
+             @"duration": userInfo[UIKeyboardAnimationDurationUserInfoKey],
+             @"curve": userInfo[UIKeyboardAnimationCurveUserInfoKey]
+             };
+}
+
 @end
