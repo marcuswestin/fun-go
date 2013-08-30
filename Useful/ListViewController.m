@@ -74,7 +74,9 @@ static CGFloat START_Y = 99999.0f;
                 id item = [_delegate listItemForIndex:itemIndex];
                 if (isGroupView) {
                     id groupId = [_delegate listGroupIdForItem:item];
-                    [_delegate listSelectGroupWithId:(id)groupId withItem:(id)item];
+                    if ([_delegate respondsToSelector:@selector(listSelectGroupWithId:withItem:)]) {
+                        [_delegate listSelectGroupWithId:(id)groupId withItem:(id)item];
+                    }
                 } else {
                     [_delegate listSelectItem:item atIndex:itemIndex];
                 }

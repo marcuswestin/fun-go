@@ -23,10 +23,10 @@ typedef enum ListViewLocation ListViewLocation;
 - (UIView*) listViewForGroupId:(id)groupId withItem:(id)item withWidth:(CGFloat)width;
 - (id) listGroupIdForItem:(id)item;
 - (void) listSelectItem:(id)item atIndex:(NSInteger)itemIndex;
-- (void) listSelectGroupWithId:(id)groupId withItem:(id)item;
 @optional
 - (void) listTopGroupViewDidMove:(CGRect)frame;
 - (void) listTopGroupDidChange:(id)topGroupItem;
+- (void) listSelectGroupWithId:(id)groupId withItem:(id)item;
 @end
 
 
