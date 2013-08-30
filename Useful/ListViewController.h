@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FunObjc.h"
+#import "ViewController.h"
 
 enum ListViewLocation { TOP=1, BOTTOM=2 };
 typedef enum ListViewLocation ListViewLocation;

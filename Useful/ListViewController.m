@@ -7,6 +7,7 @@
 //
 
 #import "ListViewController.h"
+#import "UIView+FunStyle.h"
 
 static CGFloat MAX_Y = 9999999.0f;
 static CGFloat START_Y = 99999.0f;
