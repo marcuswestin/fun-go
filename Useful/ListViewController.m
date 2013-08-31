@@ -44,8 +44,8 @@ static CGFloat START_Y = 99999.0f;
 - (void)_setTopGroupItem:(id)item withDirection:(ListViewDirection)direction {
     _topGroupItem = item;
     _topGroupId = [_delegate listGroupIdForItem:item];
-    if ([_delegate respondsToSelector:@selector(listTopGroupDidChange:)]) {
-        [_delegate listViewTopGroupDidChange:item withDirection:direction];
+    if ([_delegate respondsToSelector:@selector(listTopGroupDidChange:withDirection:)]) {
+        [_delegate listTopGroupDidChange:item withDirection:direction];
     }
 }
 
@@ -239,10 +239,10 @@ static CGFloat START_Y = 99999.0f;
     }
     _previousContentOffsetY = scrollView.contentOffset.y;
     
-    if (_topGroupView && [_delegate respondsToSelector:@selector(listViewTopGroupViewDidMove:)]) {
+    if (_topGroupView && [_delegate respondsToSelector:@selector(listTopGroupViewDidMove:)]) {
         CGRect frame = _topGroupView.frame;
         frame.origin.y -= _scrollView.contentOffset.y;
-        [_delegate listViewTopGroupViewDidMove:frame];
+        [_delegate listTopGroupViewDidMove:frame];
     }
 }
 
