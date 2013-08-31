@@ -24,6 +24,8 @@ typedef ViewStyler* (^StylerRect)(CGRect rect);
 typedef ViewStyler* (^StylerString1)(NSString* string);
 typedef ViewStyler* (^StylerInteger1)(NSInteger integer);
 typedef ViewStyler* (^StylerTextAlignment)(NSTextAlignment textAlignment);
+typedef ViewStyler* (^StylerColorFloat2)(UIColor* color, CGFloat f1, CGFloat f2);
+typedef ViewStyler* (^StylerFont)(UIFont* font);
 @interface ViewStyler : FunBase
 
 /* Create & apply
@@ -76,6 +78,9 @@ typedef ViewStyler* (^StylerTextAlignment)(NSTextAlignment textAlignment);
 - (StylerString1)text;
 - (StylerColor1)textColor;
 - (StylerTextAlignment)textAlignment;
+- (StylerColorFloat2)textShadow;
+- (StylerFont)textFont;
+
 @end
 
 @interface UIView (FunStyle)
