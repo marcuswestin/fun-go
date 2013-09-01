@@ -53,4 +53,5 @@ void asyncBackground(Block block);
 void vibrateDevice();
 NSString* concat(id arg1, ...);
 NSNumber* num(int i);
+NSNumber* numf(float f);
 void repeat(NSUInteger times, NSUIntegerBlock block);

@@ -64,7 +64,8 @@ NSString* concat(NSString* firstArg, ...) {
     return result;
 }
 
-NSNumber* num(NSInteger i) { return [NSNumber numberWithInt:i]; }
+NSNumber* num(int i) { return [NSNumber numberWithInt:i]; }
+NSNumber* numf(float f) { return [NSNumber numberWithFloat:f]; }
 
 void repeat(NSUInteger times, NSUIntegerBlock block) {
     for (NSUInteger i=0; i<times; i++) {
