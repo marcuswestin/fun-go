@@ -7,10 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FunObjc.h"
+#import "ViewController.h"
 
 enum ListViewLocation { TOP=1, BOTTOM=2 };
 typedef enum ListViewLocation ListViewLocation;
+
+enum ListViewDirection { UP=-1, DOWN=1 };
+typedef enum ListViewDirection ListViewDirection;
 
 @interface ListGroupHeadView : UIView;
 @end
@@ -23,10 +26,10 @@ typedef enum ListViewLocation ListViewLocation;
 - (UIView*) listViewForGroupId:(id)groupId withItem:(id)item withWidth:(CGFloat)width;
 - (id) listGroupIdForItem:(id)item;
 - (void) listSelectItem:(id)item atIndex:(NSInteger)itemIndex;
-- (void) listSelectGroupWithId:(id)groupId withItem:(id)item;
 @optional
 - (void) listTopGroupViewDidMove:(CGRect)frame;
-- (void) listTopGroupDidChange:(id)topGroupItem;
+- (void) listTopGroupDidChange:(id)topGroupItem withDirection:(ListViewDirection)direction;
+- (void) listSelectGroupWithId:(id)groupId withItem:(id)item;
 @end
 
 

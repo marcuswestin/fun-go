@@ -6,7 +6,8 @@
 //  Copyright (c) 2013 Flutterby Labs Inc. All rights reserved.
 //
 
-#import "FunAll.h"
+#import "FunObjc.h"
+#import "SQL.h"
 #import "FMDatabaseAdditions.h"
 #import "Files.h"
 #import "Log.h"

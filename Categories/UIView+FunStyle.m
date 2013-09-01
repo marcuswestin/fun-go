@@ -269,6 +269,19 @@
         return self;
     };
 }
+- (StylerColorFloat2)textShadow {
+    return ^(UIColor* shadowColor, CGFloat shadowOffsetX, CGFloat shadowOffsetY) {
+        _labelView.shadowColor = shadowColor;
+        _labelView.shadowOffset = CGSizeMake(shadowOffsetX, shadowOffsetY);
+        return self;
+    };
+}
+- (StylerFont)textFont {
+    return ^(UIFont* font) {
+        _labelView.font = font;
+        return self;
+    };
+}
 @end
 
 @implementation UIView (FunStyle)
