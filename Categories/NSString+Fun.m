@@ -35,4 +35,8 @@
     return [self stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" \n\t\r"]];
 }
 
+- (BOOL)isEmpty {
+    return self.length == 0;
+}
+
 @end

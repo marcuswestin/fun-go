@@ -68,7 +68,7 @@ static CGFloat fuzzyBlurBlur = 2.0;
     UILabel* label = [[UILabel alloc] initWithFrame:overlayWindow.frame];
     label.text = message;
     label.textAlignment = NSTextAlignmentCenter;
-    label.textColor = WHITE;
+    label.textColor = BLACK;
     [overlayWindow addSubview:label];
     return overlayWindow;
 }
