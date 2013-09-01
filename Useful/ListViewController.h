@@ -45,5 +45,6 @@ typedef enum ListViewLocation ListViewLocation;
 @property CGFloat width;
 @property CGFloat height;
 @property CGFloat groupHeadBoundary;
+- (void) reloadDataWithStartIndex:(NSInteger)startIndex;
 - (void) stopScrolling;
 @end

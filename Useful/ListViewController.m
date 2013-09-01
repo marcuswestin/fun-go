@@ -33,37 +33,33 @@ static CGFloat START_Y = 99999.0f;
     _height = view.height;
     _scrollView = [[UIScrollView alloc] initWithFrame:view.bounds];
     _scrollView.showsVerticalScrollIndicator = NO;
-    _scrollView.contentSize = CGSizeMake(_width, MAX_Y);
-    _scrollView.contentOffset = CGPointMake(0, START_Y);
-    _previousContentOffsetY = _scrollView.contentOffset.y;
     
     // Load data in next tick to ensure subclass viewDidLoad finished
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self _loadData];
+        [self reloadDataWithStartIndex:[_delegate listStartIndex]];
+        [self _setupScrollview];
     });
 }
 
-- (void)_setTopGroupItem:(id)item {
-    _topGroupItem = item;
-    _topGroupId = [_delegate listGroupIdForItem:item];
-    if ([_delegate respondsToSelector:@selector(listTopGroupDidChange:)]) {
-        [_delegate listTopGroupDidChange:item];
-    }
-}
-
-- (void)_loadData {
+- (void)reloadDataWithStartIndex:(NSInteger)startAtIndex {
+    [self.scrollView empty];
     _topY = START_Y;
     _bottomY = START_Y;
-    NSUInteger startAtIndex = [_delegate listStartIndex];
     _topItemIndex = startAtIndex;
     _bottomItemIndex = startAtIndex - 1;
+    
+    _scrollView.contentSize = CGSizeMake(_width, MAX_Y);
+    _scrollView.contentOffset = CGPointMake(0, START_Y);
+    _previousContentOffsetY = _scrollView.contentOffset.y;
 
     [self _addViewForNextItemAtLocation:BOTTOM];
     [self _setTopGroupItem:[_delegate listItemForIndex:_topItemIndex]];
     _bottomGroupId = _topGroupId;
     [self _extendBottom];
+}
+
+- (void)_setupScrollview {
     [self.view insertSubview:_scrollView atIndex:0];
-    
     [_scrollView setDelegate:self];
     [_scrollView onTap:^(UITapGestureRecognizer *sender) {
         CGPoint tapPoint = [sender locationInView:_scrollView];
@@ -85,6 +81,14 @@ static CGFloat START_Y = 99999.0f;
             }
         }
     }];
+}
+
+- (void)_setTopGroupItem:(id)item {
+    _topGroupItem = item;
+    _topGroupId = [_delegate listGroupIdForItem:item];
+    if ([_delegate respondsToSelector:@selector(listTopGroupDidChange:)]) {
+        [_delegate listTopGroupDidChange:item];
+    }
 }
 
 - (BOOL)_isGroupView:(UIView*)view {
