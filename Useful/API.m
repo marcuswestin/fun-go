@@ -132,7 +132,7 @@ static int numRequests = 0;
     
     NSString* contentType = response.allHeaderFields[@"content-type"];
     
-    if ([contentType rangeOfString:@"application/json"].location == 0) {
+    if ([contentType rangeOfString:@"application/json"].location == 0 || [contentType rangeOfString:@"application/javascript"].location == 0) {
         id jsonRes = [JSON parseData:data];
         if (!jsonRes) { return callback(makeError(@"Bad JSON format"), nil); }
         NSLog(@"API got json: %@ %@", method, path);

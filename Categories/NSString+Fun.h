@@ -16,4 +16,5 @@
 - (NSString*)stringByRemoving:(NSString*)needles;
 - (NSString*)encodedURIComponent;
 - (NSString*)stringByTrimmingWhitespace;
+- (BOOL)isEmpty;
 @end

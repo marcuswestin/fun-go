@@ -48,5 +48,6 @@ typedef enum ListViewDirection ListViewDirection;
 @property CGFloat width;
 @property CGFloat height;
 @property CGFloat groupHeadBoundary;
+- (void) reloadDataWithStartIndex:(NSInteger)startIndex;
 - (void) stopScrolling;
 @end
