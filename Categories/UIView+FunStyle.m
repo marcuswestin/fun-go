@@ -527,5 +527,12 @@ static CGFloat STATIC = 0.5f;
 - (NSData *)captureToPngData {
     return UIImagePNGRepresentation([self captureToImage]);
 }
+- (UIView*)ghost {
+    UIImage* ghostImage = [self captureToImage];
+    UIImageView* ghostView = [UIImageView.styler.frame(self.frame) render];
+    ghostView.image = ghostImage;
+    [self.superview insertSubview:ghostView aboveSubview:self];
+    return ghostView;
+}
 
 @end

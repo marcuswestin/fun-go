@@ -140,4 +140,5 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (UIImage*)captureToImageWithScale:(CGFloat)scale;
 - (NSData*)captureToPngData;
 - (NSData*)captureToJpgData:(CGFloat)compressionQuality;
+- (UIView*)ghost;
 @end
