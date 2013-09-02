@@ -23,13 +23,13 @@ static CGFloat START_Y = 99999.0f;
     
     [super viewDidLoad];
     UIView* view = self.view;
+
     if (!_delegate) {
         _delegate = (id<ListViewDelegate>)self;
     }
-    _width = view.width;
-    _height = view.height;
+    
     _scrollView = [[UIScrollView alloc] initWithFrame:view.bounds];
-        
+    
     _scrollView.showsVerticalScrollIndicator = NO;
     
     // Load data in next tick to ensure subclass viewDidLoad finished
@@ -46,7 +46,7 @@ static CGFloat START_Y = 99999.0f;
     _topItemIndex = startAtIndex;
     _bottomItemIndex = startAtIndex - 1;
     
-    _scrollView.contentSize = CGSizeMake(_width, MAX_Y);
+    _scrollView.contentSize = CGSizeMake(self.view.width, MAX_Y);
     _scrollView.contentOffset = CGPointMake(0, START_Y);
     _previousContentOffsetY = _scrollView.contentOffset.y;
 
@@ -110,7 +110,8 @@ static CGFloat START_Y = 99999.0f;
     
     [self _checkGroupForItem:item atLocation:location];
 
-    UIView* view = [_delegate listViewForItem:item atIndex:index withWidth:_width];
+    UIView* view = [_delegate listViewForItem:item atIndex:index withWidth:[self _listWidthForView]];
+    [view moveToX:_groupMargins.left];
     [self _addView:view at:location];
     
     if (location == TOP) {
@@ -122,11 +123,16 @@ static CGFloat START_Y = 99999.0f;
     return YES;
 }
 
+- (CGFloat)_listWidthForView {
+    return self.view.width - (_groupMargins.left + _groupMargins.right);
+}
+
 - (void)_checkGroupForItem:(id)item atLocation:(ListViewLocation)location {
     id groupId = [_delegate listGroupIdForItem:item];
     id currentGroupId = (location == TOP ? _topGroupId : _bottomGroupId);
     if (![groupId isEqual:currentGroupId]) {
-        UIView* view = [_delegate listViewForGroupId:groupId withItem:item withWidth:_width];
+        UIView* view = [_delegate listViewForGroupId:groupId withItem:item withWidth:[self _listWidthForView]];
+        [view moveToX:_groupMargins.left y:_groupMargins.top + _groupMargins.bottom];
         ListGroupHeadView* groupView = [[ListGroupHeadView alloc] initWithFrame:view.bounds];
         [groupView addSubview:view];
         [self _addView:groupView at:location];
