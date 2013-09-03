@@ -534,5 +534,12 @@ static CGFloat STATIC = 0.5f;
     [self.superview insertSubview:ghostView aboveSubview:self];
     return ghostView;
 }
-
+- (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback {
+    UIView* ghost = self.ghost;
+    [UIView animateWithDuration:duration animations:^{
+        animationCallback(nil, ghost);
+    } completion:^(BOOL finished) {
+        [ghost removeFromSuperview];
+    }];
+}
 @end

@@ -141,4 +141,5 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (NSData*)captureToPngData;
 - (NSData*)captureToJpgData:(CGFloat)compressionQuality;
 - (UIView*)ghost;
+- (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback;
 @end
