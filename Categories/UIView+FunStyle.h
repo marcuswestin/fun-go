@@ -53,6 +53,7 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (StylerPoint)position;
 - (StylerRect)frame;
 - (StylerFloat1)moveDown;
+- (StylerView)positionBelowView;
 
 /* Size
  ******/
@@ -128,6 +129,7 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (void)setOutsetShadowColor:(UIColor*)color radius:(CGFloat)radius;
 - (void)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius;
 - (void)setBorderColor:(UIColor*)color width:(CGFloat)width;
+- (void)setGradientColors:(NSArray*)colors;
 
 /* View hierarchy
  ****************/

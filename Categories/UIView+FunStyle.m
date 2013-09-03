@@ -130,6 +130,13 @@
 - (StylerFloat1)moveDown {
     Float1Styler(_frame.origin.y += f1);
 }
+- (StylerView)positionBelowView {
+    return ^(UIView* view) {
+        _frame.origin.y = view.y2;
+        return self;
+    };
+}
+
 /* Size
  ******/
 - (StylerFloat1)w {
@@ -424,6 +431,20 @@
 - (void)setBorderColor:(UIColor *)color width:(CGFloat)width {
     self.layer.borderColor = color.CGColor;
     self.layer.borderWidth = width;
+}
+
+- (void)setGradientColors:(NSArray *)colors {
+    CAGradientLayer* gradient = [CAGradientLayer layer];
+    CALayer* layer = self.layer;
+    gradient.frame = layer.bounds;
+    gradient.colors = [colors map:^id(UIColor* color, NSUInteger i) {
+        return (id)color.CGColor;
+    }];
+//    gradient.locations = [colors map:^id(id val, NSUInteger i) {
+//        return numf(((CGFloat) i) / (colors.count - 1));
+//    }];
+    gradient.cornerRadius = self.layer.cornerRadius;
+    [layer insertSublayer:gradient atIndex:0];
 }
 
 - (void)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius {

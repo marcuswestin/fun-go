@@ -15,9 +15,6 @@ typedef enum ListViewLocation ListViewLocation;
 enum ListViewDirection { UP=-1, DOWN=1 };
 typedef enum ListViewDirection ListViewDirection;
 
-@interface ListGroupHeadView : UIView;
-@end
-
 @protocol ListViewDelegate <NSObject>
 @required
 - (NSInteger) listStartIndex;

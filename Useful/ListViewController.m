@@ -9,11 +9,14 @@
 #import "ListViewController.h"
 #import "UIView+FunStyle.h"
 
-static CGFloat MAX_Y = 9999999.0f;
-static CGFloat START_Y = 99999.0f;
-
+// Used to differentiate group head views from item views
+@interface ListGroupHeadView : UIView;
+@end
 @implementation ListGroupHeadView
 @end
+
+static CGFloat MAX_Y = 9999999.0f;
+static CGFloat START_Y = 99999.0f;
 
 @implementation ListViewController {
     UIView* _topGroupView;
@@ -27,6 +30,7 @@ static CGFloat START_Y = 99999.0f;
         _delegate = (id<ListViewDelegate>)self;
     }
     
+    self.view.backgroundColor = WHITE;
     _scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
     _scrollView.showsVerticalScrollIndicator = NO;
     
