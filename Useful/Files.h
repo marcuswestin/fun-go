@@ -22,5 +22,7 @@
 + (NSString*)cachePath:(NSString*)filename;
 + (NSString*)documentPath:(NSString*)filename;
 + (NSString*)readResource:(NSString*)name;
++ (BOOL)removeDocument:(NSString*)name;
++ (BOOL)removeCache:(NSString*)name;
 
 @end

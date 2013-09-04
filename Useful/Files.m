@@ -55,4 +55,13 @@ static NSString* _cachesDirectory;
     NSString* path = [[NSBundle mainBundle] pathForResource:name ofType:nil];
     return [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
 }
++ (BOOL)removeCache:(NSString *)name {
+    return [Files removeFile:[Files cachePath:name]];
+}
++ (BOOL)removeDocument:(NSString *)name {
+    return [Files removeFile:[Files documentPath:name]];
+}
++ (BOOL)removeFile:(NSString*)path {
+    return [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+}
 @end
