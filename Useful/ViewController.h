@@ -10,9 +10,8 @@
 
 @interface ViewController : UIViewController
 
-@property (strong) NSDictionary* state;
+@property NSDictionary* state;
 
-+ (instancetype)make;
-+ (instancetype)makeWithState:(NSDictionary*)state;
++ (instancetype)withState:(NSDictionary*)state;
 
 @end

@@ -10,21 +10,10 @@
 
 @implementation ViewController
 
-@synthesize state;
-
-+ (instancetype)make {
-    return [self makeWithState:@{}];
-}
-
-+ (instancetype)makeWithState:(NSDictionary *)state {
++ (instancetype)withState:(NSDictionary *)state {
     ViewController* viewController = [[self.class alloc] init];
     viewController.state = state ? state : @{};
     return viewController;
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end
