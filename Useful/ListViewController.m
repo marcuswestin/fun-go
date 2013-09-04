@@ -55,12 +55,15 @@ static CGFloat START_Y = 99999.0f;
         // Initialize with first view. It's the first top & bottom view.
         _topItemIndex = startAtIndex;
         _bottomItemIndex = startAtIndex - 1;
-        [self _listAddNextBottomView];
-        [self _setTopGroupItem:[_delegate listItemForIndex:_topItemIndex] withDirection:DOWN];
-        _bottomGroupId = _topGroupId;
+        BOOL didAddFirstView = [self _listAddNextBottomView];
         
-        [self _extendBottom];
-        [self _extendTop];
+        if (didAddFirstView) {
+            [self _setTopGroupItem:[_delegate listItemForIndex:_topItemIndex] withDirection:DOWN];
+            _bottomGroupId = _topGroupId;
+            
+            [self _extendBottom];
+            [self _extendTop];
+        }
     }];
 }
 
@@ -91,7 +94,6 @@ static CGFloat START_Y = 99999.0f;
 }
 
 - (void)_setTopGroupItem:(id)item withDirection:(ListViewDirection)direction {
-    _topGroupItem = item;
     _topGroupId = [_delegate listGroupIdForItem:item];
     if ([_delegate respondsToSelector:@selector(listTopGroupDidChange:withDirection:)]) {
         [_delegate listTopGroupDidChange:item withDirection:direction];
@@ -123,32 +125,48 @@ static CGFloat START_Y = 99999.0f;
 }
 
 - (BOOL)_listAddNextTopView {
-    NSInteger index = _topItemIndex - 1;
-    id item = [_delegate listItemForIndex:index];
-    if (!item) { return NO; }
-    
-    // Check if the new item falls outside of the group of the current top-most item.
-    id groupId = [_delegate listGroupIdForItem:item];
-    if (![groupId isEqual:_topGroupId]) {
-        // We reached the top of the currently displayed top-most group.
-        id previousTopItem = [_delegate listItemForIndex:_topItemIndex];
-        [self _addGroupViewForItem:previousTopItem withGroupId:_topGroupId atLocation:TOP];
-        // TODO The top group id should be that of the new top-most item, not that of the group we just finished off.
+    NSInteger nextTopItemIndex = _topItemIndex - 1;
+    id nextTopItem = [_delegate listItemForIndex:nextTopItemIndex];
+    if (!nextTopItem) {
+        if (![self _isGroupView:[self topView]]) {
+            // There should always be a group view at the very top
+            [self _listRenderTopGroup];
+            return YES;
+        }
+
+        return NO; // We're at the very top
     }
     
-    UIView* view = [_delegate listViewForItem:item atIndex:index withWidth:[self _listWidthForView]];
+    // Check if the new item falls outside of the group of the current top-most item.
+    id groupId = [_delegate listGroupIdForItem:nextTopItem];
+    if (![groupId isEqual:_topGroupId]) {
+        if ([self _isGroupView:[self topView]]) {
+            // The group view was just rendered in the previous _listAddNewTopView call
+            _topGroupId = groupId;
+        } else {
+            // We reached the top of the currently displayed top-most group.
+            [self _listRenderTopGroup];
+            return YES;
+        }
+    }
+    
+    UIView* view = [_delegate listViewForItem:nextTopItem atIndex:nextTopItemIndex withWidth:[self _listWidthForView]];
     [view moveToX:_groupMargins.left];
     [self _addView:view at:TOP];
-    
-    _topItemIndex = index;
+    _topItemIndex = nextTopItemIndex;
     return YES;
+}
+
+- (UIView*)_listRenderTopGroup {
+    id previousTopItem = [_delegate listItemForIndex:_topItemIndex];
+    return [self _addGroupViewForItem:previousTopItem withGroupId:_topGroupId atLocation:TOP];
 }
 
 - (CGFloat)_listWidthForView {
     return self.view.width - (_groupMargins.left + _groupMargins.right);
 }
 
-- (void) _addGroupViewForItem:(id)item withGroupId:(id)groupId atLocation:(ListViewLocation)location {
+- (UIView*) _addGroupViewForItem:(id)item withGroupId:(id)groupId atLocation:(ListViewLocation)location {
     UIView* view = [_delegate listViewForGroupId:groupId withItem:item withWidth:[self _listWidthForView]];
     [view moveToX:_groupMargins.left y:_groupMargins.top + _groupMargins.bottom];
     CGRect frame = view.bounds;
@@ -162,6 +180,7 @@ static CGFloat START_Y = 99999.0f;
         _bottomGroupId = groupId;
     }
     [self _checkTopGroupView];
+    return groupView;
 }
 
 - (void) _checkTopGroupView {
@@ -185,8 +204,8 @@ static CGFloat START_Y = 99999.0f;
 - (void)_extendBottom {
     CGFloat targetY = _scrollView.contentOffset.y + _scrollView.height;
     while (_bottomY < targetY) {
-        BOOL didAddItem = [self _listAddNextBottomView];
-        if (!didAddItem) {
+        BOOL didAddView = [self _listAddNextBottomView];
+        if (!didAddView) {
             [self _didReachTheVeryBottom];
             break;
         }
@@ -197,8 +216,8 @@ static CGFloat START_Y = 99999.0f;
 - (void)_extendTop {
     CGFloat targetY = _scrollView.contentOffset.y;
     while (_topY > targetY) {
-        BOOL didAddItem = [self _listAddNextTopView];
-        if (!didAddItem) {
+        BOOL didAddView = [self _listAddNextTopView];
+        if (!didAddView) {
             [self _didReachTheVeryTop];
             break;
         }
@@ -242,15 +261,12 @@ static CGFloat START_Y = 99999.0f;
 }
 
 - (void)_didReachTheVeryTop {
-    if (_scrollView.contentOffset.y <= 0) { return; }
-    
-    // TODO ensure that top group view is rendered
-    
     CGFloat changeInHeight = CGRectGetMinY([self topView].frame);
+    if (changeInHeight == 0) { return; }
     _topY -= changeInHeight;
     _bottomY -= changeInHeight;
     [self _withoutScrollEvents:^{
-        _scrollView.contentOffset = CGPointZero;
+        _scrollView.contentOffset = CGPointMake(0, _scrollView.contentOffset.y - changeInHeight);
         for (UIView* subView in self.views) {
             [subView moveByY:-changeInHeight];
         }

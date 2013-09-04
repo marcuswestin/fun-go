@@ -39,7 +39,6 @@ typedef enum ListViewDirection ListViewDirection;
 @property CGFloat previousContentOffsetY;
 @property (readonly) id bottomGroupId;
 @property (readonly) id topGroupId;
-@property (readonly) id topGroupItem;
 @property CGFloat topY;
 @property CGFloat bottomY;
 @property CGFloat width;
