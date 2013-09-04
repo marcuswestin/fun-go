@@ -33,6 +33,7 @@ static CGFloat START_Y = 99999.0f;
     self.view.backgroundColor = WHITE;
     _scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
     _scrollView.showsVerticalScrollIndicator = NO;
+    _scrollView.alwaysBounceVertical = YES;
     
     asyncMain(^{ // Load data in next tick to ensure subclass viewDidLoad finished
         [self _setupScrollview];
