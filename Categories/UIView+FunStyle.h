@@ -38,6 +38,7 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (StylerView)appendTo;
 - (StylerView)prependTo;
 - (StylerInteger1)tag;
+- (StylerString1)name;
 
 /* Position
  **********/
@@ -52,6 +53,7 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (StylerFloat1)positionFromBottom;
 - (StylerPoint)position;
 - (StylerRect)frame;
+- (StylerFloat4)inset;
 - (StylerFloat1)moveDown;
 - (StylerView)positionBelowView;
 
@@ -69,6 +71,7 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (StylerColor1)bg;
 - (StylerFloat3)shadow;
 - (StylerFloat1)radius;
+- (StylerFloat1)borderWidth;
 - (StylerFloat4)borderWidths;
 - (StylerColor1)borderColor;
 - (ViewStyler*)hide;
@@ -121,6 +124,7 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (CGFloat)x2;
 - (CGFloat)y2;
 - (CGRect)frameInWindow;
+- (CGRect)frameOnScreen;
 
 /* Borders, Shadows & Insets
  ***************************/
@@ -135,6 +139,7 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
  ****************/
 - (UIView*)appendTo:(UIView*)superview;
 - (void)empty;
+- (UIView*)viewWithName:(NSString*)name;
 
 /* Screenshot
  ************/
@@ -144,4 +149,5 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (NSData*)captureToJpgData:(CGFloat)compressionQuality;
 - (UIView*)ghost;
 - (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback;
+- (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback completion:(ViewCallback)completionCallback;
 @end

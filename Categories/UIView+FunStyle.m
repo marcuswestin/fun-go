@@ -10,6 +10,9 @@
 #import "FunObjc.h"
 #import <QuartzCore/QuartzCore.h>
 
+static NSMutableArray* tagIntegerToTagName;
+static NSMutableDictionary* tagNameToTagNumber;
+
 @implementation ViewStyler {
     UIView* _view;
     CGRect _frame;
@@ -57,6 +60,23 @@
 - (StylerInteger1)tag {
     return ^(NSInteger tag) {
         _view.tag = tag;
+        return self;
+    };
+}
+- (StylerString1)name {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        tagIntegerToTagName = [NSMutableArray arrayWithObject:@0];
+        tagNameToTagNumber = [NSMutableDictionary dictionary];
+    });
+    return ^(NSString* tagName) {
+        NSNumber* tagNumber = tagNameToTagNumber[tagName];
+        if (!tagNumber) {
+            NSInteger tag = tagIntegerToTagName.count;
+            [tagIntegerToTagName addObject:tagName];
+            tagNameToTagNumber[tagName] = [NSNumber numberWithInteger:tag];
+        }
+        _view.tag = [tagNameToTagNumber[tagName] integerValue];
         return self;
     };
 }
@@ -126,6 +146,17 @@
         return self;
     };
 }
+- (StylerFloat4)inset {
+    return ^(CGFloat top, CGFloat right, CGFloat bottom, CGFloat left) {
+        _frame.size.height -= top;
+        _frame.size.width -= right;
+        _frame.size.height -= bottom;
+        _frame.size.width -= left;
+        _frame.origin.y += top;
+        _frame.origin.x += left;
+        return self;
+    };
+}
 #define Float1Styler(code) return ^(CGFloat f1) { code; return self; }
 - (StylerFloat1)moveDown {
     Float1Styler(_frame.origin.y += f1);
@@ -184,7 +215,10 @@
 - (StylerColor1)bg {
     return ^(UIColor* color) {
         _view.backgroundColor = color;
-        return self;
+        if (color.hasTransparency) {
+            _view.opaque = NO;
+        }
+return self;
     };
 }
 - (StylerFloat3)shadow {
@@ -199,6 +233,12 @@
 - (StylerFloat1)radius {
     return ^(CGFloat radius) {
         _view.layer.cornerRadius = radius;
+        return self;
+    };
+}
+- (StylerFloat1)borderWidth {
+    return ^(CGFloat w) {
+        _borderWidths = UIEdgeInsetsMake(w, w, w, w);
         return self;
     };
 }
@@ -416,12 +456,19 @@
     return CGRectGetMaxY(self.frame);
 }
 - (CGRect)frameInWindow {
+    return [self convertRect:self.bounds toView:self.window];
+}
+- (CGRect)frameOnScreen {
     CGRect frame = self.frame;
     UIView* view = self;
-    UIWindow* window = view.window;
-    while ((view = view.superview) != window) {
+    while ((view = view.superview) != nil) {
         frame.origin.x += view.x;
         frame.origin.y += view.y;
+        if ([view isKindOfClass:UIScrollView.class]) {
+            CGPoint offset = ((UIScrollView*)view).contentOffset;
+            frame.origin.x -= offset.x;
+            frame.origin.y -= offset.y;
+        }
     }
     return frame;
 }
@@ -529,6 +576,11 @@ static CGFloat STATIC = 0.5f;
     [superview addSubview:self];
     return self;
 }
+- (UIView *)viewWithName:(NSString *)name {
+    NSNumber* tagNumber = tagNameToTagNumber[name];
+    if (!tagNumber) { return nil; }
+    return [self viewWithTag:[tagNumber integerValue]];
+}
 
 /* Screenshot
  ************/
@@ -550,17 +602,22 @@ static CGFloat STATIC = 0.5f;
 }
 - (UIView*)ghost {
     UIImage* ghostImage = [self captureToImage];
-    UIImageView* ghostView = [UIImageView.styler.frame(self.frame) render];
+    UIImageView* ghostView = [UIImageView.appendTo(self.window).frame([self frameInWindow]) render];
     ghostView.image = ghostImage;
-    [self.superview insertSubview:ghostView aboveSubview:self];
     return ghostView;
 }
 - (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback {
-    UIView* ghost = self.ghost;
-    [UIView animateWithDuration:duration animations:^{
-        animationCallback(nil, ghost);
-    } completion:^(BOOL finished) {
-        [ghost removeFromSuperview];
+    [self ghostWithDuration:duration animation:animationCallback completion:^(NSError *err, UIView *ghostView) {
+        [ghostView removeFromSuperview];
     }];
+}
+- (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback completion:(ViewCallback)completionCallback {
+    UIView* ghostView = self.ghost;
+    [UIView animateWithDuration:duration animations:^{
+        animationCallback(nil, ghostView);
+    } completion:^(BOOL finished) {
+        completionCallback(nil, ghostView);
+    }];
+
 }
 @end
