@@ -83,7 +83,7 @@ static CGFloat START_Y = 99999.0f;
                         [_delegate listSelectGroupWithId:(id)groupId withItem:(id)item];
                     }
                 } else {
-                    [_delegate listSelectItem:item atIndex:itemIndex];
+                    [_delegate listSelectItem:item index:itemIndex view:view];
                 }
                 break;
             }

@@ -21,9 +21,9 @@ typedef enum ListViewDirection ListViewDirection;
 - (id) listItemForIndex:(NSInteger)index;
 - (UIView*) listViewForItem:(id)item atIndex:(NSInteger)itemIndex withWidth:(CGFloat)width;
 - (UIView*) listViewForGroupId:(id)groupId withItem:(id)item withWidth:(CGFloat)width;
-- (id) listGroupIdForItem:(id)item;
-- (void) listSelectItem:(id)item atIndex:(NSInteger)itemIndex;
+- (void) listSelectItem:(id)item index:(NSInteger)itemIndex view:(UIView*)itemView;
 @optional
+- (id) listGroupIdForItem:(id)item;
 - (void) listTopGroupViewDidMove:(CGRect)frame;
 - (void) listTopGroupDidChange:(id)topGroupItem withDirection:(ListViewDirection)direction;
 - (void) listSelectGroupWithId:(id)groupId withItem:(id)item;
