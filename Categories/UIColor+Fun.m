@@ -24,4 +24,14 @@ UIColor* rgb(NSUInteger r, NSUInteger g, NSUInteger b) {
     return [UIColor colorWithHue:hue saturation:saturation brightness:brightness alpha:1];
 }
 
+- (CGFloat)alpha {
+    CGFloat alpha;
+    [self getWhite:nil alpha:&alpha];
+    return alpha;
+}
+
+- (BOOL)hasTransparency {
+    return !self.alpha;
+}
+
 @end
