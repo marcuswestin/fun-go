@@ -382,10 +382,10 @@ return self;
 - (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height {
     [self resizeByAddingWidth:-width height:-height];
 }
-- (CGSize)resizeToContainSubviews {
+- (CGSize)sizeToContainSubviews {
     CGSize size = self.bounds.size;
     for (UIView* view in self.subviews) {
-        CGSize subSize = [view resizeToContainSubviews];
+        CGSize subSize = [view sizeToContainSubviews];
         CGFloat maxX = view.frame.origin.x + subSize.width;
         CGFloat maxY = view.frame.origin.y + subSize.height;
         if (maxX > size.width) { size.width = maxX; }

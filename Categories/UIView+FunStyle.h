@@ -103,7 +103,7 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (void)setHeight:(CGFloat)height;
 - (void)resizeByAddingWidth:(CGFloat)width height:(CGFloat)height;
 - (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height;
-- (CGSize)resizeToContainSubviews;
+- (CGSize)sizeToContainSubviews;
 - (void)setSize:(CGSize)size;
 
 /* Position
