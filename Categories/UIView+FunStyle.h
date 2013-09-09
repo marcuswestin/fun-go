@@ -56,6 +56,7 @@ typedef ViewStyler* (^StylerFont)(UIFont* font);
 - (StylerFloat4)inset;
 - (StylerFloat1)moveDown;
 - (StylerView)positionBelowView;
+- (StylerView)positionRightOfView;
 
 /* Size
  ******/

@@ -167,6 +167,12 @@ static NSMutableDictionary* tagNameToTagNumber;
         return self;
     };
 }
+- (StylerView)positionRightOfView {
+    return ^(UIView* view) {
+        _frame.origin.x = view.x2;
+        return self;
+    };
+}
 
 /* Size
  ******/
