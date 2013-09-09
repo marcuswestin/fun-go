@@ -22,8 +22,6 @@ static CGFloat START_Y = 99999.0f;
     UIView* _topGroupView;
 }
 - (void)viewDidLoad {
-    _groupHeadBoundary = 0;
-    
     [super viewDidLoad];
 
     if (!_delegate) {
@@ -45,12 +43,14 @@ static CGFloat START_Y = 99999.0f;
 - (void)reloadDataWithStartIndex:(NSInteger)startAtIndex {
     [self _withoutScrollEvents:^{
         [self.scrollView empty];
+
         _topY = START_Y;
         _bottomY = START_Y;
-        
         _scrollView.contentSize = CGSizeMake(self.view.width, MAX_Y);
         _scrollView.contentOffset = CGPointMake(0, START_Y);
         _previousContentOffsetY = _scrollView.contentOffset.y;
+        _bottomGroupId = nil;
+        _topGroupId = nil;
         
         // All subsequent view calculations depend on the top/bottom current views.
         // Initialize with first view. It's the first top & bottom view.
