@@ -14,12 +14,12 @@ typedef void (^EventHandler)(UIEvent* event);
 typedef void (^TapHandler)(UITapGestureRecognizer* sender);
 typedef void (^PanHandler)(UIPanGestureRecognizer* sender);
 
-@interface UIView (Fun)
+@interface UIView (UIControlFun)
 - (UITapGestureRecognizer*) onTap:(TapHandler)handler;
 - (UIPanGestureRecognizer*) onPan:(PanHandler)handler;
 @end
 
-@interface UIButton (Fun)
+@interface UIButton (UIControlFun)
 - (void)setTitle:(NSString *)title;
 - (void)setTitleColor:(UIColor *)color;
 @end
@@ -28,7 +28,7 @@ typedef void (^PanHandler)(UIPanGestureRecognizer* sender);
 @property (strong) EventHandler handler;
 @end
 
-@interface UIControl (Fun)
+@interface UIControl (UIControlFun)
 - (void) onEditingChanged:(EventHandler)handler;
 - (void) onTap:(EventHandler)handler;
 - (void) on:(UIControlEvents)controlEvents handler:(EventHandler)handler;
@@ -38,7 +38,7 @@ typedef BOOL (^TextViewShouldChangeBlock)(UITextView* textView, NSRange range, N
 typedef void (^TextViewBlock)(UITextView* textView);
 @interface UITextViewDelegate : NSObject <UITextViewDelegate>
 @end
-@interface UITextView (Fun) <UITextViewDelegate>
+@interface UITextView (UIControlFun) <UITextViewDelegate>
 - (void) onTextDidChange:(TextViewBlock)handler;
 - (void) onTextShouldChange:(TextViewShouldChangeBlock)handler;
 - (void) onSelectionDidChange:(TextViewBlock)handler;

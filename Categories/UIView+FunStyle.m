@@ -9,6 +9,99 @@
 #import "UIView+FunStyle.h"
 #import "FunObjc.h"
 #import <QuartzCore/QuartzCore.h>
+#import "UIView+Fun.h"
+
+// Arity 0
+#define DeclareStyler(STYLER_NAME, STYLER_CODE)\
+-(Styler) STYLER_NAME {\
+    STYLER_CODE; return self;\
+}
+// Arity 1
+#define DeclareFloatStyler(STYLER_NAME, FLOAT_ARG_NAME, STYLER_CODE)\
+    -(StylerFloat1) STYLER_NAME {\
+        return ^(CGFloat FLOAT_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+#define DeclareViewStyler(STYLER_NAME, VIEW_ARG_NAME, STYLER_CODE)\
+-(StylerView) STYLER_NAME {\
+    return ^(UIView* VIEW_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+#define DeclareIntegerStyler(STYLER_NAME, INT_ARG_NAME, STYLER_CODE)\
+-(StylerInteger1) STYLER_NAME {\
+    return ^(NSInteger INT_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+#define DeclareStringStyler(STYLER_NAME, STRING_ARG_NAME, STYLER_CODE)\
+-(StylerString1) STYLER_NAME {\
+    return ^(NSString* STRING_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+#define DeclarePointStyler(STYLER_NAME, POINT_ARG_NAME, STYLER_CODE)\
+-(StylerPoint) STYLER_NAME {\
+    return ^(CGPoint POINT_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+#define DeclareRectStyler(STYLER_NAME, RECT_ARG_NAME, STYLER_CODE)\
+-(StylerRect) STYLER_NAME {\
+    return ^(CGRect RECT_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+#define DeclareSizeStyler(STYLER_NAME, SIZE_ARG_NAME, STYLER_CODE)\
+-(StylerSize) STYLER_NAME {\
+    return ^(CGSize SIZE_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+#define DeclareColorStyler(STYLER_NAME, COLOR_ARG_NAME, STYLER_CODE)\
+    -(StylerColor1) STYLER_NAME {\
+        return ^(UIColor* COLOR_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+// Arity 2
+//////////
+#define DeclareFloat2Styler(STYLER_NAME, F1ARG_NAME, F2ARG_NAME, STYLER_CODE)\
+-(StylerFloat2) STYLER_NAME {\
+    return ^(CGFloat F1ARG_NAME, CGFloat F2ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+#define DeclareViewFloatStyler(STYLER_NAME, VIEW_ARG_NAME, FLOAT_ARG_NAME, STYLER_CODE)\
+-(StylerViewFloat) STYLER_NAME {\
+    return ^(UIView* VIEW_ARG_NAME, CGFloat FLOAT_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+#define DeclareFloatColorStyler(STYLER_NAME, FLOAT_ARG_NAME, COLOR_ARG_NAME, STYLER_CODE)\
+-(StylerFloatColor) STYLER_NAME {\
+    return ^(CGFloat FLOAT_ARG_NAME, UIColor* COLOR_ARG_NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+// Arity 3
+//////////
+#define DeclareFloat3Styler(STYLER_NAME, f1NAME, f2NAME, f3NAME, STYLER_CODE)\
+    -(StylerFloat3)STYLER_NAME { \
+        return ^(CGFloat f1NAME, CGFloat f2NAME, CGFloat f3NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+// Arity 4
+//////////
+#define DeclareFloat4Styler(STYLER_NAME, f1NAME, f2NAME, f3NAME, f4NAME, STYLER_CODE)\
+-(StylerFloat4)STYLER_NAME { \
+    return ^(CGFloat f1NAME, CGFloat f2NAME, CGFloat f3NAME, CGFloat f4NAME) {\
+        STYLER_CODE; return self;\
+    };\
+}
+
 
 static NSMutableArray* tagIntegerToTagName;
 static NSMutableDictionary* tagNameToTagNumber;
@@ -18,6 +111,11 @@ static NSMutableDictionary* tagNameToTagNumber;
     CGRect _frame;
     UIEdgeInsets _borderWidths;
     UIColor* _borderColor;
+}
+
++ (void)load {
+    tagIntegerToTagName = [NSMutableArray arrayWithObject:@0];
+    tagNameToTagNumber = [NSMutableDictionary dictionary];
 }
 
 /* Create & apply
@@ -45,221 +143,108 @@ static NSMutableDictionary* tagNameToTagNumber;
 
 /* View Hierarchy
  ****************/
-- (StylerView)appendTo {
-    return ^(UIView* view) {
-        [view addSubview:_view];
-        return self;
-    };
-}
-- (StylerView)prependTo {
-    return ^(UIView* view) {
-        [view insertSubview:_view atIndex:0];
-        return self;
-    };
-}
-- (StylerInteger1)tag {
-    return ^(NSInteger tag) {
-        _view.tag = tag;
-        return self;
-    };
-}
-- (StylerString1)name {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        tagIntegerToTagName = [NSMutableArray arrayWithObject:@0];
-        tagNameToTagNumber = [NSMutableDictionary dictionary];
-    });
-    return ^(NSString* tagName) {
-        NSNumber* tagNumber = tagNameToTagNumber[tagName];
-        if (!tagNumber) {
-            NSInteger tag = tagIntegerToTagName.count;
-            [tagIntegerToTagName addObject:tagName];
-            tagNameToTagNumber[tagName] = [NSNumber numberWithInteger:tag];
-        }
-        _view.tag = [tagNameToTagNumber[tagName] integerValue];
-        return self;
-    };
-}
+DeclareViewStyler(appendTo, view, [_view appendTo:view])
+DeclareViewStyler(prependTo, view, [_view prependTo:view])
 
+DeclareIntegerStyler(tag, tagI, _view.tag = tagI)
+
+DeclareStringStyler(name, tagName,
+                    NSNumber* tagNumber = tagNameToTagNumber[tagName];
+                    if (!tagNumber) {
+                        NSInteger tag = tagIntegerToTagName.count;
+                        [tagIntegerToTagName addObject:tagName];
+                        tagNameToTagNumber[tagName] = [NSNumber numberWithInteger:tag];
+                    }
+                    _view.tag = [tagNameToTagNumber[tagName] integerValue];
+                    )
 /* Position
  **********/
-- (StylerFloat1)x {
-    return ^(float x) {
-        self.xy(x, _frame.origin.y);
-        return self;
-    };
-}
+DeclareFloatStyler(x, x, _frame.origin.x = x)
+DeclareFloatStyler(y, y, _frame.origin.y = y)
+DeclareFloat2Styler(xy, x, y,
+                    _frame.origin.x = x;
+                    _frame.origin.y = y;
+                    )
+DeclarePointStyler(position, pos, _frame.origin = pos)
+DeclareStyler(center,
+              [self centerHorizontally];
+              [self centerVertically];
+              )
+DeclareStyler(centerVertically,
+              _frame.origin.y = CGRectGetMidY(_view.superview.bounds) - _frame.size.height/2;
+              )
+DeclareStyler(centerHorizontally,
+              _frame.origin.x = CGRectGetMidX(_view.superview.bounds) - _frame.size.width/2;
+              )
+DeclareFloatStyler(fromBottom, offset,
+                   _frame.origin.y = _view.superview.frame.size.height - _frame.size.height - offset;
+                   )
+DeclareFloatStyler(fromRight, offset,
+                   _frame.origin.x = _view.superview.frame.size.width - _frame.size.width - offset;
+                   )
+DeclareRectStyler(frame, frame, _frame = frame)
 
-- (StylerFloat1)y {
-    return ^(float y) {
-        self.xy(_frame.origin.x, y);
-        return self;
-    };
-}
+DeclareFloat4Styler(inset, top, right, bottom, left,
+                    _frame.size.height -= top;
+                    _frame.size.width -= right;
+                    _frame.size.height -= bottom;
+                    _frame.size.width -= left;
+                    _frame.origin.y += top;
+                    _frame.origin.x += left;
+                    )
 
-- (StylerFloat2)xy {
-    return ^(float x, float y) {
-        _frame.origin.x = x;
-        _frame.origin.y = y;
-        return self;
-    };
-}
-- (StylerPoint)position {
-    return ^(CGPoint position) {
-        _frame.origin = position;
-        return self;
-    };
-}
+DeclareFloatStyler(moveDown, amount,
+                   _frame.origin.y += amount;
+                   )
 
-- (ViewStyler *)centerInSuperView {
-    [self centerHorizontallyInSuperview];
-    [self centerVerticallyInSuperview];
-    return self;
-}
-
-- (ViewStyler *)centerVerticallyInSuperview {
-    _frame.origin.y = CGRectGetMidY(_view.superview.bounds) - _frame.size.height/2;
-    return self;
-}
-
-- (ViewStyler *)centerHorizontallyInSuperview {
-    _frame.origin.x = CGRectGetMidX(_view.superview.bounds) - _frame.size.width/2;
-    return self;
-}
-
-- (ViewStyler *)positionAboveSuperview {
-    return self.y(-_frame.size.height);
-}
-- (StylerFloat1)positionFromRight {
-    return ^(CGFloat offsetFromRight) {
-        return self.x(_view.superview.frame.size.width - _frame.size.width - offsetFromRight);
-    };
-}
-- (StylerFloat1)positionFromBottom {
-    return ^(CGFloat offsetFromBottom) {
-        return self.y(_view.superview.frame.size.height - _frame.size.height - offsetFromBottom);
-    };
-}
-- (StylerRect)frame {
-    return ^(CGRect frame) {
-        _frame = frame;
-        return self;
-    };
-}
-- (StylerFloat4)inset {
-    return ^(CGFloat top, CGFloat right, CGFloat bottom, CGFloat left) {
-        _frame.size.height -= top;
-        _frame.size.width -= right;
-        _frame.size.height -= bottom;
-        _frame.size.width -= left;
-        _frame.origin.y += top;
-        _frame.origin.x += left;
-        return self;
-    };
-}
-#define Float1Styler(code) return ^(CGFloat f1) { code; return self; }
-- (StylerFloat1)moveDown {
-    Float1Styler(_frame.origin.y += f1);
-}
-- (StylerView)positionBelowView {
-    return ^(UIView* view) {
-        _frame.origin.y = view.y2;
-        return self;
-    };
-}
-- (StylerView)positionRightOfView {
-    return ^(UIView* view) {
-        _frame.origin.x = view.x2;
-        return self;
-    };
-}
+DeclareViewFloatStyler(below, view, offset, _frame.origin.y = view.y2 + offset)
+DeclareViewFloatStyler(above, view, offset, _frame.origin.y = view.y - offset)
+DeclareViewFloatStyler(rightOf, view, offset, _frame.origin.x = view.x2 + offset)
+DeclareViewFloatStyler(leftOf, view, offset, _frame.origin.x = view.x - offset)
 
 /* Size
  ******/
-- (StylerFloat1)w {
-    return ^(float width) {
-        _frame.size.width = width;
-        return self;
-    };
-}
+DeclareFloatStyler(w, width, _frame.size.width = width)
+DeclareFloatStyler(h, height, _frame.size.height = height)
+DeclareFloat2Styler(wh, w, h, _frame.size = CGSizeMake(w, h))
+DeclareStyler(fill, _frame.size = _view.superview.bounds.size)
+DeclareStyler(fillW, _frame.size.width = _view.superview.width)
+DeclareStyler(fillH, _frame.size.height = _view.superview.height)
 
-- (StylerFloat1)h {
-    return ^(float height) {
-        _frame.size.height = height;
-        return self;
-    };
-}
+DeclareSizeStyler(size, size, _frame.size = size)
+DeclareStyler(sizeToParent, _frame.size = _view.superview.bounds.size)
+DeclareStyler(sizeToFit,
+              [_view sizeToFit];
+              _frame.size = _view.frame.size;
+              )
 
-- (StylerFloat2)wh {
-    return ^(float width, float height) {
-        _frame.size.width = width;
-        _frame.size.height = height;
-        return self;
-    };
-}
-
-- (StylerSize)size {
-    return ^(CGSize size) {
-        _frame.size = size;
-        return self;
-    };
-}
-
-- (ViewStyler*)sizeToFit {
-    [_view sizeToFit];
-    _frame.size = _view.frame.size;
-    return self;
-}
-
-- (ViewStyler*)sizeToParent {
-    _frame.size = _view.superview.bounds.size;
-    return self;
-}
 
 /* Styling
  *********/
-- (StylerColor1)bg {
-    return ^(UIColor* color) {
-        _view.backgroundColor = color;
-        if (color.hasTransparency) {
-            _view.opaque = NO;
-        }
-return self;
-    };
-}
-- (StylerFloat3)shadow {
-    return ^(CGFloat xOffset, CGFloat yOffset, CGFloat radius) {
-        _view.layer.shadowColor = [UIColor colorWithWhite:0.5 alpha:1].CGColor;
-        _view.layer.shadowOffset = CGSizeMake(xOffset, yOffset);
-        _view.layer.shadowRadius = radius;
-        _view.layer.shadowOpacity = 0.5;
-        return self;
-    };
-}
-- (StylerFloat1)radius {
-    return ^(CGFloat radius) {
-        _view.layer.cornerRadius = radius;
-        return self;
-    };
-}
-- (StylerFloat1)borderWidth {
-    return ^(CGFloat w) {
-        _borderWidths = UIEdgeInsetsMake(w, w, w, w);
-        return self;
-    };
-}
+DeclareColorStyler(bg, color,
+                   _view.backgroundColor = color;
+                   if (color.hasTransparency) {
+                       _view.opaque = NO;
+                   }
+                   )
+DeclareFloat3Styler(shadow, xOffset, yOffset, radius,
+                    _view.layer.shadowColor = [UIColor colorWithWhite:0.5 alpha:1].CGColor;
+                    _view.layer.shadowOffset = CGSizeMake(xOffset, yOffset);
+                    _view.layer.shadowRadius = radius;
+                    _view.layer.shadowOpacity = 0.5;
+                    )
+DeclareFloatStyler(radius, radius, _view.layer.cornerRadius = radius)
 - (StylerFloat4)borderWidths {
     return ^(CGFloat top, CGFloat right, CGFloat bottom, CGFloat left) {
         _borderWidths = UIEdgeInsetsMake(top, left, bottom, right);
         return self;
     };
 }
-- (StylerColor1)borderColor {
-    return ^(UIColor* borderColor) {
-        _borderColor = borderColor;
-        return self;
-    };
-}
+DeclareFloatColorStyler(border, w, borderColor,
+                        _borderWidths = UIEdgeInsetsMake(w, w, w, w);
+                        _borderColor = borderColor;
+                        )
+
 - (void)_makeBorders {
     if (_borderWidths.top) {
         [self _addBorder:CGRectMake(0, 0, _frame.size.width, _borderWidths.top)];
@@ -322,6 +307,7 @@ return self;
         return self;
     };
 }
+DeclareStyler(textCenter, self.textAlignment(NSTextAlignmentCenter))
 - (StylerColorFloat2)textShadow {
     return ^(UIColor* shadowColor, CGFloat shadowOffsetX, CGFloat shadowOffsetY) {
         _labelView.shadowColor = shadowColor;
@@ -335,18 +321,27 @@ return self;
         return self;
     };
 }
+
+/* Text inputs
+ *************/
+#define _TextField ((UITextField*)_view)
+DeclareStringStyler(placeholder, placeholder, _TextField.placeholder = placeholder)
 @end
 
-@implementation UIView (FunStyle)
-
-- (void)render {}
-
+/* UIView helpers
+ ****************/
+@implementation UIView (FunStyler)
 + (StylerView)appendTo {
     return self.styler.appendTo;
 }
 + (StylerView)prependTo {
     return self.styler.prependTo;
 }
+- (ViewStyler *)styler {
+    return [[ViewStyler alloc] initWithView:self];
+}
+- (void)render {}
+
 + (StylerRect)frame {
     return self.styler.frame;
 }
@@ -358,272 +353,9 @@ return self;
     return instance.styler;
 #endif
 }
-- (ViewStyler*)styler {
-    return [[ViewStyler alloc] initWithView:self];
-}
-
-/* Size
- ******/
-- (CGFloat)height {
-    return CGRectGetHeight(self.frame);
-}
-- (CGFloat)width {
-    return CGRectGetWidth(self.frame);
-}
-- (void)setWidth:(CGFloat)width {
-    [self setSize:CGSizeMake(width, self.height)];
-}
-- (void)setHeight:(CGFloat)height {
-    [self setSize:CGSizeMake(self.width, height)];
-}
-- (void)setSize:(CGSize)size {
-    self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, size.width, size.height);
-}
-- (void)resizeByAddingWidth:(CGFloat)width height:(CGFloat)height {
-    CGRect frame = self.frame;
-    frame.size.height += height;
-    frame.size.width += width;
-    self.frame = frame;
-}
-- (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height {
-    [self resizeByAddingWidth:-width height:-height];
-}
-- (CGSize)sizeToContainSubviews {
-    CGSize size = self.bounds.size;
-    for (UIView* view in self.subviews) {
-        CGSize subSize = [view sizeToContainSubviews];
-        CGFloat maxX = view.frame.origin.x + subSize.width;
-        CGFloat maxY = view.frame.origin.y + subSize.height;
-        if (maxX > size.width) { size.width = maxX; }
-        if (maxY > size.height) { size.height = maxY; }
-    }
-    return self.size = size;
-}
-
-/* Position
- **********/
-- (void)moveByX:(CGFloat)dx y:(CGFloat)dy {
-    CGRect frame = self.frame;
-    frame.origin.x += dx;
-    frame.origin.y += dy;
-    self.frame = frame;
-}
-- (void)moveByX:(CGFloat)x {
-    [self moveByX:x y:0];
-}
-- (void)moveByY:(CGFloat)y {
-    [self moveByX:0 y:y];
-}
-- (void)moveToX:(CGFloat)x y:(CGFloat)y {
-    CGRect frame = self.frame;
-    frame.origin.x = x;
-    frame.origin.y = y;
-    self.frame = frame;
-}
-- (void)moveToY:(CGFloat)y {
-    [self moveToX:self.frame.origin.x y:y];
-}
-- (void)moveToX:(CGFloat)x {
-    [self moveToX:x y:self.frame.origin.y];
-}
-- (void)moveToPosition:(CGPoint)origin {
-    [self moveToX:origin.x y:origin.y];
-}
-- (void)moveByVector:(CGPoint)vector {
-    CGPoint newOrigin = self.frame.origin;
-    newOrigin.x += vector.x;
-    newOrigin.y += vector.y;
-    [self moveToPosition:newOrigin];
-}
-- (void)centerVerticallyInView:(UIView *)view {
-    [self moveToY:CGRectGetMidY(view.frame) - CGRectGetMidY(self.frame)];
-}
-- (void)centerVerticallyInSuperView {
-    [self moveToY:CGRectGetMinY(self.superview.bounds) - CGRectGetMidY(self.bounds)];
-}
-- (void)centerInSuperview {
-    [self.styler.centerInSuperView apply];
-}
-- (CGPoint)topRightCorner {
-    CGPoint point = self.frame.origin;
-    point.x += self.width;
-    return point;
-}
-- (CGFloat)x {
-    return CGRectGetMinX(self.frame);
-}
-- (CGFloat)y {
-    return CGRectGetMinY(self.frame);
-}
-- (CGFloat)x2 {
-    return CGRectGetMaxX(self.frame);
-}
-- (CGFloat)y2 {
-    return CGRectGetMaxY(self.frame);
-}
-- (CGRect)frameInWindow {
-    return [self convertRect:self.bounds toView:self.window];
-}
-- (CGRect)frameOnScreen {
-    CGRect frame = self.frame;
-    UIView* view = self;
-    while ((view = view.superview) != nil) {
-        frame.origin.x += view.x;
-        frame.origin.y += view.y;
-        if ([view isKindOfClass:UIScrollView.class]) {
-            CGPoint offset = ((UIScrollView*)view).contentOffset;
-            frame.origin.x -= offset.x;
-            frame.origin.y -= offset.y;
-        }
-    }
-    return frame;
-}
-
-/* Borders, Shadows & Insets
- ***************************/
-- (void)setBorderColor:(UIColor *)color width:(CGFloat)width {
-    self.layer.borderColor = color.CGColor;
-    self.layer.borderWidth = width;
-}
-
-- (void)setGradientColors:(NSArray *)colors {
-    CAGradientLayer* gradient = [CAGradientLayer layer];
-    CALayer* layer = self.layer;
-    gradient.frame = layer.bounds;
-    gradient.colors = [colors map:^id(UIColor* color, NSUInteger i) {
-        return (id)color.CGColor;
-    }];
-//    gradient.locations = [colors map:^id(id val, NSUInteger i) {
-//        return numf(((CGFloat) i) / (colors.count - 1));
-//    }];
-    gradient.cornerRadius = self.layer.cornerRadius;
-    [layer insertSublayer:gradient atIndex:0];
-}
-
-- (void)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
-    return [self setOutsetShadowColor:color radius:radius spread:0 x:0 y:0];
-}
-- (void)setInsetShadowColor:(UIColor *)color radius:(CGFloat)radius {
-    return [self setInsetShadowColor:color radius:radius spread:0 x:0 y:0];
-}
-
-static CGFloat STATIC = 0.5f;
-- (void)setOutsetShadowColor:(UIColor *)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
-    if (self.clipsToBounds) { NSLog(@"Warning: outset shadow put on view with clipped bounds"); }
-    NSArray* colors = @[(id)color.CGColor, (id)[UIColor.clearColor CGColor]];
-    
-    CAGradientLayer *top = [CAGradientLayer layer];
-    top.frame = CGRectMake(0 + offsetX, -radius + offsetY, self.bounds.size.width, spread + radius);
-    top.colors = colors;
-    top.startPoint = CGPointMake(STATIC, 1.0);
-    top.endPoint = CGPointMake(STATIC, 0.0);
-    [self.layer insertSublayer:top atIndex:0];
-    
-    CAGradientLayer *right = [CAGradientLayer layer];
-    right.frame = CGRectMake(self.bounds.size.width + radius + offsetX, 0 + offsetY, spread + radius, self.bounds.size.height);
-    right.colors = colors;
-    right.startPoint = CGPointMake(0.0, STATIC);
-    right.endPoint = CGPointMake(1.0, STATIC);
-    [self.layer insertSublayer:right atIndex:0];
-    
-    CAGradientLayer *bottom = [CAGradientLayer layer];
-    bottom.frame = CGRectMake(0 + offsetX, self.bounds.size.height + offsetY, self.bounds.size.width, spread + radius);
-    bottom.colors = colors;
-    bottom.startPoint = CGPointMake(STATIC, 0.0);
-    bottom.endPoint = CGPointMake(STATIC, 1.0);
-    [self.layer insertSublayer:bottom atIndex:0];
-    
-    CAGradientLayer *left = [CAGradientLayer layer];
-    left.frame = CGRectMake(-radius + offsetX, 0 + offsetY, spread + radius, self.bounds.size.height);
-    left.colors = colors;
-    left.startPoint = CGPointMake(1.0, STATIC);
-    left.endPoint = CGPointMake(0.0, STATIC);
-    [self.layer insertSublayer:left atIndex:0];
-}
-
-- (void)setInsetShadowColor:(UIColor*)color radius:(CGFloat)radius spread:(CGFloat)spread x:(CGFloat)offsetX y:(CGFloat)offsetY {
-    NSArray* colors = @[(id)color.CGColor, (id)[UIColor.clearColor CGColor]];
-    
-    CAGradientLayer *top = [CAGradientLayer layer];
-    top.frame = CGRectMake(0 + offsetX, 0 + offsetY, self.bounds.size.width, spread + radius);
-    top.colors = colors;
-    top.startPoint = CGPointMake(STATIC, 0.0);
-    top.endPoint = CGPointMake(STATIC, 1.0);
-    [self.layer insertSublayer:top atIndex:0];
-    
-    CAGradientLayer *right = [CAGradientLayer layer];
-    right.frame = CGRectMake(self.bounds.size.width - radius + offsetX, 0 + offsetY, spread + radius, self.bounds.size.height);
-    right.colors = colors;
-    right.startPoint = CGPointMake(1.0, STATIC);
-    right.endPoint = CGPointMake(0.0, STATIC);
-    [self.layer insertSublayer:right atIndex:0];
-
-    CAGradientLayer *bottom = [CAGradientLayer layer];
-    bottom.frame = CGRectMake(0 + offsetX, self.bounds.size.height - radius + offsetY, self.bounds.size.width, spread + radius);
-    bottom.colors = colors;
-    bottom.startPoint = CGPointMake(STATIC, 1.0);
-    bottom.endPoint = CGPointMake(STATIC, 0.0);
-    [self.layer insertSublayer:bottom atIndex:0];
-
-    CAGradientLayer *left = [CAGradientLayer layer];
-    left.frame = CGRectMake(0 + offsetX, 0 + offsetY, spread + radius, self.bounds.size.height);
-    left.colors = colors;
-    left.startPoint = CGPointMake(0.0, STATIC);
-    left.endPoint = CGPointMake(1.0, STATIC);
-    [self.layer insertSublayer:left atIndex:0];
-}
-
-/* View hierarchy
- ****************/
-- (void)empty {
-    [[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-}
-- (UIView *)appendTo:(UIView *)superview {
-    [superview addSubview:self];
-    return self;
-}
 - (UIView *)viewWithName:(NSString *)name {
     NSNumber* tagNumber = tagNameToTagNumber[name];
     if (!tagNumber) { return nil; }
     return [self viewWithTag:[tagNumber integerValue]];
-}
-
-/* Screenshot
- ************/
-- (UIImage *)captureToImage {
-    return [self captureToImageWithScale:0.0];
-}
-- (UIImage *)captureToImageWithScale:(CGFloat)scale {
-    UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.opaque, scale);
-    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
-    UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return img;
-}
-- (NSData *)captureToJpgData:(CGFloat)compressionQuality {
-    return UIImageJPEGRepresentation([self captureToImage], compressionQuality);
-}
-- (NSData *)captureToPngData {
-    return UIImagePNGRepresentation([self captureToImage]);
-}
-- (UIView*)ghost {
-    UIImage* ghostImage = [self captureToImage];
-    UIImageView* ghostView = [UIImageView.appendTo(self.window).frame([self frameInWindow]) render];
-    ghostView.image = ghostImage;
-    return ghostView;
-}
-- (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback {
-    [self ghostWithDuration:duration animation:animationCallback completion:^(NSError *err, UIView *ghostView) {
-        [ghostView removeFromSuperview];
-    }];
-}
-- (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback completion:(ViewCallback)completionCallback {
-    UIView* ghostView = self.ghost;
-    [UIView animateWithDuration:duration animations:^{
-        animationCallback(nil, ghostView);
-    } completion:^(BOOL finished) {
-        completionCallback(nil, ghostView);
-    }];
-
 }
 @end

@@ -17,7 +17,7 @@ static char const * const KeyBlock = "Fun_Block";
 
 /* UI View
  *********/
-@implementation UIView (Fun)
+@implementation UIView (UIControlFun)
 - (id)_addFunGesture:(Class)cls Key:(char const * const)Key selector:(SEL)selector handler:(id)handler {
     objc_setAssociatedObject(self, Key, handler, OBJC_ASSOCIATION_COPY_NONATOMIC);
     id instance = [[cls alloc] initWithTarget:self action:selector];
@@ -52,7 +52,7 @@ static char const * const KeyPanHandler = "Fun_PanHandler";
 
 /* UIButton
  **********/
-@implementation UIButton (Fun)
+@implementation UIButton (UIControlFun)
 - (void)setTitle:(NSString *)title {
     [self setTitle:title forState:UIControlStateNormal];
 }
@@ -68,7 +68,7 @@ static char const * const KeyPanHandler = "Fun_PanHandler";
     _handler(event);
 }
 @end
-@implementation UIControl (Fun)
+@implementation UIControl (UIControlFun)
 - (void)onEditingChanged:(EventHandler)handler {
     [self on:UIControlEventEditingChanged handler:handler];
 }
@@ -85,7 +85,7 @@ static char const * const KeyPanHandler = "Fun_PanHandler";
 
 /* UITextViews
  *************/
-@implementation UITextView (Fun)
+@implementation UITextView (UIControlFun)
 
 static char const * const KeyTextDidChange = "FunKeyTextDidChange";
 - (void)onTextDidChange:(TextViewBlock)handler {

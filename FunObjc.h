@@ -21,6 +21,7 @@
 #import "NSNumber+Fun.h"
 #import "UIColor+Fun.h"
 #import "UIControl+Fun.h"
+#import "UIView+Fun.h"
 #import "UIView+FunStyle.h"
 #import "UIImage+Fun.h"
 

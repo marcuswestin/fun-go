@@ -24,7 +24,7 @@ void error(NSError* err) {
         view.textColor = RED;
         view.editable = NO;
         [view sizeToFit];
-        [view centerInSuperview];
+        [view center];
     });
 }
 
