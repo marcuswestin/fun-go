@@ -98,7 +98,11 @@ static int numRequests = 0;
 
 + (void) send:(NSString*)method path:(NSString*)path contentType:(NSString*)contentType data:(NSData*)data callback:(APICallback)callback {
 
-    NSLog(@"API %@ %@", method, path);
+    if ([contentType isEqualToString:@"application/json"]) {
+        NSLog(@"API %@ %@ SEND:\n%@", method, path, data.toString);
+    } else {
+        NSLog(@"API %@ %@ SEND", method, path);
+    }
     NSDictionary* devInterceptRes = [API _devIntercept:path];
     if (devInterceptRes) {
         return dispatch_async(dispatch_get_main_queue(), ^{
@@ -135,14 +139,14 @@ static int numRequests = 0;
     if ([contentType rangeOfString:@"application/json"].location == 0 || [contentType rangeOfString:@"application/javascript"].location == 0) {
         id jsonRes = [JSON parseData:data];
         if (!jsonRes) { return callback(makeError(@"Bad JSON format"), nil); }
-        NSLog(@"API got json: %@ %@", method, path);
+        NSLog(@"API %@ %@ RECV:\n%@\n\n", method, path, [data toString]);
         callback(nil, jsonRes);
     } else if ([contentType rangeOfString:@"text/plain"].location == 0) {
-        NSLog(@"API got text: %@ %@ %@", method, path, data.toString);
+        NSLog(@"API %@ %@ RECV:\n%@\n\n", method, path, data.toString);
         callback(makeError(@"Received unexpected content type from server"), nil);
 //        callback(nil, data.toString);
     } else {
-        NSLog(@"API got unknown: %@ %@ %@", method, path, contentType);
+        NSLog(@"API %@ %@ RECV:\n%@\n\n", method, path, contentType);
         callback(makeError(@"Received unexpected content type from server"), nil);
     }
 }

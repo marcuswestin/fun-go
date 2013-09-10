@@ -12,13 +12,15 @@
 
 @implementation NSObject (Fun)
 
+static NSJSONWritingOptions jsonOpts = 0;
+
 - (NSString *)toJsonString {
     return [[NSString alloc] initWithData:self.toJsonData encoding:NSUTF8StringEncoding];
 }
 
 - (NSData*)toJsonData {
     NSError* err;
-    NSData* data = [NSJSONSerialization dataWithJSONObject:self options:NSJSONWritingPrettyPrinted error:&err];
+    NSData* data = [NSJSONSerialization dataWithJSONObject:self options:jsonOpts error:&err];
     if (err) { return [Log error:err]; }
     return data;
 }
