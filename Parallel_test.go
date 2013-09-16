@@ -63,6 +63,16 @@ func TestParallelTypeOutPanic(t *testing.T) {
 	Parallel(badParallelOutputFun, func(res int, err error) {})
 }
 
+func TestParallelFinalErrArgPanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r != "Parallel final function's last argument type should be error but is int" {
+			t.Error("Did not panic with the expected message")
+		}
+	}()
+
+	Parallel(f1, f2, func(res1, res2 string, err int) {})
+}
+
 func fErr2() (res string, err1 error, err2 error) {
 	err2 = errors.New("Error2 from fErr2")
 	return
