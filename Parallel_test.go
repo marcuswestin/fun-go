@@ -55,7 +55,7 @@ func TestParallelNumInPanic(t *testing.T) {
 func TestParallelTypeOutPanic(t *testing.T) {
 	defer func() {
 		r := recover()
-		if r != "Parallel function number 1 returns a different value kind than the reciving function accepts" {
+		if r != "Parallel function number 0 returns a \"string\" but final function expects a \"int\"" {
 			t.Error("Did not panic with the expected message")
 		}
 	}()
@@ -73,8 +73,8 @@ func TestParallelFinalErrArgPanic(t *testing.T) {
 	Parallel(f1, f2, func(res1, res2 string, err int) {})
 }
 
-func fErr2() (res string, err1 error, err2 error) {
-	err2 = errors.New("Error2 from fErr2")
+func fErr2() (res string, err error) {
+	err = errors.New("Error2 from fErr2")
 	return
 }
 
