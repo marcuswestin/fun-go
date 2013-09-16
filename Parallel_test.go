@@ -1,33 +1,62 @@
 package fun
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 )
 
 func ExampleParallel() {
-	res, err := Parallel(p1, p2, p2, p1, p2)
-	fmt.Println(err, res)
+	Parallel(f1, f2, f3, func(f1res, f2res string, f3res int, err error) {
+		fmt.Println(f1res, f2res, f3res)
+	})
 	// Output:
-	// <nil> [From p1 From p2 From p2 From p1 From p2]
+	// From p1 From p2 123
 }
 
 func TestParallel(t *testing.T) {
-	res, err := Parallel(p1, p2, p2, p2, p1)
-	if err != nil {
-		t.Fail()
-	}
-	if res[0] != "From p1" {
-		t.Fail()
-	}
-	if len(res) != 5 {
-		t.Fail()
-	}
+	Parallel(f1, f2, f3, func(fromP1, fromP2 string, fromP3 int, err error) {
+		if err != nil {
+			t.Error("Got unexpeted error")
+		}
+		if fromP1 != "From p1" || fromP2 != "From p2" || fromP3 != 123 {
+			t.Fail()
+		}
+	})
 }
 
-func p1() (interface{}, error) {
+func TestParallelErr(t *testing.T) {
+	Parallel(f1, fErr, f2, f3, func(fromP1, fromErr, fromP2 string, fromP3 int, err error) {
+		if err == nil {
+			t.Error("Got nil err")
+		} else if err.Error() != "Error from fErr" {
+			t.Error("Got incorrect error")
+		}
+	})
+	Parallel(f1, f2, fErr2, f3, func(fromF1, fromF2, fromFErr2 string, fromF3 int, err error) {
+		if err == nil {
+			t.Error("Got nil err")
+		} else if err.Error() != "Error2 from fErr2" {
+			t.Error("Got incorrect error")
+		}
+	})
+}
+
+func fErr2() (res string, err1 error, err2 error) {
+	err2 = errors.New("Error2 from fErr2")
+	return
+}
+
+func fErr() (res string, err error) {
+	err = errors.New("Error from fErr")
+	return
+}
+func f3() (int, error) {
+	return 123, nil
+}
+func f1() (string, error) {
 	return "From p1", nil
 }
-func p2() (interface{}, error) {
+func f2() (string, error) {
 	return "From p2", nil
 }
