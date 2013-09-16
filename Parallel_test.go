@@ -42,6 +42,27 @@ func TestParallelErr(t *testing.T) {
 	})
 }
 
+func TestParallelNumInPanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Did not panic")
+		}
+	}()
+	badParallelFunc := func(unexpectedArgIn int) (res string, err error) { return }
+	Parallel(badParallelFunc, func(res string, err error) {})
+}
+
+func TestParallelTypeOutPanic(t *testing.T) {
+	defer func() {
+		r := recover()
+		if r != "Parallel function number 1 returns a different value kind than the reciving function accepts" {
+			t.Error("Did not panic with the expected message")
+		}
+	}()
+	badParallelOutputFun := func() (res string, err error) { return }
+	Parallel(badParallelOutputFun, func(res int, err error) {})
+}
+
 func fErr2() (res string, err1 error, err2 error) {
 	err2 = errors.New("Error2 from fErr2")
 	return
