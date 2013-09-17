@@ -14,6 +14,7 @@ func Parallel(args ...interface{}) error {
 	errorIndex := len(funs)
 	results := make([]reflect.Value, len(funs)+1)
 	resChan := make(chan parallelResult)
+	doneReturnsError := false
 
 	// Check types
 	if doneTyp.NumIn() != len(funs)+1 {
@@ -21,6 +22,15 @@ func Parallel(args ...interface{}) error {
 	}
 	if !doneTyp.In(errorIndex).Implements(errorInterface) {
 		panic(fmt.Sprint(finalFuncErrArgMsg, doneTyp.In(errorIndex)))
+	}
+	if doneTyp.NumOut() > 1 {
+		panic(fmt.Sprint(finalFuncReturnCountMsg, doneTyp.NumOut()))
+	}
+	if doneTyp.NumOut() == 1 {
+		if !doneTyp.Out(0).Implements(errorInterface) {
+			panic(fmt.Sprint(finalFuncReturnWrongTypeMsg, doneTyp.Out(0)))
+		}
+		doneReturnsError = true
 	}
 	for funI, fun := range funs {
 		funTyp := reflect.TypeOf(fun)
@@ -58,17 +68,25 @@ func Parallel(args ...interface{}) error {
 				results[funI] = reflect.Zero(reflect.ValueOf(fun).Type().Out(0))
 			}
 			results[errorIndex] = res.err
-			doneVal.Call(results)
-			return res.err.Interface().(error)
+			doneRes := doneVal.Call(results)
+			if !doneReturnsError {
+				return res.err.Interface().(error)
+			}
+			return doneRes[0].Interface().(error)
 		}
 
 		results[res.index] = res.val
 	}
 
 	results[errorIndex] = reflect.ValueOf(&nilError).Elem()
-	doneVal.Call(results)
-
-	return nil
+	doneRes := doneVal.Call(results)
+	if !doneReturnsError {
+		return nil
+	}
+	if doneRes[0].IsNil() {
+		return nil
+	}
+	return doneRes[0].Interface().(error)
 }
 
 type parallelResult struct {
@@ -86,3 +104,5 @@ const argFuncNoArgsMsg = "Parallel functions should not take any arguments\n(off
 const argFuncNumReturnMsg = "Parallel function number %d should return two values (returns %d)"
 const argFuncDoneFuncTypeMismatch = "Parallel function number %d returns a %q but final function expects a %q"
 const argFuncErrReturnMsg = "Parallel function number %d should return an error as second return value (returns %q)"
+const finalFuncReturnCountMsg = "Parallel final function should return nothing or one error (returns %d values)"
+const finalFuncReturnWrongTypeMsg = "Parallel final function return value must be an error (is %q)"

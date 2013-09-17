@@ -73,6 +73,28 @@ func TestParallelFinalErrArgPanic(t *testing.T) {
 	Parallel(f1, f2, func(res1, res2 string, err int) {})
 }
 
+func TestParallelFinalFuncReturnsError(t *testing.T) {
+	var err error
+	err = Parallel(f1, f2, func(res1, res2 string, err error) {})
+	assert(t, err == nil)
+	err = Parallel(f1, fErr, func(res1, res2 string, err error) {})
+	assert(t, err != nil)
+	err = Parallel(f1, f2, func(res1, res2 string, err error) error { return nil })
+	assert(t, err == nil)
+	err = Parallel(f1, fErr, func(res1, res2 string, err error) error { return errors.New("A new error") })
+	assert(t, err != nil)
+	assert(t, err.Error() == "A new error")
+	err = Parallel(f1, f2, func(res1, res2 string, err error) error { return nil })
+	assert(t, err == nil)
+}
+
+func assert(t *testing.T, shouldBeTrue bool) {
+	if shouldBeTrue {
+		return
+	}
+	t.Fail()
+}
+
 func fErr2() (res string, err error) {
 	err = errors.New("Error2 from fErr2")
 	return
