@@ -88,6 +88,20 @@ func TestParallelFinalFuncReturnsError(t *testing.T) {
 	assert(t, err == nil)
 }
 
+func noErr() error     { return nil }
+func blurghErr() error { return errors.New("Blurgh") }
+
+func TestParallelNoFinalFunc(t *testing.T) {
+	err := Parallel(noErr, noErr)
+	assert(t, err == nil)
+}
+
+func TestParallelNoFinalFuncError(t *testing.T) {
+	err := Parallel(noErr, blurghErr, noErr)
+	assert(t, err != nil)
+	assert(t, err.Error() == "Blurgh")
+}
+
 func assert(t *testing.T, shouldBeTrue bool) {
 	if shouldBeTrue {
 		return

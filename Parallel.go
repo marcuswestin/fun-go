@@ -6,9 +6,37 @@ import (
 )
 
 func Parallel(args ...interface{}) error {
-	l := len(args) - 1
-	funs := args[:l]
-	done := args[l]
+	if reflect.TypeOf(args[0]).NumOut() == 2 {
+		funs := args[:len(args)-1]
+		return parallelWithDone(funs, Last(args))
+	} else {
+		return parallelWithoutDone(args)
+	}
+}
+
+func parallelWithoutDone(funs []interface{}) error {
+	resChan := make(chan reflect.Value)
+
+	for _, fun := range funs {
+		fun := reflect.ValueOf(fun)
+		go func() {
+			resChan <- fun.Call(nil)[0]
+		}()
+	}
+
+	for i := 0; i < len(funs); i++ {
+		res := <-resChan
+
+		// There was an error
+		if !res.IsNil() {
+			return res.Interface().(error)
+		}
+	}
+
+	return nil
+}
+
+func parallelWithDone(funs []interface{}, done interface{}) error {
 	doneVal := reflect.ValueOf(done)
 	doneTyp := doneVal.Type()
 	errorIndex := len(funs)
