@@ -1,7 +1,6 @@
 package fun
 
 import (
-	"fmt"
 	"testing"
 )
 
