@@ -92,7 +92,8 @@ func assert(t *testing.T, shouldBeTrue bool) {
 	if shouldBeTrue {
 		return
 	}
-	t.Fail()
+	t.Error("assert failed")
+	// panic("assert failed")
 }
 
 func fErr2() (res string, err error) {
