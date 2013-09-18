@@ -5,6 +5,35 @@ import (
 	"reflect"
 )
 
+type parallel2Result struct {
+	i   int
+	val interface{}
+	err error
+}
+
+func Parallel2(funs ...interface{}) ([]interface{}, error) {
+	resChan := make(chan parallel2Result)
+	results := make([]interface{}, len(funs))
+	// Dispatch functions
+	for i, fun := range funs {
+		go func(i int, fun interface{}) {
+			res := reflect.ValueOf(fun).Call(nil)
+			val := res[0].Interface().(interface{})
+			err := res[1].Interface().(error)
+			resChan <- parallel2Result{i: i, val: val, err: err}
+		}(i, fun)
+	}
+	// Collect results
+	for i := 0; i < len(funs); i++ {
+		res := <-resChan
+		if res.err != nil {
+			return nil, res.err
+		}
+		results[res.i] = res.val
+	}
+	return results, nil
+}
+
 func Parallel(args ...interface{}) error {
 	if reflect.TypeOf(args[0]).NumOut() == 2 {
 		funs := args[:len(args)-1]
