@@ -20,6 +20,7 @@ static CGFloat START_Y = 99999.0f;
 
 @implementation ListViewController {
     UIView* _topGroupView;
+    NSUInteger _withoutScrollEventStack;
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -268,6 +269,7 @@ static CGFloat START_Y = 99999.0f;
     _bottomY -= changeInHeight;
     [self _withoutScrollEvents:^{
         _scrollView.contentOffset = CGPointMake(0, _scrollView.contentOffset.y - changeInHeight);
+        _scrollView.contentSize = CGSizeMake(self.view.width,  _scrollView.contentSize.height - changeInHeight);
         for (UIView* subView in self.views) {
             [subView moveByY:-changeInHeight];
         }
@@ -275,9 +277,15 @@ static CGFloat START_Y = 99999.0f;
 }
 
 - (void)_withoutScrollEvents:(Block)block {
-    _scrollView.delegate = nil;
+    if (_withoutScrollEventStack == 0) {
+        _scrollView.delegate = nil;
+    }
+    _withoutScrollEventStack += 1;
     block();
-    _scrollView.delegate = self;
+    _withoutScrollEventStack -= 1;
+    if (_withoutScrollEventStack == 0) {
+        _scrollView.delegate = self;
+    }
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
