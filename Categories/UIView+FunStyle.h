@@ -57,11 +57,13 @@ typedef ViewStyler* (^StylerFloatColor)(CGFloat f, UIColor* color);
 - (StylerPoint)position;
 - (StylerRect)frame;
 - (StylerFloat4)inset;
+- (StylerFloat1)insetAll;
 - (StylerFloat1)moveDown;
 - (StylerViewFloat)below;
 - (StylerViewFloat)above;
 - (StylerViewFloat)leftOf;
 - (StylerViewFloat)rightOf;
+- (StylerView)fillRightOf;
 
 /* Size
  ******/
@@ -92,6 +94,7 @@ typedef ViewStyler* (^StylerFloatColor)(CGFloat f, UIColor* color);
 - (StylerTextAlignment)textAlignment;
 - (StylerColorFloat2)textShadow;
 - (StylerFont)textFont;
+- (StylerInteger1)textLines;
 
 /* Text inputs
  *************/

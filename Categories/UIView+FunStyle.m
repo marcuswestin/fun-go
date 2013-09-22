@@ -102,6 +102,11 @@
     };\
 }
 
+// Type helpers
+///////////////
+#define _labelView ((UILabel*)_view)
+#define _buttonView ((UIButton*)_view)
+
 
 static NSMutableArray* tagIntegerToTagName;
 static NSMutableDictionary* tagNameToTagNumber;
@@ -185,13 +190,16 @@ DeclareFloatStyler(fromRight, offset,
 DeclareRectStyler(frame, frame, _frame = frame)
 
 DeclareFloat4Styler(inset, top, right, bottom, left,
-                    _frame.size.height -= top;
-                    _frame.size.width -= right;
-                    _frame.size.height -= bottom;
-                    _frame.size.width -= left;
                     _frame.origin.y += top;
+                    _frame.size.height -= top;
+                    _frame.size.height -= bottom;
+
                     _frame.origin.x += left;
+                    _frame.size.width -= left;
+                    _frame.size.width -= right;
                     )
+
+DeclareFloatStyler(insetAll, i, return self.inset(i,i,i,i))
 
 DeclareFloatStyler(moveDown, amount,
                    _frame.origin.y += amount;
@@ -201,6 +209,10 @@ DeclareViewFloatStyler(below, view, offset, _frame.origin.y = view.y2 + offset)
 DeclareViewFloatStyler(above, view, offset, _frame.origin.y = view.y - offset)
 DeclareViewFloatStyler(rightOf, view, offset, _frame.origin.x = view.x2 + offset)
 DeclareViewFloatStyler(leftOf, view, offset, _frame.origin.x = view.x - offset)
+DeclareViewStyler(fillRightOf, view,
+                  _frame.origin.x = view.x2;
+                  _frame.size.width = _view.superview.width - view.x2;
+                  )
 
 /* Size
  ******/
@@ -214,6 +226,7 @@ DeclareStyler(fillH, _frame.size.height = _view.superview.height)
 DeclareSizeStyler(size, size, _frame.size = size)
 DeclareStyler(sizeToParent, _frame.size = _view.superview.bounds.size)
 DeclareStyler(sizeToFit,
+              _view.frame = _frame;
               [_view sizeToFit];
               _frame.size = _view.frame.size;
               )
@@ -275,8 +288,6 @@ DeclareFloatColorStyler(border, w, borderColor,
 }
 /* Labels
  ********/
-#define _labelView ((UILabel*)_view)
-#define _buttonView ((UIButton*)_view)
 - (StylerString1)text {
     return ^(NSString* text) {
         if ([_view respondsToSelector:@selector(setText:)]) {
@@ -321,6 +332,12 @@ DeclareStyler(textCenter, self.textAlignment(NSTextAlignmentCenter))
         return self;
     };
 }
+DeclareIntegerStyler(textLines, lines,
+                     _labelView.numberOfLines = lines;
+                     if (_labelView.lineBreakMode == NSLineBreakByTruncatingTail) {
+                         _labelView.lineBreakMode = NSLineBreakByWordWrapping;
+                     }
+                     )
 
 /* Text inputs
  *************/
