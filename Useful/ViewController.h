@@ -7,11 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "State.h"
 
 @interface ViewController : UIViewController
-
-@property NSDictionary* state;
-
-+ (instancetype)withState:(NSDictionary*)state;
-
+- (instancetype)initWithState:(State*)state;
 @end
