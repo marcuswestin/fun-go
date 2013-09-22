@@ -45,6 +45,7 @@ typedef void (^NSUIntegerBlock)(NSUInteger i);
 void error(NSError* err);
 NSError* makeError(NSString* localMessage);
 void after(NSTimeInterval delayInSeconds, Block block);
+void every(NSTimeInterval delayInSeconds, Block block);
 void asyncDefault(Block block);
 void asyncHigh(Block block);
 void asyncLow(Block block);

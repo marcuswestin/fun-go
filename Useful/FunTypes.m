@@ -33,6 +33,13 @@ void after(NSTimeInterval delayInSeconds, Block block) {
     dispatch_after(popTime, dispatch_get_main_queue(), block);
 }
 
+void every(NSTimeInterval intervalInSeconds, Block block) {
+    after(intervalInSeconds, ^{
+        block();
+        every(intervalInSeconds, block);
+    });
+}
+
 void asyncDefault(Block block) {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), block);
 }
