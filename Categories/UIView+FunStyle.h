@@ -95,6 +95,7 @@ typedef ViewStyler* (^StylerFloatColor)(CGFloat f, UIColor* color);
 - (StylerColorFloat2)textShadow;
 - (StylerFont)textFont;
 - (StylerInteger1)textLines;
+- (Styler)wrapText;
 
 /* Text inputs
  *************/

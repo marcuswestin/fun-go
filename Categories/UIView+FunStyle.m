@@ -334,10 +334,12 @@ DeclareStyler(textCenter, self.textAlignment(NSTextAlignmentCenter))
 }
 DeclareIntegerStyler(textLines, lines,
                      _labelView.numberOfLines = lines;
-                     if (_labelView.lineBreakMode == NSLineBreakByTruncatingTail) {
-                         _labelView.lineBreakMode = NSLineBreakByWordWrapping;
-                     }
                      )
+DeclareStyler(wrapText,
+              _labelView.numberOfLines = 0;
+              _labelView.lineBreakMode = NSLineBreakByWordWrapping;
+              [self sizeToFit]
+              )
 
 /* Text inputs
  *************/
