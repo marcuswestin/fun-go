@@ -11,5 +11,7 @@
 @interface State : NSObject <NSCoding>
 + (instancetype) state;
 + (instancetype) fromDict:(NSDictionary*)dict;
+- (BOOL)archiveToDocument:(NSString*)archiveDocName;
++ (State*)fromArchiveDocument:(NSString*)archiveDocName;
 @end
 

@@ -8,6 +8,7 @@
 
 #import "State.h"
 #import <objc/runtime.h>
+#import "Files.h"
 
 @implementation State
 
@@ -48,5 +49,13 @@
 - (void)setValue:(id)value forUndefinedKey:(NSString *)key {
     NSLog(@"WARNING attempted to set value %@ for undefined key %@", value, key);
 }
+- (BOOL)archiveToDocument:(NSString *)archiveDocName {
+    return [NSKeyedArchiver archiveRootObject:self toFile:[Files documentPath:archiveDocName]];
+}
+
++ (State*)fromArchiveDocument:(NSString*)archiveDocName {
+    return [NSKeyedUnarchiver unarchiveObjectWithFile:[Files documentPath:archiveDocName]];
+}
+
 
 @end
