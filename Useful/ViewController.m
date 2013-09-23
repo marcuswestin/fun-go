@@ -7,9 +7,15 @@
 //
 
 #import "ViewController.h"
+#import "FunObjc.h"
 //#import <objc/runtime.h>
 
 @implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor = WHITE;
+}
 
 - (instancetype)initWithState:(State *)state {
     self = [super init];
