@@ -10,6 +10,6 @@
 
 @interface State : NSObject <NSCoding>
 + (instancetype) state;
-+ (instancetype) stateFromDict:(NSDictionary*)dict;
++ (instancetype) fromDict:(NSDictionary*)dict;
 @end
 

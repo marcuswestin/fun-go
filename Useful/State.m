@@ -14,7 +14,7 @@
 +(instancetype)state {
     return [[self class] alloc];
 }
-+ (instancetype)stateFromDict:(NSDictionary*)dict {
++ (instancetype)fromDict:(NSDictionary*)dict {
     if ([dict isKindOfClass:State.class]) {
         return (State*)dict;
     } else {
@@ -43,6 +43,10 @@
 - (id)initWithCoder:(NSCoder *)aDecoder {
     NSDictionary* dict = [aDecoder decodeObjectForKey:@"baseDataStateDict"];
     return [self initWithDict:dict];
+}
+
+- (void)setValue:(id)value forUndefinedKey:(NSString *)key {
+    NSLog(@"WARNING attempted to set value %@ for undefined key %@", value, key);
 }
 
 @end
