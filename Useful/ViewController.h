@@ -13,4 +13,6 @@
 - (instancetype)initWithState:(id<NSCoding>)state;
 @property id<NSCoding> state;
 - (void)render:(BOOL)animated;
+
+- (void)pushViewController:(ViewController *)viewController;
 @end

@@ -19,7 +19,11 @@
 }
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     if (!self.window) {
-        [self _loadInterfaceWithRootViewController:[self rootViewControllerForFreshLoad]];
+        UIViewController* rootVC = [self rootViewControllerForFreshLoad];
+        if (!rootVC.restorationIdentifier) {
+            rootVC.restorationIdentifier = rootVC.className;
+        }
+        [self _loadInterfaceWithRootViewController:rootVC];
     }
     [self handleLaunchNotification:launchOptions];
     [self interfaceDidLoad];

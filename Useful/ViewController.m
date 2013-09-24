@@ -59,4 +59,12 @@
 }
 - (void)afterRender:(BOOL)animated{} // Private hook - see e.g. ListViewController
 
+- (void)pushViewController:(ViewController *)viewController {
+    if ([self.parentViewController isKindOfClass:[UINavigationController class]]) {
+        [(UINavigationController*)self.parentViewController pushViewController:viewController animated:YES];
+    } else {
+        [NSException raise:@"" format:@"pushViewController:animated: called on ViewController without a UINavigationController parent"];
+    }
+}
+
 @end
