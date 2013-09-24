@@ -25,6 +25,10 @@ static NSJSONWritingOptions jsonOpts = 0;
     return data;
 }
 
+- (NSString *)className {
+    return NSStringFromClass(self.class);
+}
+
 + (NSObject *)parseJsonData:(NSData *)jsonData {
     NSError* err;
     id result = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:&err];

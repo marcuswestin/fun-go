@@ -8,30 +8,55 @@
 
 #import "ViewController.h"
 #import "FunObjc.h"
-//#import <objc/runtime.h>
 
-@implementation ViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    self.view.backgroundColor = WHITE;
+@implementation ViewController {
+    BOOL _didRender;
 }
 
-- (instancetype)initWithState:(State *)state {
-    self = [super init];
-    [self performSelector:@selector(setState:) withObject:state];
+- (NSString *)restorationIdentifier {
+    return self.className;
+}
+
+- (instancetype)initWithState:(id<NSCoding>)state {
+    if (self = [super initWithNibName:nil bundle:nil]) {
+        self.state = state;
+    }
     return self;
 }
 
-- (NSString*) restorationIdentifier {
-    if (![self respondsToSelector:@selector(state)]) { return nil; }
-    return NSStringFromClass(self.class);
+- (id)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    [self decodeRestorableStateWithCoder:coder];
+    return self;
 }
 
 - (void)encodeRestorableStateWithCoder:(NSCoder *)coder {
-    if (![self respondsToSelector:@selector(state)]) { return; }
-    State* state = [self performSelector:@selector(state) withObject:nil];
-    [state encodeWithCoder:coder];
+    [super encodeRestorableStateWithCoder:coder];
+    [coder encodeObject:self.title forKey:@"FunVCTitle"];
+    [coder encodeObject:self.state forKey:@"FunVCState"];
 }
+
+- (void)decodeRestorableStateWithCoder:(NSCoder *)coder {
+    [super decodeRestorableStateWithCoder:coder];
+    self.title = [coder decodeObjectForKey:@"FunVCTitle"];
+    self.state = [coder decodeObjectForKey:@"FunVCState"];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (_didRender) { return; }
+    _didRender = YES;
+    self.view.backgroundColor = WHITE;
+    [self beforeRender:animated];
+    [self render:animated];
+    [self afterRender:animated];
+}
+
+- (void)beforeRender:(BOOL)animated{} // Private hook - see e.g. ListViewController
+- (void)render:(BOOL)animated {
+    NSLog(@"%@ must implement - (void)render:(BOOL)animated{}", self.className);
+    [NSException raise:@"NotImplemented" format:@"Please implement ViewController render:(BOOL)animated{}"];
+}
+- (void)afterRender:(BOOL)animated{} // Private hook - see e.g. ListViewController
 
 @end

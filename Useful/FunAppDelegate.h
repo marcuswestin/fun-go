@@ -7,11 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ViewController.h"
 
-@interface FunAppDelegate : UIResponder <UIApplicationDelegate>
+@protocol FunApp <NSObject>
+- (void)interfaceWillLoad;
+- (ViewController*)rootViewControllerForFreshLoad;
+- (void)interfaceDidLoad;
+@end
+
+@interface FunAppDelegate : UIResponder<UIApplicationDelegate, FunApp>
 
 @property (strong, nonatomic) UIWindow *window;
-
-- (void)start;
 
 @end

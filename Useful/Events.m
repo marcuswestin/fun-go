@@ -58,7 +58,11 @@ static Events* instance;
 + (void)fire:(NSString *)signal info:(id)info {
     NSArray* callbacks = [signals[signal] copy];
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"Emit %@ %@", signal, info);
+        if (info) {
+            NSLog(@"@ Event %@, Info: %@", signal, info);
+        } else {
+            NSLog(@"@ Event %@", signal);
+        }
         for (NSDictionary* obj in callbacks) {
             EventCallback callback = obj[CbKey];
             callback(info);

@@ -10,5 +10,7 @@
 #import "State.h"
 
 @interface ViewController : UIViewController
-- (instancetype)initWithState:(State*)state;
+- (instancetype)initWithState:(id<NSCoding>)state;
+@property id<NSCoding> state;
+- (void)render:(BOOL)animated;
 @end

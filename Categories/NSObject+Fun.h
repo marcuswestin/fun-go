@@ -12,6 +12,7 @@
 
 - (NSString *)toJsonString;
 - (NSData*)toJsonData;
+- (NSString*)className;
 + (NSObject*)parseJsonData:(NSData*)jsonData;
 + (NSObject*)parseJsonString:(NSString*)jsonString;
 

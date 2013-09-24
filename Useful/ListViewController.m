@@ -22,9 +22,8 @@ static CGFloat START_Y = 99999.0f;
     UIView* _topGroupView;
     NSUInteger _withoutScrollEventStack;
 }
-- (void)viewDidLoad {
-    [super viewDidLoad];
 
+- (void)beforeRender:(BOOL)animated {
     if (!_delegate) {
         _delegate = (id<ListViewDelegate>)self;
     }
@@ -34,11 +33,12 @@ static CGFloat START_Y = 99999.0f;
     _scrollView.showsVerticalScrollIndicator = NO;
     _scrollView.alwaysBounceVertical = YES;
     
-    asyncMain(^{ // Load data in next tick to ensure subclass viewDidLoad finished
-        [self _setupScrollview];
-        [self reloadDataWithStartIndex:[_delegate listStartIndex]];
-        [self.view insertSubview:_scrollView atIndex:0];
-    });
+    [self _setupScrollview];
+    [self.view insertSubview:_scrollView atIndex:0];
+}
+
+- (void)afterRender:(BOOL)animated {
+    [self reloadDataWithStartIndex:[_delegate listStartIndex]];
 }
 
 - (void)reloadDataWithStartIndex:(NSInteger)startAtIndex {
