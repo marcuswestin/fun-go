@@ -230,7 +230,7 @@ static CGFloat START_Y = 99999.0f;
 - (void)_cleanupTop {
     CGFloat targetY = _scrollView.contentOffset.y;
     UIView* view;
-    while (CGRectGetMaxY((view = [self topView]).frame) < targetY) {
+    while ((view = [self topView]) && CGRectGetMaxY(view.frame) < targetY) {
         [view removeFromSuperview];
         _topY += view.height;
         if ([self _isGroupView:view]) {
@@ -246,7 +246,7 @@ static CGFloat START_Y = 99999.0f;
 - (void) _cleanupBottom {
     CGFloat targetY = _scrollView.contentOffset.y + _scrollView.height;
     UIView* view;
-    while (CGRectGetMinY((view = [self bottomView]).frame) > targetY) {
+    while ((view = [self bottomView]) && CGRectGetMinY(view.frame) > targetY) {
         [view removeFromSuperview];
         _bottomY -= view.height;
         if ([self _isGroupView:view]) {
@@ -312,6 +312,7 @@ static CGFloat START_Y = 99999.0f;
 }
 
 - (NSArray*)views {
+    if (!_scrollView.subviews || !_scrollView.subviews.count) { return @[]; }
     return [_scrollView.subviews filter:^BOOL(UIView* view, NSUInteger i) {
         // Why is a random UIImageView hanging in the scroll view? Asch.
         return ![view isKindOfClass:UIImageView.class];
