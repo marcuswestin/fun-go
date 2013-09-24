@@ -22,6 +22,7 @@
         [self _loadInterfaceWithRootViewController:[self rootViewControllerForFreshLoad]];
     }
     [self handleLaunchNotification:launchOptions];
+    [self interfaceDidLoad];
     return YES;
 }
 // View state saving
@@ -47,7 +48,6 @@
     self.window.restorationIdentifier = NSStringFromClass([self class]);
     self.window.rootViewController = rootViewController;
     [self.window makeKeyAndVisible];
-    [self interfaceDidLoad];
 }
 - (void)interfaceWillLoad {
     [self _notImplemented];
