@@ -18,8 +18,8 @@ func Parallel2(funs ...interface{}) ([]interface{}, error) {
 	for i, fun := range funs {
 		go func(i int, fun interface{}) {
 			res := reflect.ValueOf(fun).Call(nil)
-			val := res[0].Interface().(interface{})
-			err := res[1].Interface().(error)
+			val, _ := res[0].Interface().(interface{})
+			err, _ := res[1].Interface().(error)
 			resChan <- parallel2Result{i: i, val: val, err: err}
 		}(i, fun)
 	}
