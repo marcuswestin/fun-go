@@ -13,6 +13,7 @@
 #define TRANSPARENT [UIColor clearColor]
 #define BLACK [UIColor blackColor]
 #define RED [UIColor redColor]
+#define GREEN [UIColor greenColor]
 #define BLUE [UIColor blueColor]
 #define RANDOM_COLOR [UIColor randomColor]
 UIColor* rgba(NSUInteger r, NSUInteger g, NSUInteger b, CGFloat a);
