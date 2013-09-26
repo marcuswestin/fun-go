@@ -10,6 +10,7 @@
 #import "FunObjc.h"
 #import <QuartzCore/QuartzCore.h>
 #import "UIView+Fun.h"
+#import "DefaultStyles.h"
 
 // Arity 0
 #define DeclareStyler(STYLER_NAME, STYLER_CODE)\
@@ -169,6 +170,7 @@ static NSMutableDictionary* tagNameToTagNumber;
 /* Create & apply
  ****************/
 - (ViewStyler*)initWithView:(UIView*)view {
+    [[[view class] styles] applyTo:view];
     _view = view;
     _frame = view.frame;
     return self;

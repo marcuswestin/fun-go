@@ -23,6 +23,7 @@
 #import "UIControl+Fun.h"
 #import "UIView+Fun.h"
 #import "UIView+FunStyle.h"
+#import "DefaultStyles.h"
 #import "UIImage+Fun.h"
 
 #import "ViewController.h"
