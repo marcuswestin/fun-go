@@ -66,7 +66,7 @@ static CGFloat fuzzyBlurBlur = 2.0;
 
 + (UIWindow*)showMessage:(NSString *)message {
     [Overlay show];
-    [UILabel.appendTo(overlayWindow).fill.text(message).textColor(BLACK).wrapText.center render];
+    [UILabel.appendTo(overlayWindow).fill.insetAll(8).text(message).textColor(BLACK).wrapText.center render];
     return overlayWindow;
 }
 
