@@ -18,13 +18,7 @@ void error(NSError* err) {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString* message = err.localizedDescription;
         NSLog(@"ERROR %@ %@", message, err);
-        UITextView* view = [UITextView.appendTo([Overlay show]).w(Viewport.width) render];
-        [view setText:message];
-        view.backgroundColor = TRANSPARENT;
-        view.textColor = RED;
-        view.editable = NO;
-        [view sizeToFit];
-        [view center];
+        [UILabel.appendTo([Overlay show]).fillW.inset(0,8,0,8).text(message).textColor(RED).wrapText.center render];
     });
 }
 

@@ -8,8 +8,9 @@
 
 #import "UIView+Fun.h"
 
-@implementation UIView (Fun)
+@class FunBlurView;
 
+@implementation UIView (Fun)
 /* Size
  ******/
 - (CGFloat)height {
@@ -17,6 +18,9 @@
 }
 - (CGFloat)width {
     return CGRectGetWidth(self.frame);
+}
+- (CGSize)size {
+    return self.frame.size;
 }
 - (void)setWidth:(CGFloat)width {
     [self setSize:CGSizeMake(width, self.height)];
@@ -266,5 +270,35 @@ static CGFloat STATIC = 0.5f;
     } completion:^(BOOL finished) {
         completionCallback(nil, ghostView);
     }];
+}
+@end
+
+// Blur effect
+//////////////
+@interface FunBlurView : UIView
+@property UIToolbar *toolbar;
+@end
+@implementation FunBlurView
+- (id)initWithSuperview:(UIView*)view color:(UIColor*)color {
+    self = [super initWithFrame:view.bounds];
+    self.clipsToBounds = YES; // toolbar draws a thin shadow on top without clip
+    if (color) {
+        [self.toolbar setBarTintColor:color];
+    }
+    [self setToolbar:[[UIToolbar alloc] initWithFrame:[self bounds]]];
+    [self.layer insertSublayer:[self.toolbar layer] atIndex:0];
+    return self;
+}
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    [self.toolbar setFrame:[self bounds]];
+}
+@end
+@implementation UIView (Blur)
+- (void)blur {
+    [self blur:WHITE];
+}
+- (void)blur:(UIColor *)color {
+    [self addSubview:[[FunBlurView alloc] initWithSuperview:self color:color]];
 }
 @end

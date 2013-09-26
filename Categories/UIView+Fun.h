@@ -15,12 +15,13 @@
  ******/
 - (CGFloat)height;
 - (CGFloat)width;
+- (CGSize)size;
 - (void)setWidth:(CGFloat)width;
 - (void)setHeight:(CGFloat)height;
+- (void)setSize:(CGSize)size;
 - (void)resizeByAddingWidth:(CGFloat)width height:(CGFloat)height;
 - (void)resizeBySubtractingWidth:(CGFloat)width height:(CGFloat)height;
 - (CGSize)sizeToContainSubviews;
-- (void)setSize:(CGSize)size;
 
 /* Position
  **********/
@@ -66,4 +67,9 @@
 - (UIView*)ghost;
 - (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback;
 - (void)ghostWithDuration:(NSTimeInterval)duration animation:(ViewCallback)animationCallback completion:(ViewCallback)completionCallback;
+@end
+
+@interface UIView (Blur)
+- (void)blur;
+- (void)blur:(UIColor*)color;
 @end

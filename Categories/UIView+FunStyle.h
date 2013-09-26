@@ -38,6 +38,7 @@ typedef ViewStyler* (^StylerFloatColor)(CGFloat f, UIColor* color);
 - (id)render;
 - (StylerView)appendTo;
 - (StylerView)prependTo;
+- (id)onTap:(EventHandler)handler;
 
 /* View hierarchy
  ****************/
@@ -58,6 +59,8 @@ typedef ViewStyler* (^StylerFloatColor)(CGFloat f, UIColor* color);
 - (StylerRect)frame;
 - (StylerFloat4)inset;
 - (StylerFloat1)insetAll;
+- (StylerFloat1)insetTop;
+- (StylerFloat1)moveUp;
 - (StylerFloat1)moveDown;
 - (StylerViewFloat)below;
 - (StylerViewFloat)above;
@@ -96,6 +99,8 @@ typedef ViewStyler* (^StylerFloatColor)(CGFloat f, UIColor* color);
 - (StylerFont)textFont;
 - (StylerInteger1)textLines;
 - (Styler)wrapText;
+- (ViewStyler*(^)(UIKeyboardType keyboardType))keyboardType;
+- (ViewStyler*(^)(UIKeyboardAppearance keyboardAppearance))keyboardAppearance;
 
 /* Text inputs
  *************/

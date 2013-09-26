@@ -60,11 +60,18 @@
     };\
 }
 #define DeclareColorStyler(STYLER_NAME, COLOR_ARG_NAME, STYLER_CODE)\
-    -(StylerColor1) STYLER_NAME {\
-        return ^(UIColor* COLOR_ARG_NAME) {\
+-(StylerColor1) STYLER_NAME {\
+    return ^(UIColor* COLOR_ARG_NAME) {\
         STYLER_CODE; return self;\
     };\
 }
+#define DeclareStyler1(STYLER_NAME, ARG1_TYPE, ARG1_NAME, STYLER_CODE)\
+-(ViewStyler*(^)(ARG1_TYPE)) STYLER_NAME {\
+return ^(ARG1_TYPE ARG1_NAME) {\
+STYLER_CODE; return self;\
+};\
+}
+
 // Arity 2
 //////////
 #define DeclareFloat2Styler(STYLER_NAME, F1ARG_NAME, F2ARG_NAME, STYLER_CODE)\
@@ -102,14 +109,50 @@
     };\
 }
 
+static NSMutableArray* tagIntegerToTagName;
+static NSMutableDictionary* tagNameToTagNumber;
+
+@interface ViewStyler ()
+- (instancetype)initWithView:(UIView*)view;
+@end
+
+/* UIView helpers
+ ****************/
+@implementation UIView (FunStyler)
++ (StylerView)appendTo {
+    return self.styler.appendTo;
+}
++ (StylerView)prependTo {
+    return self.styler.prependTo;
+}
+- (ViewStyler *)styler {
+    return [[ViewStyler alloc] initWithView:self];
+}
+- (void)render {}
+
++ (StylerRect)frame {
+    return self.styler.frame;
+}
++ (ViewStyler*)styler {
+    UIView* instance = [[[self class] alloc] initWithFrame:CGRectZero];
+#if defined DEBUG && FALSE
+    return instance.styler.bg(RANDOM_COLOR);
+#else
+    return instance.styler;
+#endif
+}
+- (UIView *)viewWithName:(NSString *)name {
+    NSNumber* tagNumber = tagNameToTagNumber[name];
+    if (!tagNumber) { return nil; }
+    return [self viewWithTag:[tagNumber integerValue]];
+}
+@end
+
 // Type helpers
 ///////////////
 #define _labelView ((UILabel*)_view)
 #define _buttonView ((UIButton*)_view)
-
-
-static NSMutableArray* tagIntegerToTagName;
-static NSMutableDictionary* tagNameToTagNumber;
+#define _textField ((UITextField*)_view)
 
 @implementation ViewStyler {
     UIView* _view;
@@ -140,6 +183,12 @@ static NSMutableDictionary* tagNameToTagNumber;
     [self apply];
     [_view render];
     return _view;
+}
+
+- (id)onTap:(EventHandler)handler {
+    id view = [self render];
+    [_buttonView onTap:handler];
+    return view;
 }
 
 - (id)view {
@@ -200,13 +249,13 @@ DeclareFloat4Styler(inset, top, right, bottom, left,
                     )
 
 DeclareFloatStyler(insetAll, i, return self.inset(i,i,i,i))
+DeclareFloatStyler(insetTop, f, return self.inset(f,0,0,0))
 
-DeclareFloatStyler(moveDown, amount,
-                   _frame.origin.y += amount;
-                   )
+DeclareFloatStyler(moveUp, amount, _frame.origin.y -= amount)
+DeclareFloatStyler(moveDown, amount, _frame.origin.y += amount)
 
 DeclareViewFloatStyler(below, view, offset, _frame.origin.y = view.y2 + offset)
-DeclareViewFloatStyler(above, view, offset, _frame.origin.y = view.y - offset)
+DeclareViewFloatStyler(above, view, offset, _frame.origin.y = view.y - _frame.size.height - offset)
 DeclareViewFloatStyler(rightOf, view, offset, _frame.origin.x = view.x2 + offset)
 DeclareViewFloatStyler(leftOf, view, offset, _frame.origin.x = view.x - offset)
 DeclareViewStyler(fillRightOf, view,
@@ -340,41 +389,10 @@ DeclareStyler(wrapText,
               _labelView.lineBreakMode = NSLineBreakByWordWrapping;
               [self sizeToFit]
               )
+DeclareStyler1(keyboardType, UIKeyboardType, type, _textField.keyboardType = type)
+DeclareStyler1(keyboardAppearance, UIKeyboardAppearance, appearance, _textField.keyboardAppearance = appearance)
 
 /* Text inputs
  *************/
-#define _TextField ((UITextField*)_view)
-DeclareStringStyler(placeholder, placeholder, _TextField.placeholder = placeholder)
-@end
-
-/* UIView helpers
- ****************/
-@implementation UIView (FunStyler)
-+ (StylerView)appendTo {
-    return self.styler.appendTo;
-}
-+ (StylerView)prependTo {
-    return self.styler.prependTo;
-}
-- (ViewStyler *)styler {
-    return [[ViewStyler alloc] initWithView:self];
-}
-- (void)render {}
-
-+ (StylerRect)frame {
-    return self.styler.frame;
-}
-+ (ViewStyler*)styler {
-    UIView* instance = [[[self class] alloc] init];
-#if defined DEBUG && FALSE
-    return instance.styler.bg(RANDOM_COLOR);
-#else
-    return instance.styler;
-#endif
-}
-- (UIView *)viewWithName:(NSString *)name {
-    NSNumber* tagNumber = tagNameToTagNumber[name];
-    if (!tagNumber) { return nil; }
-    return [self viewWithTag:[tagNumber integerValue]];
-}
+DeclareStringStyler(placeholder, placeholder, _textField.placeholder = placeholder)
 @end
