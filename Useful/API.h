@@ -8,7 +8,8 @@
 
 #import "FunBase.h"
 
-typedef Callback APICallback;
+typedef void (^APICallback)(NSError* err, NSDictionary* res);
+typedef NSError* (^APIErrorCheck)(NSHTTPURLResponse* httpRes, NSDictionary* res);
 
 @interface API : FunBase
 
@@ -17,5 +18,5 @@ typedef Callback APICallback;
 + (void)post:(NSString*)path json:(NSDictionary*)json callback:(APICallback)callback;
 + (void)get:(NSString*)path queries:(NSDictionary*)queries callback:(APICallback)callback;
 + (void)upload:(NSString*)path json:(NSDictionary*)json attachments:(NSDictionary*)attachments callback:(APICallback)callback;
-
++ (void)addErrorCheck:(APIErrorCheck)errorCheck;
 @end

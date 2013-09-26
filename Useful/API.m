@@ -10,11 +10,6 @@
 
 #define log NSLog
 
-NSError* checkHttpError(NSHTTPURLResponse* response) {
-    if (response.statusCode >= 200 && response.statusCode < 300) { return nil; }
-    return makeError([NSString stringWithFormat:@"API response code: %d", response.statusCode]);
-}
-
 @implementation API
 
 static NSString* server;
@@ -22,22 +17,29 @@ static NSOperationQueue* queue;
 static NSString* multipartBoundary;
 static NSMutableDictionary* baseHeaders;
 static int numRequests = 0;
+static NSMutableArray* errorChecks;
+
++ (void)load {
+    baseHeaders = [NSMutableDictionary dictionary];
+    errorChecks = [NSMutableArray array];
+    multipartBoundary = @"_____FUNOBJ_BNDRY__";
+    queue = [[NSOperationQueue alloc] init];
+    queue.maxConcurrentOperationCount = 10;
+    errorChecks = [NSMutableArray array];
+}
+
++ (void)addErrorCheck:(APIErrorCheck)errorCheck {
+    [errorChecks addObject:errorCheck];
+}
 
 + (void)setup:(NSString *)serverUrl {
     server = serverUrl;
-    baseHeaders = [NSMutableDictionary dictionary];
 }
 
 + (void)setHeaders:(NSDictionary *)headers {
     for (NSString* name in headers) {
         baseHeaders[name] = headers[name];
     }
-}
-
-+ (void)load {
-    multipartBoundary = @"_____FUNOBJ_BNDRY__";
-    queue = [[NSOperationQueue alloc] init];
-    queue.maxConcurrentOperationCount = 10;
 }
 
 + (void)post:(NSString *)path json:(NSDictionary *)json callback:(APICallback)callback {
@@ -127,28 +129,47 @@ static int numRequests = 0;
     }];
 }
 
-+ (void)_handleResponse:(NSHTTPURLResponse*)response forMethod:(NSString*)method path:(NSString*)path data:(NSData*)data error:(NSError*)connectionError callback:(APICallback)callback {
++ (void)_handleResponse:(NSHTTPURLResponse*)httpRes forMethod:(NSString*)method path:(NSString*)path data:(NSData*)data error:(NSError*)connectionError callback:(APICallback)callback {
+    
     [API _hideSpinner];
     
-    if (connectionError) { return callback(connectionError, nil); }
-    NSError* error = checkHttpError(response);
-    if (error) { return callback(error, nil); }
-    
-    NSString* contentType = response.allHeaderFields[@"content-type"];
-    
-    if ([contentType rangeOfString:@"application/json"].location == 0 || [contentType rangeOfString:@"application/javascript"].location == 0) {
-        id jsonRes = [JSON parseData:data];
-        if (!jsonRes) { return callback(makeError(@"Bad JSON format"), nil); }
-        NSLog(@"API %@ %@ RECV:\n%@\n\n", method, path, [data toString]);
-        callback(nil, jsonRes);
-    } else if ([contentType rangeOfString:@"text/plain"].location == 0) {
-        NSLog(@"API %@ %@ RECV:\n%@\n\n", method, path, data.toString);
-        callback(makeError(@"Received unexpected content type from server"), nil);
-//        callback(nil, data.toString);
-    } else {
-        NSLog(@"API %@ %@ RECV:\n%@\n\n", method, path, contentType);
-        callback(makeError(@"Received unexpected content type from server"), nil);
+    if (connectionError) {
+        return callback(connectionError, nil);
     }
+    
+    NSLog(@"API %@ %@ RECV:\n%@\n\n", method, path, [data toString]);
+
+    NSString* contentType = httpRes.allHeaderFields[@"content-type"];
+    NSDictionary* res;
+    NSError* err;
+    
+    if (!contentType) {
+        err = makeError(@"Missing Content-Type header");
+    } else if ([contentType hasPrefix:@"application/json"] || [contentType hasPrefix:@"application/javascript"]) {
+        res = [NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
+    } else if ([contentType hasPrefix:@"text/"]) {
+        res = @{ @"text":[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] };
+    } else {
+        err = makeError([@"Unknown Content-Type: " stringByAppendingString:contentType]);
+    }
+    
+    if (err) {
+        return callback(err, nil);
+    }
+    
+    for (APIErrorCheck errorCheck in errorChecks) {
+        err = errorCheck(httpRes, res);
+        if (err) {
+            return callback(err, nil);
+        }
+    }
+    
+    if (httpRes.statusCode < 200 && httpRes.statusCode >= 300) {
+        err = makeError([NSString stringWithFormat:@"API received non-200 status code: %d", httpRes.statusCode]);
+        return callback(err, nil);
+    }
+    
+    callback(nil, res);
 }
 
 + (NSDictionary*)headers:(NSString*)contentType data:(NSData*)data {
