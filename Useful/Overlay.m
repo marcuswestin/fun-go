@@ -26,15 +26,16 @@ static UIWindow* previousWindow;
         [Overlay hide];
     }];
 
+    overlayWindow.alpha = 0;
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         UIImage* blur = [Overlay snapshotUnderlayWithBlur:fuzzyBlurBlur];
         dispatch_async(dispatch_get_main_queue(), ^{
             UIImageView* blurView = [[UIImageView alloc] initWithFrame:CGRectInset(overlayWindow.bounds, -20, -20)];
             blurView.image = blur;
-            blurView.alpha = 0;
             [overlayWindow insertSubview:blurView atIndex:0];
-            [UIView animateWithDuration:0.3 animations:^{
-                blurView.alpha = 1;
+            [UIView animateWithDuration:0.2 animations:^{
+                overlayWindow.alpha = 1;
             }];
         });
     });
@@ -65,11 +66,7 @@ static CGFloat fuzzyBlurBlur = 2.0;
 
 + (UIWindow*)showMessage:(NSString *)message {
     [Overlay show];
-    UILabel* label = [[UILabel alloc] initWithFrame:overlayWindow.frame];
-    label.text = message;
-    label.textAlignment = NSTextAlignmentCenter;
-    label.textColor = BLACK;
-    [overlayWindow addSubview:label];
+    [UILabel.appendTo(overlayView).fill.text(message).textColor(BLACK).wrapText.center render];
     return overlayWindow;
 }
 
@@ -80,7 +77,7 @@ static CGFloat fuzzyBlurBlur = 2.0;
     overlayWindow = nil;
     previousWindow = nil;
 
-    [UIView animateWithDuration:0.25 animations:^{
+    [UIView animateWithDuration:0.2 animations:^{
         _overlayWindow.alpha = 0;
     } completion:^(BOOL finished) {
         [_overlayWindow setHidden:YES];
