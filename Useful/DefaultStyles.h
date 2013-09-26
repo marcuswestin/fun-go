@@ -44,6 +44,15 @@
 + (UITextFieldStyles*)styles;
 @end
 
+// UITextView
+@interface UITextViewStyles : UIViewStyles
+@property UIColor* textColor;
+@property UIFont* font;
+@end
+@interface UITextView (DefaultStyles)
++ (UITextViewStyles*)styles;
+@end
+
 // UILabel
 @interface UILabelStyles : UIViewStyles
 @property UIColor* textColor;

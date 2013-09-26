@@ -92,6 +92,21 @@ DeclareClassDefaultStyles(UITextField, UITextFieldStyles, uiTextFieldStyles)
 }
 @end
 
+// UITextView
+/////////////
+DeclareClassDefaultStyles(UITextView, UITextViewStyles, uiTextViewStyles)
+@implementation UITextViewStyles
+- (void)applyTo:(UITextView *)textView {
+    [super applyTo:textView];
+    if (_textColor) {
+        textView.textColor = _textColor;
+    }
+    if (_font) {
+        textView.font = _font;
+    }
+}
+@end
+
 // UILabel
 //////////
 DeclareClassDefaultStyles(UILabel, UILabelStyles, uiLabelStyles)
