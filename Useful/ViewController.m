@@ -13,8 +13,8 @@
     BOOL _didRender;
 }
 
-- (NSString *)restorationIdentifier {
-    return self.className;
++ (instancetype)withoutState {
+    return [[[self class] alloc] initWithState:nil];
 }
 
 - (instancetype)initWithState:(id<NSCoding>)state {
@@ -28,6 +28,10 @@
     self = [super initWithCoder:coder];
     [self decodeRestorableStateWithCoder:coder];
     return self;
+}
+
+- (NSString *)restorationIdentifier {
+    return self.className;
 }
 
 - (void)encodeRestorableStateWithCoder:(NSCoder *)coder {
