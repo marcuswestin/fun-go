@@ -246,7 +246,9 @@ func (p *Pool) Select(output interface{}, sql string, args ...interface{}) error
 
 	structType := outputReflection.Type().Elem()
 	for rows.Next() {
-		structPtrVal, err := structFromRow(structType, columns, rows)
+		structPtrVal := reflect.New(structType.Elem())
+		outputItemStructVal := structPtrVal.Elem()
+		err = structFromRow(outputItemStructVal, columns, rows)
 		if err != nil {
 			return err
 		}
@@ -259,6 +261,12 @@ func (p *Pool) Select(output interface{}, sql string, args ...interface{}) error
 const selectOneTypeError = "fun/sql.SelectOne: expects a **struct, e.g var person *Person; c.SelectOne(&person, sql)"
 
 func (p *Pool) SelectOne(output interface{}, query string, args ...interface{}) error {
+	return p.selectOne(output, query, true, args...)
+}
+func (p *Pool) SelectMaybe(output interface{}, query string, args ...interface{}) error {
+	return p.selectOne(output, query, false, args...)
+}
+func (p *Pool) selectOne(output interface{}, query string, required bool, args ...interface{}) error {
 	// Check types
 	var outputReflectionPtr = reflect.ValueOf(output)
 	if !outputReflectionPtr.IsValid() {
@@ -284,15 +292,26 @@ func (p *Pool) SelectOne(output interface{}, query string, args ...interface{}) 
 		return err
 	}
 	if !rows.Next() {
-		return errors.New("fun/sql.SelectOne: got none. Query: " + query + " Args: " + fmt.Sprint(args))
+		if required {
+			return errors.New("SelectOne got 0 rows. Query: " + query)
+		} else {
+			return nil
+		}
 	}
 
-	structType := outputReflection.Type()
-	structPtrVal, err := structFromRow(structType, columns, rows)
+	var vStruct reflect.Value
+	if outputReflection.IsNil() {
+		structPtrVal := reflect.New(outputReflection.Type().Elem())
+		outputReflection.Set(structPtrVal)
+		vStruct = structPtrVal.Elem()
+	} else {
+		vStruct = outputReflection.Elem()
+	}
+
+	err = structFromRow(vStruct, columns, rows)
 	if err != nil {
 		return err
 	}
-	outputReflection.Set(structPtrVal)
 
 	if rows.Next() {
 		return errors.New("fun/sql.SelectOne: got multiple rows. Query: " + query + " Args: " + fmt.Sprint(args))
@@ -301,11 +320,7 @@ func (p *Pool) SelectOne(output interface{}, query string, args ...interface{}) 
 	return nil
 }
 
-func structFromRow(structType reflect.Type, columns []string, rows *sql.Rows) (structPtrVal reflect.Value, err error) {
-	structPtrVal = reflect.New(structType.Elem())
-
-	outputItemStructVal := structPtrVal.Elem()
-
+func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows) (err error) {
 	vals := make([]interface{}, len(columns))
 	for i, _ := range columns {
 		vals[i] = &sql.RawBytes{}
@@ -341,7 +356,7 @@ func structFromRow(structType reflect.Type, columns []string, rows *sql.Rows) (s
 			}
 			outputItemField.SetInt(reflect.ValueOf(intVal).Int())
 		default:
-			err = errors.New("fun/sql: Bad row value for column: " + column)
+			err = errors.New("fun/sql: Bad row value for column: " + column + " " + outputItemField.Kind().String())
 			return
 		}
 	}
