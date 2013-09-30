@@ -31,6 +31,34 @@ type Pool struct {
 	queue chan *sql.DB
 }
 
+func (p *Pool) Transact(txFun func(tx *Pool) error) (err error) {
+	conn := <-p.queue
+	defer func() { p.queue <- conn }()
+
+	txPool := &Pool{queue: make(chan *sql.DB, 1)}
+	_, err = conn.Exec("START TRANSACTION")
+	if err != nil {
+		return
+	}
+
+	err = txFun(txPool)
+	if err != nil {
+		return rollback(conn, err)
+	}
+
+	conn.Exec("COMMIT")
+
+	return err
+}
+
+func rollback(conn *sql.DB, err error) error {
+	_, rbErr := conn.Exec("ROLLBACK")
+	if rbErr != nil {
+		err = errors.New("Rollback error: " + rbErr.Error() + " Query error: " + err.Error())
+	}
+	return err
+}
+
 // Query with fixed args
 func (p *Pool) Query(query string, args ...interface{}) (rows *sql.Rows, err error) {
 	conn := <-p.queue
