@@ -31,11 +31,23 @@ type Pool struct {
 	queue chan *sql.DB
 }
 
+func (p *Pool) Autocommit(acFun func(ac *Pool) error) (err error) {
+	conn := <-p.queue
+	defer func() { p.queue <- conn }()
+
+	acPool := &Pool{queue: make(chan *sql.DB, 1)}
+	acPool.queue <- conn
+
+	return acFun(acPool)
+}
+
 func (p *Pool) Transact(txFun func(tx *Pool) error) (err error) {
 	conn := <-p.queue
 	defer func() { p.queue <- conn }()
 
 	txPool := &Pool{queue: make(chan *sql.DB, 1)}
+	txPool.queue <- conn
+
 	_, err = conn.Exec("START TRANSACTION")
 	if err != nil {
 		return
