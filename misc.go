@@ -7,6 +7,7 @@ import (
 	"io"
 	"math"
 	mathRand "math/rand"
+	"strconv"
 	"time"
 )
 
@@ -24,6 +25,10 @@ func RandomDigits(numDigits int) int {
 	min := int(math.Pow10(numDigits - 1))
 	lessThan := int(math.Pow10(numDigits))
 	return RandomBetween(min, lessThan)
+}
+
+func RandomDigitString(numDigits int) string {
+	return strconv.Itoa(RandomDigits(numDigits))
 }
 
 func MakeUid(numChars int) (uid string, err error) {
