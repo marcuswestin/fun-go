@@ -58,9 +58,12 @@ func (p *Pool) Transact(txFun func(tx *Pool) error) (err error) {
 		return rollback(conn, err)
 	}
 
-	conn.Exec("COMMIT")
+	_, err = conn.Exec("COMMIT")
+	if err != nil {
+		return
+	}
 
-	return err
+	return
 }
 
 func rollback(conn *sql.DB, err error) error {
