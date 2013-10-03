@@ -123,21 +123,45 @@ func FixArgs(args []interface{}) {
 }
 
 func (p *Pool) SelectInt(query string, args ...interface{}) (num int, err error) {
-	err = p.queryOne(query, args, &num)
+	found, err := p.queryOne(query, args, &num)
+	if !found {
+		err = errors.New("Query returned no rows")
+	}
 	return
 }
 
 func (p *Pool) SelectString(query string, args ...interface{}) (str string, err error) {
-	err = p.queryOne(query, args, &str)
+	found, err := p.queryOne(query, args, &str)
+	if !found {
+		err = errors.New("Query returned no rows")
+	}
 	return
 }
 
 func (p *Pool) SelectUInt(query string, args ...interface{}) (num uint, err error) {
-	err = p.queryOne(query, args, &num)
+	found, err := p.queryOne(query, args, &num)
+	if !found {
+		err = errors.New("Query returned no rows")
+	}
 	return
 }
 
-func (p *Pool) queryOne(query string, args []interface{}, out interface{}) (err error) {
+func (p *Pool) SelectIntMaybe(query string, args ...interface{}) (num int, found bool, err error) {
+	found, err = p.queryOne(query, args, &num)
+	return
+}
+
+func (p *Pool) SelectStringMaybe(query string, args ...interface{}) (str string, found bool, err error) {
+	found, err = p.queryOne(query, args, &str)
+	return
+}
+
+func (p *Pool) SelectUIntMaybe(query string, args ...interface{}) (num uint, found bool, err error) {
+	found, err = p.queryOne(query, args, &num)
+	return
+}
+
+func (p *Pool) queryOne(query string, args []interface{}, out interface{}) (found bool, err error) {
 	rows, err := p.Query(query, args...)
 	if err != nil {
 		return
@@ -148,14 +172,13 @@ func (p *Pool) queryOne(query string, args []interface{}, out interface{}) (err 
 		if err != nil {
 			return
 		}
+		if rows.Next() {
+			err = errors.New("Query returned too many rows")
+			return
+		}
+		found = true
 	} else {
-		err = errors.New("Query returned no rows")
-		return
-	}
-
-	if rows.Next() {
-		err = errors.New("Query returned too many rows")
-		return
+		found = false
 	}
 
 	return
