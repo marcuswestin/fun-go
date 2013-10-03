@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func NewPool(sourceStrings []string) (pool *Pool, err error) {
+func NewPool(sourceStrings []string) (pool Conn, err error) {
 	queue := make(chan *sql.DB, len(sourceStrings))
 	var conn *sql.DB
 	for _, sourceStr := range sourceStrings {
@@ -31,7 +31,7 @@ type Pool struct {
 	queue chan *sql.DB
 }
 
-func (p *Pool) Autocommit(acFun func(ac *Pool) error) (err error) {
+func (p *Pool) Autocommit(acFun func(ac Conn) error) (err error) {
 	conn := <-p.queue
 	defer func() { p.queue <- conn }()
 
@@ -41,7 +41,7 @@ func (p *Pool) Autocommit(acFun func(ac *Pool) error) (err error) {
 	return acFun(acPool)
 }
 
-func (p *Pool) Transact(txFun func(tx *Pool) error) (err error) {
+func (p *Pool) Transact(txFun func(tx Conn) error) (err error) {
 	conn := <-p.queue
 	defer func() { p.queue <- conn }()
 
@@ -382,7 +382,7 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 			}
 			outputItemField.SetInt(reflect.ValueOf(intVal).Int())
 		default:
-			err = errors.New("fun/sql: Bad row value for column: " + column + " " + outputItemField.Kind().String())
+			err = errors.New("fun/sql: Bad row value for column " + column + ": " + outputItemField.Kind().String())
 			return
 		}
 	}
