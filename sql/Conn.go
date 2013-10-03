@@ -4,9 +4,11 @@ import (
 	"database/sql"
 )
 
+type ConnFun func(ac Conn) error
+
 type Conn interface {
-	Autocommit(func(Conn) error) error
-	Transact(func(Conn) error) error
+	Autocommit(ConnFun) error
+	Transact(ConnFun) error
 	Query(query string, args ...interface{}) (rows *sql.Rows, err error)
 	Exec(query string, args ...interface{}) (res sql.Result, err error)
 	SelectInt(query string, args ...interface{}) (num int, err error)

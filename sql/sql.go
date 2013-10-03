@@ -31,7 +31,7 @@ type Pool struct {
 	queue chan *sql.DB
 }
 
-func (p *Pool) Autocommit(acFun func(ac Conn) error) (err error) {
+func (p *Pool) Autocommit(acFun ConnFun) (err error) {
 	conn := <-p.queue
 	defer func() { p.queue <- conn }()
 
@@ -41,7 +41,7 @@ func (p *Pool) Autocommit(acFun func(ac Conn) error) (err error) {
 	return acFun(acPool)
 }
 
-func (p *Pool) Transact(txFun func(tx Conn) error) (err error) {
+func (p *Pool) Transact(txFun ConnFun) (err error) {
 	conn := <-p.queue
 	defer func() { p.queue <- conn }()
 
