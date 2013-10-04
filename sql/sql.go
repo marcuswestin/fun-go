@@ -146,6 +146,30 @@ func (p *Pool) SelectUInt(query string, args ...interface{}) (num uint, err erro
 	return
 }
 
+func (p *Pool) SelectIntForce(query string, args ...interface{}) (num int, err error) {
+	found, err := p.queryOne(query, args, &num)
+	if !found {
+		panic("Query returned no rows")
+	}
+	return
+}
+
+func (p *Pool) SelectStringForce(query string, args ...interface{}) (str string, err error) {
+	found, err := p.queryOne(query, args, &str)
+	if !found {
+		panic("Query returned no rows")
+	}
+	return
+}
+
+func (p *Pool) SelectUIntForce(query string, args ...interface{}) (num uint, err error) {
+	found, err := p.queryOne(query, args, &num)
+	if !found {
+		panic("Query returned no rows")
+	}
+	return
+}
+
 func (p *Pool) SelectIntMaybe(query string, args ...interface{}) (num int, found bool, err error) {
 	found, err = p.queryOne(query, args, &num)
 	return
@@ -209,21 +233,25 @@ func (p *Pool) queryOne(query string, args []interface{}, out interface{}) (foun
 // 	return
 // }
 
-func (p *Pool) UpdateOne(query string, args ...interface{}) error {
+func (p *Pool) UpdateOne(query string, args ...interface{}) (err error) {
+	rowsAffected, err := p.Update(query, args...)
+	if err != nil {
+		return
+	}
+	if rowsAffected != 1 {
+		return errors.New(fmt.Sprintf("UpdateOne affected %d rows. Query: %q Args: %q", rowsAffected, query, args))
+	}
+	return
+}
+
+func (p *Pool) Update(query string, args ...interface{}) (rowsAffected int64, err error) {
 	res, err := p.Exec(query, args...)
 	if err != nil {
-		return err
+		return
 	}
 
-	affected, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if affected != 1 {
-		return errors.New(fmt.Sprintf("UpdateOne affected %d rows. Query: %q Args: %q", affected, query, args))
-	}
-
-	return nil
+	rowsAffected, err = res.RowsAffected()
+	return
 }
 
 func (p *Pool) InsertIgnoreId(query string, args ...interface{}) (err error) {
