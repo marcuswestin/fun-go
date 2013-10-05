@@ -116,8 +116,12 @@ would give you the error:
 func FixArgs(args []interface{}) {
 	for i, arg := range args {
 		vArg := reflect.ValueOf(arg)
-		if vArg.Kind() == reflect.String {
+		switch vArg.Kind() {
+		case reflect.String:
 			args[i] = vArg.String()
+			if args[i] == "" {
+				args[i] = nil
+			}
 		}
 	}
 }
