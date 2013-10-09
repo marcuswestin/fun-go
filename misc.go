@@ -21,14 +21,10 @@ func RandomBetween(min, lessThan int) int {
 }
 
 // Returns a random number with numDigits digits
-func RandomDigits(numDigits int) int {
+func RandomDigits(numDigits int) string {
 	min := int(math.Pow10(numDigits - 1))
 	lessThan := int(math.Pow10(numDigits))
-	return RandomBetween(min, lessThan)
-}
-
-func RandomDigitString(numDigits int) string {
-	return strconv.Itoa(RandomDigits(numDigits))
+	return strconv.Itoa(RandomBetween(min, lessThan))
 }
 
 func MakeUid(numChars int) (uid string, err error) {
