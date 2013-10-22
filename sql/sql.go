@@ -143,7 +143,7 @@ func (p *Pool) SelectString(query string, args ...interface{}) (str string, err 
 	return
 }
 
-func (p *Pool) SelectUInt(query string, args ...interface{}) (num uint, err error) {
+func (p *Pool) SelectUint(query string, args ...interface{}) (num uint, err error) {
 	found, err := p.queryOne(query, args, &num)
 	if !found {
 		err = errors.New("Query returned no rows")
@@ -167,7 +167,7 @@ func (p *Pool) SelectStringForce(query string, args ...interface{}) (str string,
 	return
 }
 
-func (p *Pool) SelectUIntForce(query string, args ...interface{}) (num uint, err error) {
+func (p *Pool) SelectUintForce(query string, args ...interface{}) (num uint, err error) {
 	found, err := p.queryOne(query, args, &num)
 	if !found {
 		panic("Query returned no rows")
@@ -185,7 +185,7 @@ func (p *Pool) SelectStringMaybe(query string, args ...interface{}) (str string,
 	return
 }
 
-func (p *Pool) SelectUIntMaybe(query string, args ...interface{}) (num uint, found bool, err error) {
+func (p *Pool) SelectUintMaybe(query string, args ...interface{}) (num uint, found bool, err error) {
 	found, err = p.queryOne(query, args, &num)
 	return
 }

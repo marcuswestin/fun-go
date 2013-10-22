@@ -26,13 +26,13 @@ type Conn interface {
 
 	SelectInt(query string, args ...interface{}) (num int, err error)
 	SelectString(query string, args ...interface{}) (str string, err error)
-	SelectUInt(query string, args ...interface{}) (num uint, err error)
+	SelectUint(query string, args ...interface{}) (num uint, err error)
 
 	SelectIntMaybe(query string, args ...interface{}) (num int, found bool, err error)
 	SelectStringMaybe(query string, args ...interface{}) (str string, found bool, err error)
-	SelectUIntMaybe(query string, args ...interface{}) (num uint, found bool, err error)
+	SelectUintMaybe(query string, args ...interface{}) (num uint, found bool, err error)
 
 	SelectIntForce(query string, args ...interface{}) (num int, err error)
 	SelectStringForce(query string, args ...interface{}) (str string, err error)
-	SelectUIntForce(query string, args ...interface{}) (num uint, err error)
+	SelectUintForce(query string, args ...interface{}) (num uint, err error)
 }
