@@ -14,6 +14,7 @@ type Conn interface {
 	Transact(ConnFun) error
 
 	InsertIgnoreId(query string, args ...interface{}) (err error)
+	InsertIgnoreDuplicates(query string, args ...interface{}) (err error)
 	Insert(query string, args ...interface{}) (id int64, err error)
 
 	UpdateOne(query string, args ...interface{}) (err error)

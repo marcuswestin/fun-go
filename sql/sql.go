@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 func NewPool(sourceStrings []string) (pool Conn, err error) {
@@ -260,6 +261,14 @@ func (p *Pool) Update(query string, args ...interface{}) (rowsAffected int64, er
 
 func (p *Pool) InsertIgnoreId(query string, args ...interface{}) (err error) {
 	_, err = p.Insert(query, args...)
+	return
+}
+
+func (p *Pool) InsertIgnoreDuplicates(query string, args ...interface{}) (err error) {
+	_, err = p.Insert(query, args...)
+	if err != nil && strings.Contains(err.Error(), "Duplicate entry") {
+		err = nil
+	}
 	return
 }
 
