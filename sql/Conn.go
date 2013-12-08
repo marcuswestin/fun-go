@@ -17,8 +17,9 @@ type Conn interface {
 	InsertIgnoreDuplicates(query string, args ...interface{}) (err error)
 	Insert(query string, args ...interface{}) (id int64, err error)
 
-	UpdateOne(query string, args ...interface{}) (err error)
 	Update(query string, args ...interface{}) (rowsAffected int64, err error)
+	UpdateOne(query string, args ...interface{}) (err error)
+	UpdateNum(num int64, query string, args ...interface{}) (err error)
 
 	Select(output interface{}, sql string, args ...interface{}) (err error)
 	SelectOne(output interface{}, query string, args ...interface{}) (err error)

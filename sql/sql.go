@@ -239,11 +239,15 @@ func (p *Pool) queryOne(query string, args []interface{}, out interface{}) (foun
 // }
 
 func (p *Pool) UpdateOne(query string, args ...interface{}) (err error) {
+	return p.UpdateNum(1, query, args...)
+}
+
+func (p *Pool) UpdateNum(num int64, query string, args ...interface{}) (err error) {
 	rowsAffected, err := p.Update(query, args...)
 	if err != nil {
 		return
 	}
-	if rowsAffected != 1 {
+	if rowsAffected != num {
 		return errors.New(fmt.Sprintf("UpdateOne affected %d rows. Query: %q Args: %q", rowsAffected, query, args))
 	}
 	return
