@@ -195,6 +195,7 @@ func (p *Pool) queryOne(query string, args []interface{}, out interface{}) (foun
 	if err != nil {
 		return
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		err = rows.Scan(out)
@@ -208,6 +209,11 @@ func (p *Pool) queryOne(query string, args []interface{}, out interface{}) (foun
 		found = true
 	} else {
 		found = false
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return
 	}
 
 	return
@@ -308,6 +314,7 @@ func (p *Pool) Select(output interface{}, sql string, args ...interface{}) error
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
 	// Reflect onto structs
 	columns, err := rows.Columns()
@@ -326,6 +333,12 @@ func (p *Pool) Select(output interface{}, sql string, args ...interface{}) error
 
 		outputReflection.Set(reflect.Append(outputReflection, structPtrVal))
 	}
+
+	err = rows.Err()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -356,6 +369,7 @@ func (p *Pool) selectOne(output interface{}, query string, required bool, args .
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
 	// Reflect onto struct
 	columns, err := rows.Columns()
@@ -386,6 +400,11 @@ func (p *Pool) selectOne(output interface{}, query string, required bool, args .
 
 	if rows.Next() {
 		return errors.New("fun/sql.SelectOne: got multiple rows. Query: " + query + " Args: " + fmt.Sprint(args))
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return err
 	}
 
 	return nil
