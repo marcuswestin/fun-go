@@ -4,16 +4,85 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
 )
 
-func NewPool(sourceStrings []string) (pool Conn, err error) {
-	queue := make(chan *sql.DB, len(sourceStrings))
+var MaxShards = 64000
+
+type ShardSet struct {
+	username               string
+	password               string
+	host                   string
+	port                   int
+	dbNamePrefix           string
+	numShards              int
+	numConnectionsPerShard int
+	pools                  []Conn
+}
+
+func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, numConnectionsPerShard int) *ShardSet {
+	return &ShardSet{
+		username:               username,
+		password:               password,
+		host:                   host,
+		port:                   port,
+		dbNamePrefix:           dbNamePrefix,
+		numShards:              numShards,
+		numConnectionsPerShard: numConnectionsPerShard,
+	}
+}
+
+func (s *ShardSet) Connect() (err error) {
+	s.pools = make([]Conn, s.numShards)
+	var pool Conn
+	for i := 0; i < s.numShards; i++ {
+		autoIncrementOffset := i + 1
+		dbName := s.dbNamePrefix + strconv.Itoa(autoIncrementOffset)
+		pool, err = NewPool(
+			DbSourceString(s.username, s.password, s.host, s.port, dbName, MaxShards, autoIncrementOffset),
+			s.numConnectionsPerShard)
+		if err != nil {
+			return
+		}
+		s.pools[i] = pool
+	}
+	return
+}
+
+func (s *ShardSet) Pool(id int64) Conn {
+	if id == 0 {
+		panic("Bad shard index id 0")
+	}
+	shardIndex := ((id - 1) % int64(MaxShards)) // 1->0, 2->1, 3->2 ..., 65000->65000, 65001->0, 65002->1
+	return s.pools[shardIndex]
+}
+
+func randomBetween(min, max int) int {
+	return rand.Intn(max-min) + min // random int in [min, max)
+}
+
+func (s *ShardSet) RandomPool() Conn {
+	return s.pools[randomBetween(0, len(s.pools))]
+}
+
+func DbSourceString(username string, password string, host string, port int, dbName string, autoIncrementIncrement int, autoIncrementOffset int) string {
+	return fmt.Sprintf(
+		"%s:%s@tcp(%s:%d)/%s?strict=true&clientFoundRows=true&autocommit=true&auto_increment_increment=%d&auto_increment_offset=%d&sql_mode=STRICT_ALL_TABLES",
+		username, password, host, port, dbName, autoIncrementIncrement, autoIncrementOffset)
+}
+
+type Pool struct {
+	queue chan *sql.DB
+}
+
+func NewPool(sourceString string, numConnections int) (pool Conn, err error) {
+	queue := make(chan *sql.DB, numConnections)
 	var conn *sql.DB
-	for _, sourceStr := range sourceStrings {
-		conn, err = sql.Open("mysql", sourceStr)
+	for i := 0; i < numConnections; i++ {
+		conn, err = sql.Open("mysql", sourceString)
 		if err != nil {
 			return
 		}
@@ -26,10 +95,6 @@ func NewPool(sourceStrings []string) (pool Conn, err error) {
 	}
 	pool = &Pool{queue}
 	return
-}
-
-type Pool struct {
-	queue chan *sql.DB
 }
 
 func (p *Pool) Autocommit(acFun ConnFun) (err error) {
