@@ -443,7 +443,7 @@ func (p *Pool) selectOne(output interface{}, query string, required bool, args .
 	}
 	if !rows.Next() {
 		if required {
-			return errors.New("SelectOne got 0 rows. Query: " + query)
+			return errors.New("SelectOne got 0 rows. Query: " + query + " Args: " + fmt.Sprint(args))
 		} else {
 			return nil
 		}
