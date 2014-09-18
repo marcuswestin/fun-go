@@ -60,6 +60,10 @@ func (s *ShardSet) Pool(id int64) Conn {
 	return s.pools[shardIndex]
 }
 
+func (s *ShardSet) All() []Conn {
+	return s.pools
+}
+
 func randomBetween(min, max int) int {
 	return rand.Intn(max-min) + min // random int in [min, max)
 }
