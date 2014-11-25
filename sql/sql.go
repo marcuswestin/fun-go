@@ -11,27 +11,25 @@ import (
 )
 
 type ShardSet struct {
-	username               string
-	password               string
-	host                   string
-	port                   int
-	dbNamePrefix           string
-	numShards              int
-	maxShards              int
-	numConnectionsPerShard int
-	pools                  []Conn
+	username     string
+	password     string
+	host         string
+	port         int
+	dbNamePrefix string
+	numShards    int
+	maxShards    int
+	pools        []Conn
 }
 
-func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int, numConnectionsPerShard int) *ShardSet {
+func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int) *ShardSet {
 	return &ShardSet{
-		username:               username,
-		password:               password,
-		host:                   host,
-		port:                   port,
-		dbNamePrefix:           dbNamePrefix,
-		numShards:              numShards,
-		maxShards:              maxShards,
-		numConnectionsPerShard: numConnectionsPerShard,
+		username:     username,
+		password:     password,
+		host:         host,
+		port:         port,
+		dbNamePrefix: dbNamePrefix,
+		numShards:    numShards,
+		maxShards:    maxShards,
 	}
 }
 
@@ -41,9 +39,7 @@ func (s *ShardSet) Connect() (err error) {
 	for i := 0; i < s.numShards; i++ {
 		autoIncrementOffset := i + 1
 		dbName := s.dbNamePrefix + strconv.Itoa(autoIncrementOffset)
-		pool, err = NewPool(
-			DbSourceString(s.username, s.password, s.host, s.port, dbName, s.maxShards, autoIncrementOffset),
-			s.numConnectionsPerShard)
+		pool, err = NewPool(DbSourceString(s.username, s.password, s.host, s.port, dbName, s.maxShards, autoIncrementOffset))
 		if err != nil {
 			return
 		}
@@ -82,21 +78,19 @@ type Pool struct {
 	queue chan *sql.DB
 }
 
-func NewPool(sourceString string, numConnections int) (pool Conn, err error) {
-	queue := make(chan *sql.DB, numConnections)
+func NewPool(sourceString string) (pool Conn, err error) {
+	// TODO Remove pool - go sql package already pools connections
+	queue := make(chan *sql.DB, 1)
 	var conn *sql.DB
-	for i := 0; i < numConnections; i++ {
-		conn, err = sql.Open("mysql", sourceString)
-		if err != nil {
-			return
-		}
-		err = conn.Ping()
-		if err != nil {
-			return
-		}
-
-		queue <- conn
+	conn, err = sql.Open("mysql", sourceString)
+	if err != nil {
+		return
 	}
+	err = conn.Ping()
+	if err != nil {
+		return
+	}
+	queue <- conn
 	pool = &Pool{queue}
 	return
 }
