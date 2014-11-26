@@ -1,17 +1,18 @@
 package sql
 
-import (
-	"database/sql"
-)
-
-type ConnFun func(ac Conn) error
+import "database/sql"
 
 type Conn interface {
+	Tx
+	Autocommit(TxFunc) error
+	Transact(TxFunc) error
+}
+
+type TxFunc func(tx Tx) error
+
+type Tx interface {
 	Query(query string, args ...interface{}) (rows *sql.Rows, err error)
 	Exec(query string, args ...interface{}) (res sql.Result, err error)
-
-	Autocommit(ConnFun) error
-	Transact(ConnFun) error
 
 	InsertIgnoreId(query string, args ...interface{}) (err error)
 	InsertIgnoreDuplicates(query string, args ...interface{}) (err error)
