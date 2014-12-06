@@ -269,6 +269,7 @@ func (s *shardConn) Select(output interface{}, sql string, args ...interface{}) 
 	}
 	defer rows.Close()
 
+	outputReflection.Set(reflect.MakeSlice(outputReflection.Type(), 0, 0))
 	// Reflect onto structs
 	columns, err := rows.Columns()
 	if err != nil {
