@@ -37,10 +37,6 @@ func (s *shard) Transact(txFun TxFunc) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = tx.Exec("START TRANSACTION")
-	if err != nil {
-		return
-	}
 
 	err = txFun(&shardConn{tx})
 	if err != nil {
