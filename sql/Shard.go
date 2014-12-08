@@ -203,7 +203,7 @@ func (s *shardConn) UpdateNum(num int64, query string, args ...interface{}) (err
 		return
 	}
 	if rowsAffected != num {
-		return errors.New(fmt.Sprintf("UpdateOne affected %d rows. Query: %q Args: %q", rowsAffected, query, args))
+		return errors.New(fmt.Sprint("UpdateOne affected ", rowsAffected, " rows. Query: ", query, " Args: ", args))
 	}
 	return
 }
