@@ -14,10 +14,11 @@ type ShardSet struct {
 	dbNamePrefix string
 	numShards    int
 	maxShards    int
+	maxConns     int
 	shards       []*shard
 }
 
-func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int) *ShardSet {
+func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int, maxConns int) *ShardSet {
 	return &ShardSet{
 		username:     username,
 		password:     password,
@@ -26,6 +27,7 @@ func NewShardSet(username string, password string, host string, port int, dbName
 		dbNamePrefix: dbNamePrefix,
 		numShards:    numShards,
 		maxShards:    maxShards,
+		maxConns:     maxConns,
 	}
 }
 
@@ -65,18 +67,20 @@ func (s *ShardSet) addShard(i int) (err error) {
 	dbName := fmt.Sprint(s.dbNamePrefix, autoIncrementOffset)
 	sourceString := dbSourceString(s.username, s.password, s.host, s.port,
 		dbName, s.maxShards, autoIncrementOffset)
-	s.shards[i], err = newShard(sourceString)
+	s.shards[i], err = newShard(sourceString, s.maxConns)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func newShard(sourceString string) (s *shard, err error) {
+func newShard(sourceString string, maxConns int) (s *shard, err error) {
 	db, err := sql.Open("mysql", sourceString)
 	if err != nil {
 		return
 	}
+	db.SetMaxOpenConns(maxConns)
+	// db.SetMaxIdleConns(n)
 	err = db.Ping()
 	if err != nil {
 		return
