@@ -103,48 +103,66 @@ func fixArgs(args []interface{}) {
 
 func (s *shardConn) SelectInt(query string, args ...interface{}) (num int, err error) {
 	found, err := s.queryOne(query, args, &num)
+	if err != nil {
+		return
+	}
 	if !found {
-		err = errors.New("Query returned no rows")
+		err = errors.New("Query returned no rows: " + query)
 	}
 	return
 }
 
 func (s *shardConn) SelectString(query string, args ...interface{}) (str string, err error) {
 	found, err := s.queryOne(query, args, &str)
+	if err != nil {
+		return
+	}
 	if !found {
-		err = errors.New("Query returned no rows")
+		err = errors.New("Query returned no rows: " + query)
 	}
 	return
 }
 
 func (s *shardConn) SelectUint(query string, args ...interface{}) (num uint, err error) {
 	found, err := s.queryOne(query, args, &num)
+	if err != nil {
+		return
+	}
 	if !found {
-		err = errors.New("Query returned no rows")
+		err = errors.New("Query returned no rows: " + query)
 	}
 	return
 }
 
 func (s *shardConn) SelectIntForce(query string, args ...interface{}) (num int, err error) {
 	found, err := s.queryOne(query, args, &num)
+	if err != nil {
+		return
+	}
 	if !found {
-		panic("Query returned no rows")
+		panic("Query returned no rows: " + query)
 	}
 	return
 }
 
 func (s *shardConn) SelectStringForce(query string, args ...interface{}) (str string, err error) {
 	found, err := s.queryOne(query, args, &str)
+	if err != nil {
+		return
+	}
 	if !found {
-		panic("Query returned no rows")
+		panic("Query returned no rows: " + query)
 	}
 	return
 }
 
 func (s *shardConn) SelectUintForce(query string, args ...interface{}) (num uint, err error) {
 	found, err := s.queryOne(query, args, &num)
+	if err != nil {
+		return
+	}
 	if !found {
-		panic("Query returned no rows")
+		panic("Query returned no rows: " + query)
 	}
 	return
 }
