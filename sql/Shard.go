@@ -418,8 +418,13 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 			}
 			outputItemField.SetInt(reflect.ValueOf(intVal).Int())
 		default:
-			err = errors.New("fun/sql: Bad row value for column " + column + ": " + outputItemField.Kind().String())
-			return
+			if outputItemField.Kind() == reflect.Slice { // && outputItemField. == reflect.Uint8 {
+				// byte slice
+				outputItemField.SetBytes(bytes)
+			} else {
+				err = errors.New("fun/sql: Bad row value for column " + column + ": " + outputItemField.Kind().String())
+				return
+			}
 		}
 	}
 
