@@ -13,6 +13,7 @@ type TxFunc func(tx Tx) error
 type Tx interface {
 	Query(query string, args ...interface{}) (rows *sql.Rows, err error)
 	Exec(query string, args ...interface{}) (res sql.Result, err error)
+	ExecIgnoreDuplicateError(query string, args ...interface{}) (res sql.Result, err error)
 
 	InsertIgnoreId(query string, args ...interface{}) (err error)
 	InsertIgnoreDuplicates(query string, args ...interface{}) (err error)

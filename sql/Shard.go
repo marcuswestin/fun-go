@@ -74,6 +74,17 @@ func (s *shardConn) Exec(query string, args ...interface{}) (res sql.Result, err
 	}
 	return
 }
+func IsDuplicateExecError(err error) bool {
+	return strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1060: Duplicate column name") ||
+		strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1061: Duplicate key name")
+}
+func (s *shardConn) ExecIgnoreDuplicateError(query string, args ...interface{}) (res sql.Result, err error) {
+	res, err = s.Exec(query, args...)
+	if err != nil && IsDuplicateExecError(err) {
+		err = nil
+	}
+	return
+}
 
 /*
 Fix args by converting them to values of their underlying kind.
@@ -244,7 +255,6 @@ func (s *shardConn) InsertIgnoreId(query string, args ...interface{}) (err error
 func IsDuplicateEntryError(err error) bool {
 	return strings.Contains(err.Error(), "Duplicate entry")
 }
-
 func (s *shardConn) InsertIgnoreDuplicates(query string, args ...interface{}) (err error) {
 	_, err = s.Insert(query, args...)
 	if err != nil && IsDuplicateEntryError(err) {
