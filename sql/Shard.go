@@ -76,7 +76,8 @@ func (s *shardConn) Exec(query string, args ...interface{}) (res sql.Result, err
 }
 func IsDuplicateExecError(err error) bool {
 	return strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1060: Duplicate column name") ||
-		strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1061: Duplicate key name")
+		strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1061: Duplicate key name") ||
+		strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1050: Table")
 }
 func (s *shardConn) ExecIgnoreDuplicateError(query string, args ...interface{}) (res sql.Result, err error) {
 	res, err = s.Exec(query, args...)
