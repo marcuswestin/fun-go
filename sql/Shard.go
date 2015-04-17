@@ -309,7 +309,7 @@ func (s *shardConn) Select(output interface{}, sql string, args ...interface{}) 
 	for rows.Next() {
 		structPtrVal := reflect.New(structType.Elem())
 		outputItemStructVal := structPtrVal.Elem()
-		err = structFromRow(outputItemStructVal, columns, rows)
+		err = structFromRow(outputItemStructVal, columns, rows, sql)
 		if err != nil {
 			return err
 		}
@@ -376,7 +376,7 @@ func (s *shardConn) scanOne(output interface{}, query string, required bool, arg
 		vStruct = outputReflection.Elem()
 	}
 
-	err = structFromRow(vStruct, columns, rows)
+	err = structFromRow(vStruct, columns, rows, query)
 	if err != nil {
 		return err
 	}
@@ -393,7 +393,16 @@ func (s *shardConn) scanOne(output interface{}, query string, required bool, arg
 	return nil
 }
 
-func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows) (err error) {
+type scanError struct {
+	err   error
+	query string
+}
+
+func (s *scanError) Error() string {
+	return s.err.Error() + " [SQL: " + s.query + "]"
+}
+
+func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows, query string) (err error) {
 	vals := make([]interface{}, len(columns))
 	for i, _ := range columns {
 		vals[i] = &sql.RawBytes{}
@@ -401,6 +410,7 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 	}
 	err = rows.Scan(vals...)
 	if err != nil {
+		err = &scanError{err, query}
 		return
 	}
 
