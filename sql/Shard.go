@@ -125,11 +125,14 @@ func (s *shardConn) SelectInt(query string, args ...interface{}) (num int, err e
 }
 
 func (s *shardConn) SelectString(query string, args ...interface{}) (str string, err error) {
-	found, err := s.queryOne(query, args, &str)
+	var nullStr sql.NullString
+	found, err := s.queryOne(query, args, &nullStr)
 	if err != nil {
 		return
 	}
-	if !found {
+	if found {
+		str = nullStr.String
+	} else {
 		err = errors.New("Query returned no rows: " + query)
 	}
 	return
