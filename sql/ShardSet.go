@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 type ShardSet struct {
@@ -65,35 +66,46 @@ func (s *ShardSet) RandomShard() Conn {
 func (s *ShardSet) addShard(i int) (err error) {
 	autoIncrementOffset := i + 1
 	dbName := fmt.Sprint(s.dbNamePrefix, autoIncrementOffset)
-	sourceString := dbSourceString(s.username, s.password, s.host, s.port,
-		dbName, s.maxShards, autoIncrementOffset)
-	s.shards[i], err = newShard(sourceString, s.maxConns)
+	s.shards[i], err = newShard(s, dbName, autoIncrementOffset)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func newShard(sourceString string, maxConns int) (s *shard, err error) {
-	db, err := sql.Open("mysql", sourceString)
-	if err != nil {
-		return
+func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*shard, error) {
+	connVars := map[string]string{
+		"autocommit":               "true",
+		"auto_increment_increment": strconv.Itoa(s.maxShards),
+		"auto_increment_offset":    strconv.Itoa(autoIncrementOffset),
+		"sql_mode":                 "STRICT_ALL_TABLES",
 	}
-	db.SetMaxOpenConns(maxConns)
+
+	db, err := dbOpener(s.username, s.password, dbName, s.host, s.port, connVars)
+	if err != nil {
+		return nil, err
+	}
+
+	db.SetMaxOpenConns(s.maxConns)
 	// db.SetMaxIdleConns(n)
 	err = db.Ping()
 	if err != nil {
-		return
+		return nil, err
 	}
 	return &shard{db, shardConn{db}}, nil
 }
 
-func randomBetween(min, max int) int {
-	return rand.Intn(max-min) + min // random int in [min, max)
+func SetOpener(opener Opener) {
+	if dbOpener != nil {
+		panic("Opener already set - did you import two driver adapters?")
+	}
+	dbOpener = opener
 }
 
-func dbSourceString(username string, password string, host string, port int, dbName string, autoIncrementIncrement int, autoIncrementOffset int) string {
-	return fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?strict=true&clientFoundRows=true&autocommit=true&auto_increment_increment=%d&auto_increment_offset=%d&sql_mode=STRICT_ALL_TABLES",
-		username, password, host, port, dbName, autoIncrementIncrement, autoIncrementOffset)
+type Opener func(username, password, dbName, host string, port int, connVars map[string]string) (*sql.DB, error)
+
+var dbOpener Opener
+
+func randomBetween(min, max int) int {
+	return rand.Intn(max-min) + min // random int in [min, max)
 }

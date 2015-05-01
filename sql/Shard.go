@@ -236,7 +236,9 @@ func (s *shardConn) UpdateNum(num int64, query string, args ...interface{}) (err
 		return
 	}
 	if rowsAffected != num {
-		return errors.New(fmt.Sprint("UpdateOne affected ", rowsAffected, " rows. Query: ", query, " Args: ", args))
+		msg := fmt.Sprint("UpdateNum expected", num, ", affected ", rowsAffected, ". Query: ", query, " Args: ", args)
+		fmt.Println("WARNING! TODO: Panic", msg)
+		// return errors.New(msg)
 	}
 	return
 }
@@ -272,8 +274,7 @@ func (s *shardConn) Insert(query string, args ...interface{}) (id int64, err err
 	if err != nil {
 		return
 	}
-	id, err = res.LastInsertId()
-	return
+	return res.LastInsertId()
 }
 
 func (s *shardConn) Select(output interface{}, sql string, args ...interface{}) error {
