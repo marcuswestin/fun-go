@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 )
 
 type ShardSet struct {
@@ -74,7 +75,7 @@ func (s *ShardSet) addShard(i int) (err error) {
 }
 
 func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*shard, error) {
-	connVars := map[string]string{
+	connVars := ConnVariables{
 		"autocommit":               "true",
 		"auto_increment_increment": strconv.Itoa(s.maxShards),
 		"auto_increment_offset":    strconv.Itoa(autoIncrementOffset),
@@ -102,7 +103,19 @@ func SetOpener(opener Opener) {
 	dbOpener = opener
 }
 
-type Opener func(username, password, dbName, host string, port int, connVars map[string]string) (*sql.DB, error)
+type ConnVariables map[string]string
+
+func (connVars ConnVariables) Join(sep string) string {
+	kvps := make([]string, len(connVars))
+	i := 0
+	for param, val := range connVars {
+		kvps[i] = param + "=" + val
+		i += 1
+	}
+	return strings.Join(kvps, sep)
+}
+
+type Opener func(username, password, dbName, host string, port int, connVars ConnVariables) (*sql.DB, error)
 
 var dbOpener Opener
 
