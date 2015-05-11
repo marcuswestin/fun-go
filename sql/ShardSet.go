@@ -77,6 +77,7 @@ func (s *ShardSet) addShard(i int) (err error) {
 func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*shard, error) {
 	connVars := ConnVariables{
 		"autocommit":               "true",
+		"clientFoundRows":          "true",
 		"auto_increment_increment": strconv.Itoa(s.maxShards),
 		"auto_increment_offset":    strconv.Itoa(autoIncrementOffset),
 		"sql_mode":                 "STRICT_ALL_TABLES",

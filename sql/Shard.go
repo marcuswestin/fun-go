@@ -236,9 +236,8 @@ func (s *shardConn) UpdateNum(num int64, query string, args ...interface{}) (err
 		return
 	}
 	if rowsAffected != num {
-		msg := fmt.Sprint("UpdateNum expected", num, ", affected ", rowsAffected, ". Query: ", query, " Args: ", args)
-		fmt.Println("WARNING! TODO: Panic", msg)
-		// return errors.New(msg)
+		msg := fmt.Sprint("UpdateNum expected ", num, ", affected ", rowsAffected, ". Query: ", query, " Args: ", args)
+		return errors.New(msg)
 	}
 	return
 }
