@@ -114,7 +114,7 @@ func fixArgs(args []interface{}) {
 	}
 }
 
-func (s *shardConn) SelectInt(query string, args ...interface{}) (num int, err error) {
+func (s *shardConn) SelectInt(query string, args ...interface{}) (num int64, err error) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
@@ -150,7 +150,7 @@ func (s *shardConn) SelectUint(query string, args ...interface{}) (num uint, err
 	return
 }
 
-func (s *shardConn) SelectIntForce(query string, args ...interface{}) (num int, err error) {
+func (s *shardConn) SelectIntForce(query string, args ...interface{}) (num int64, err error) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
@@ -183,7 +183,7 @@ func (s *shardConn) SelectUintForce(query string, args ...interface{}) (num uint
 	return
 }
 
-func (s *shardConn) SelectIntMaybe(query string, args ...interface{}) (num int, found bool, err error) {
+func (s *shardConn) SelectIntMaybe(query string, args ...interface{}) (num int64, found bool, err error) {
 	found, err = s.queryOne(query, args, &num)
 	return
 }
