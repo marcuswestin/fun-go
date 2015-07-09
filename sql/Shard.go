@@ -277,7 +277,7 @@ func (s *shardConn) Insert(query string, args ...interface{}) (id int64, err err
 	return res.LastInsertId()
 }
 
-func (s *shardConn) Select(output interface{}, sql string, args ...interface{}) error {
+func (s *shardConn) Select(output interface{}, query string, args ...interface{}) error {
 	// Check types
 	var outputPtr = reflect.ValueOf(output)
 	if outputPtr.Kind() != reflect.Ptr {
@@ -290,43 +290,55 @@ func (s *shardConn) Select(output interface{}, sql string, args ...interface{}) 
 	if outputReflection.Len() != 0 {
 		return errors.New("fun/sql.Select: expects items to be empty")
 	}
-	outputItemType := outputReflection.Type().Elem().Elem()
-	if outputItemType.Kind() != reflect.Struct {
-		return errors.New("fun/sql.Select: expects items to be a slice of structs")
-	}
+	outputReflection.Set(reflect.MakeSlice(outputReflection.Type(), 0, 0))
 
 	// Query DB
-	var rows, err = s.Query(sql, args...)
+	var rows, err = s.Query(query, args...)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
-
-	outputReflection.Set(reflect.MakeSlice(outputReflection.Type(), 0, 0))
-	// Reflect onto structs
 	columns, err := rows.Columns()
 	if err != nil {
 		return err
 	}
 
-	structType := outputReflection.Type().Elem()
-	for rows.Next() {
-		structPtrVal := reflect.New(structType.Elem())
-		outputItemStructVal := structPtrVal.Elem()
-		err = structFromRow(outputItemStructVal, columns, rows, sql)
-		if err != nil {
-			return err
+	valType := outputReflection.Type().Elem()
+	isStruct := (valType.Kind() == reflect.Ptr && valType.Elem().Kind() == reflect.Struct)
+	if isStruct {
+		// Reflect onto structs
+		for rows.Next() {
+			structPtrVal := reflect.New(valType.Elem())
+			outputItemStructVal := structPtrVal.Elem()
+			err = structFromRow(outputItemStructVal, columns, rows, query)
+			if err != nil {
+				return err
+			}
+			outputReflection.Set(reflect.Append(outputReflection, structPtrVal))
 		}
-
-		outputReflection.Set(reflect.Append(outputReflection, structPtrVal))
+	} else {
+		if len(columns) != 1 {
+			return errors.New("Expected single column in select statement for slice of non-struct values")
+		}
+		for rows.Next() {
+			rawBytes := &sql.RawBytes{}
+			err = rows.Scan(rawBytes)
+			if err != nil {
+				return err
+			}
+			outputValue := reflect.New(valType).Elem()
+			err = scanColumnValue(columns[0], outputValue, rawBytes)
+			if err != nil {
+				return err
+			}
+			if err != nil {
+				return err
+			}
+			outputReflection.Set(reflect.Append(outputReflection, outputValue))
+		}
 	}
 
-	err = rows.Err()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return rows.Err()
 }
 
 const scanOneTypeError = "fun/sql.SelectOne: expects a **struct, e.g var person *Person; c.SelectOne(&person, sql)"
@@ -410,7 +422,6 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 	vals := make([]interface{}, len(columns))
 	for i, _ := range columns {
 		vals[i] = &sql.RawBytes{}
-		// vals[i] = &[]byte{}
 	}
 	err = rows.Scan(vals...)
 	if err != nil {
@@ -418,40 +429,46 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 		return
 	}
 
-	var uintVal uint64
-	var intVal int64
 	for i, column := range columns {
-		bytes := []byte(*vals[i].(*sql.RawBytes))
-		// bytes := []byte(*vals[i].(*[]byte))
-		if bytes == nil {
-			continue // Leave struct field empty
-		}
-		var outputItemField = outputItemStructVal.FieldByName(column)
-		switch outputItemField.Kind() {
-		case reflect.String:
-			outputItemField.SetString(string(bytes))
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			uintVal, err = strconv.ParseUint(string(bytes), 10, 64)
-			if err != nil {
-				return
-			}
-			outputItemField.SetUint(reflect.ValueOf(uintVal).Uint())
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			intVal, err = strconv.ParseInt(string(bytes), 10, 64)
-			if err != nil {
-				return
-			}
-			outputItemField.SetInt(reflect.ValueOf(intVal).Int())
-		default:
-			if outputItemField.Kind() == reflect.Slice { // && outputItemField. == reflect.Uint8 {
-				// byte slice
-				outputItemField.SetBytes(bytes)
-			} else {
-				err = errors.New("fun/sql: Bad row value for column " + column + ": " + outputItemField.Kind().String())
-				return
-			}
+		err = scanColumnValue(column, outputItemStructVal.FieldByName(column), vals[i].(*sql.RawBytes))
+		if err != nil {
+			return
 		}
 	}
 
+	return
+}
+
+func scanColumnValue(column string, reflectVal reflect.Value, value *sql.RawBytes) (err error) {
+	bytes := []byte(*value)
+	if bytes == nil {
+		return // Leave struct field empty
+	}
+	switch reflectVal.Kind() {
+	case reflect.String:
+		reflectVal.SetString(string(bytes))
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		var uintVal uint64
+		uintVal, err = strconv.ParseUint(string(bytes), 10, 64)
+		if err != nil {
+			return
+		}
+		reflectVal.SetUint(reflect.ValueOf(uintVal).Uint())
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		var intVal int64
+		intVal, err = strconv.ParseInt(string(bytes), 10, 64)
+		if err != nil {
+			return
+		}
+		reflectVal.SetInt(reflect.ValueOf(intVal).Int())
+	default:
+		if reflectVal.Kind() == reflect.Slice { // && reflectVal. == reflect.Uint8 {
+			// byte slice
+			reflectVal.SetBytes(bytes)
+		} else {
+			err = errors.New("fun/sql: Bad row value for column " + column + ": " + reflectVal.Kind().String())
+			return
+		}
+	}
 	return
 }
