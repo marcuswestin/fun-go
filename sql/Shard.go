@@ -1,4 +1,4 @@
-package shards
+package sql
 
 import (
 	"database/sql"
@@ -10,61 +10,40 @@ import (
 	"github.com/marcuswestin/fun-go/errs"
 )
 
+type TxFunc func(shard *Shard) errs.Err
+
 type Shard struct {
-	db *sql.DB
-	ShardConn
-}
-
-type Error interface {
-	Error() string
-	ASAPPUserErrorMessage() string
-}
-
-type ShardConn struct {
+	db      *sql.DB // Nil for transaction and autocommit shard structs
 	sqlConn interface {
 		Exec(query string, args ...interface{}) (sql.Result, error)
 		Query(query string, args ...interface{}) (*sql.Rows, error)
 	}
 }
 
-// type txWrapper struct {
-// 	*sql.Tx
-// }
-//
-// func (t txWrapper) Exec(string, ...interface{}) (sql.Result, errs.Err) {
-// 	return nil, nil
-// }
-// func (t txWrapper) Query(string, ...interface{}) (*sql.Rows, errs.Err) {
-// 	return nil, nil
-// }
-// func (t txWrapper) Select(string, ...interface{}) (*sql.Rows, errs.Err) {
-// 	return nil, nil
-// }
-
 func (s *Shard) Autocommit(acFun TxFunc) errs.Err {
-	tx, err := s.db.Begin()
+	conn, err := s.db.Begin()
 	if err != nil {
 		return errs.Wrap(err, "Could not open autocommit", nil)
 	}
 
-	return acFun(&ShardConn{tx})
+	return acFun(&Shard{nil, conn})
 }
 
 func (s *Shard) Transact(txFun TxFunc) errs.Err {
-	tx, stdErr := s.db.Begin()
+	conn, stdErr := s.db.Begin()
 	if stdErr != nil {
 		return errs.Wrap(stdErr, "Could not open transaction", nil)
 	}
 
-	err := txFun(&ShardConn{tx})
+	err := txFun(&Shard{nil, conn})
 	if err != nil {
-		rbErr := tx.Rollback()
+		rbErr := conn.Rollback()
 		if rbErr != nil {
 			return errs.Wrap(rbErr, "Transact rollback error", errs.Info{"TransactionError": err})
 		}
 
 	} else {
-		stdErr = tx.Commit()
+		stdErr = conn.Commit()
 		if stdErr != nil {
 			return errs.Wrap(stdErr, "Could not commit transaction", nil)
 		}
@@ -74,7 +53,7 @@ func (s *Shard) Transact(txFun TxFunc) errs.Err {
 }
 
 // Query with fixed args
-func (s *ShardConn) Query(query string, args ...interface{}) (*sql.Rows, errs.Err) {
+func (s *Shard) Query(query string, args ...interface{}) (*sql.Rows, errs.Err) {
 	fixArgs(args)
 	rows, stdErr := s.sqlConn.Query(query, args...)
 	if stdErr != nil {
@@ -84,7 +63,7 @@ func (s *ShardConn) Query(query string, args ...interface{}) (*sql.Rows, errs.Er
 }
 
 // Execute with fixed args
-func (s *ShardConn) Exec(query string, args ...interface{}) (sql.Result, errs.Err) {
+func (s *Shard) Exec(query string, args ...interface{}) (sql.Result, errs.Err) {
 	fixArgs(args)
 	res, stdErr := s.sqlConn.Exec(query, args...)
 	if stdErr != nil {
@@ -99,7 +78,7 @@ func IsDuplicateExecError(err errs.Err) bool {
 		strings.HasPrefix(str, "sql.Exec Error: Error 1050: Table") ||
 		strings.HasPrefix(str, "sql.Exec Error: Error 1022: Can't write; duplicate key in table")
 }
-func (s *ShardConn) ExecIgnoreDuplicateError(query string, args ...interface{}) (res sql.Result, err errs.Err) {
+func (s *Shard) ExecIgnoreDuplicateError(query string, args ...interface{}) (res sql.Result, err errs.Err) {
 	res, err = s.Exec(query, args...)
 	if err != nil && IsDuplicateExecError(err) {
 		err = nil
@@ -133,7 +112,7 @@ func fixArgs(args []interface{}) {
 	}
 }
 
-func (s *ShardConn) SelectInt(query string, args ...interface{}) (num int64, err errs.Err) {
+func (s *Shard) SelectInt(query string, args ...interface{}) (num int64, err errs.Err) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
@@ -145,7 +124,7 @@ func (s *ShardConn) SelectInt(query string, args ...interface{}) (num int64, err
 	return
 }
 
-func (s *ShardConn) SelectString(query string, args ...interface{}) (str string, err errs.Err) {
+func (s *Shard) SelectString(query string, args ...interface{}) (str string, err errs.Err) {
 	var nullStr sql.NullString
 	found, err := s.queryOne(query, args, &nullStr)
 	if err != nil {
@@ -160,7 +139,7 @@ func (s *ShardConn) SelectString(query string, args ...interface{}) (str string,
 	return
 }
 
-func (s *ShardConn) SelectUint(query string, args ...interface{}) (num uint, err errs.Err) {
+func (s *Shard) SelectUint(query string, args ...interface{}) (num uint, err errs.Err) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
@@ -172,7 +151,7 @@ func (s *ShardConn) SelectUint(query string, args ...interface{}) (num uint, err
 	return
 }
 
-func (s *ShardConn) SelectIntForce(query string, args ...interface{}) (num int64, err errs.Err) {
+func (s *Shard) SelectIntForce(query string, args ...interface{}) (num int64, err errs.Err) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
@@ -183,7 +162,7 @@ func (s *ShardConn) SelectIntForce(query string, args ...interface{}) (num int64
 	return
 }
 
-func (s *ShardConn) SelectStringForce(query string, args ...interface{}) (str string, err errs.Err) {
+func (s *Shard) SelectStringForce(query string, args ...interface{}) (str string, err errs.Err) {
 	found, err := s.queryOne(query, args, &str)
 	if err != nil {
 		return
@@ -194,7 +173,7 @@ func (s *ShardConn) SelectStringForce(query string, args ...interface{}) (str st
 	return
 }
 
-func (s *ShardConn) SelectUintForce(query string, args ...interface{}) (num uint, err errs.Err) {
+func (s *Shard) SelectUintForce(query string, args ...interface{}) (num uint, err errs.Err) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
@@ -205,22 +184,22 @@ func (s *ShardConn) SelectUintForce(query string, args ...interface{}) (num uint
 	return
 }
 
-func (s *ShardConn) SelectIntMaybe(query string, args ...interface{}) (num int64, found bool, err errs.Err) {
+func (s *Shard) SelectIntMaybe(query string, args ...interface{}) (num int64, found bool, err errs.Err) {
 	found, err = s.queryOne(query, args, &num)
 	return
 }
 
-func (s *ShardConn) SelectStringMaybe(query string, args ...interface{}) (str string, found bool, err errs.Err) {
+func (s *Shard) SelectStringMaybe(query string, args ...interface{}) (str string, found bool, err errs.Err) {
 	found, err = s.queryOne(query, args, &str)
 	return
 }
 
-func (s *ShardConn) SelectUintMaybe(query string, args ...interface{}) (num uint, found bool, err errs.Err) {
+func (s *Shard) SelectUintMaybe(query string, args ...interface{}) (num uint, found bool, err errs.Err) {
 	found, err = s.queryOne(query, args, &num)
 	return
 }
 
-func (s *ShardConn) queryOne(query string, args []interface{}, out interface{}) (found bool, err errs.Err) {
+func (s *Shard) queryOne(query string, args []interface{}, out interface{}) (found bool, err errs.Err) {
 	rows, err := s.Query(query, args...)
 	if err != nil {
 		return
@@ -249,11 +228,11 @@ func (s *ShardConn) queryOne(query string, args []interface{}, out interface{}) 
 	return
 }
 
-func (s *ShardConn) UpdateOne(query string, args ...interface{}) (err errs.Err) {
+func (s *Shard) UpdateOne(query string, args ...interface{}) (err errs.Err) {
 	return s.UpdateNum(1, query, args...)
 }
 
-func (s *ShardConn) UpdateNum(num int64, query string, args ...interface{}) (err errs.Err) {
+func (s *Shard) UpdateNum(num int64, query string, args ...interface{}) (err errs.Err) {
 	rowsAffected, err := s.Update(query, args...)
 	if err != nil {
 		return err
@@ -267,7 +246,7 @@ func (s *ShardConn) UpdateNum(num int64, query string, args ...interface{}) (err
 	return
 }
 
-func (s *ShardConn) Update(query string, args ...interface{}) (rowsAffected int64, err errs.Err) {
+func (s *Shard) Update(query string, args ...interface{}) (rowsAffected int64, err errs.Err) {
 	res, err := s.Exec(query, args...)
 	if err != nil {
 		return
@@ -281,7 +260,7 @@ func (s *ShardConn) Update(query string, args ...interface{}) (rowsAffected int6
 	return
 }
 
-func (s *ShardConn) InsertIgnoreId(query string, args ...interface{}) (err errs.Err) {
+func (s *Shard) InsertIgnoreId(query string, args ...interface{}) (err errs.Err) {
 	_, err = s.Insert(query, args...)
 	return
 }
@@ -290,7 +269,7 @@ func IsDuplicateEntryError(err errs.Err) bool {
 	str := err.StandardError().Error()
 	return strings.Contains(str, "Duplicate entry")
 }
-func (s *ShardConn) InsertIgnoreDuplicates(query string, args ...interface{}) (err errs.Err) {
+func (s *Shard) InsertIgnoreDuplicates(query string, args ...interface{}) (err errs.Err) {
 	_, err = s.Insert(query, args...)
 	if err != nil && IsDuplicateEntryError(err) {
 		err = nil
@@ -298,7 +277,7 @@ func (s *ShardConn) InsertIgnoreDuplicates(query string, args ...interface{}) (e
 	return
 }
 
-func (s *ShardConn) Insert(query string, args ...interface{}) (id int64, err errs.Err) {
+func (s *Shard) Insert(query string, args ...interface{}) (id int64, err errs.Err) {
 	res, err := s.Exec(query, args...)
 	if err != nil {
 		return
@@ -311,7 +290,7 @@ func (s *ShardConn) Insert(query string, args ...interface{}) (id int64, err err
 	return
 }
 
-func (s *ShardConn) Select(output interface{}, query string, args ...interface{}) errs.Err {
+func (s *Shard) Select(output interface{}, query string, args ...interface{}) errs.Err {
 	// Check types
 	var outputPtr = reflect.ValueOf(output)
 	if outputPtr.Kind() != reflect.Ptr {
@@ -381,13 +360,13 @@ func (s *ShardConn) Select(output interface{}, query string, args ...interface{}
 
 const scanOneTypeError = "fun/sql.SelectOne: expects a **struct, e.g var person *Person; c.SelectOne(&person, sql)"
 
-func (s *ShardConn) SelectOne(output interface{}, query string, args ...interface{}) errs.Err {
+func (s *Shard) SelectOne(output interface{}, query string, args ...interface{}) errs.Err {
 	return s.scanOne(output, query, true, args...)
 }
-func (s *ShardConn) SelectMaybe(output interface{}, query string, args ...interface{}) errs.Err {
+func (s *Shard) SelectMaybe(output interface{}, query string, args ...interface{}) errs.Err {
 	return s.scanOne(output, query, false, args...)
 }
-func (s *ShardConn) scanOne(output interface{}, query string, required bool, args ...interface{}) errs.Err {
+func (s *Shard) scanOne(output interface{}, query string, required bool, args ...interface{}) errs.Err {
 	// Check types
 	var outputReflectionPtr = reflect.ValueOf(output)
 	if !outputReflectionPtr.IsValid() {

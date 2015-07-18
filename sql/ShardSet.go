@@ -1,11 +1,12 @@
-package shards
+package sql
 
 import (
 	"database/sql"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"strings"
+
+	"github.com/marcuswestin/fun-go/random"
 )
 
 type ShardSet struct {
@@ -61,7 +62,7 @@ func (s *ShardSet) All() []*Shard {
 }
 
 func (s *ShardSet) RandomShard() *Shard {
-	return s.shards[randomBetween(0, len(s.shards))]
+	return s.shards[random.Between(0, len(s.shards))]
 }
 
 func (s *ShardSet) addShard(i int) (err error) {
@@ -96,7 +97,7 @@ func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*Shard, erro
 	if err != nil {
 		return nil, err
 	}
-	return &Shard{db, ShardConn{db}}, nil
+	return &Shard{db, db}, nil
 }
 
 func SetOpener(opener Opener) {
@@ -121,7 +122,3 @@ func (connVars ConnVariables) Join(sep string) string {
 type Opener func(username, password, dbName, host string, port int, connVars ConnVariables) (*sql.DB, error)
 
 var dbOpener Opener
-
-func randomBetween(min, max int) int {
-	return rand.Intn(max-min) + min // random int in [min, max)
-}
