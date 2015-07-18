@@ -1,4 +1,4 @@
-package sql
+package shards
 
 import (
 	"database/sql"
@@ -17,7 +17,7 @@ type ShardSet struct {
 	numShards    int
 	maxShards    int
 	maxConns     int
-	shards       []*shard
+	shards       []*Shard
 }
 
 func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int, maxConns int) *ShardSet {
@@ -34,7 +34,7 @@ func NewShardSet(username string, password string, host string, port int, dbName
 }
 
 func (s *ShardSet) Connect() (err error) {
-	s.shards = make([]*shard, s.numShards)
+	s.shards = make([]*Shard, s.numShards)
 	for i := 0; i < s.numShards; i++ {
 		err = s.addShard(i)
 		if err != nil {
@@ -44,7 +44,7 @@ func (s *ShardSet) Connect() (err error) {
 	return
 }
 
-func (s *ShardSet) Shard(id int64) Conn {
+func (s *ShardSet) Shard(id int64) *Shard {
 	if id == 0 {
 		panic("Bad shard index id 0")
 	}
@@ -52,15 +52,15 @@ func (s *ShardSet) Shard(id int64) Conn {
 	return s.shards[shardIndex]
 }
 
-func (s *ShardSet) All() []Conn {
-	all := make([]Conn, len(s.shards))
+func (s *ShardSet) All() []*Shard {
+	all := make([]*Shard, len(s.shards))
 	for i, shard := range s.shards {
-		all[i] = Conn(shard)
+		all[i] = shard
 	}
 	return all
 }
 
-func (s *ShardSet) RandomShard() Conn {
+func (s *ShardSet) RandomShard() *Shard {
 	return s.shards[randomBetween(0, len(s.shards))]
 }
 
@@ -74,7 +74,7 @@ func (s *ShardSet) addShard(i int) (err error) {
 	return
 }
 
-func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*shard, error) {
+func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*Shard, error) {
 	connVars := ConnVariables{
 		"autocommit":               "true",
 		"clientFoundRows":          "true",
@@ -96,7 +96,7 @@ func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*shard, erro
 	if err != nil {
 		return nil, err
 	}
-	return &shard{db, shardConn{db}}, nil
+	return &Shard{db, ShardConn{db}}, nil
 }
 
 func SetOpener(opener Opener) {

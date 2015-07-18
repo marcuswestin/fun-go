@@ -5,14 +5,14 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
-	funSql "github.com/marcuswestin/FunGo/sql"
+	"github.com/marcuswestin/fun-go/sql"
 )
 
 func init() {
-	funSql.SetOpener(goSqlDriverOpener)
+	shards.SetOpener(goSqlDriverOpener)
 }
 
-func goSqlDriverOpener(username, password, dbName, host string, port int, connVars funSql.ConnVariables) (*sql.DB, error) {
+func goSqlDriverOpener(username, password, dbName, host string, port int, connVars shards.ConnVariables) (*sql.DB, error) {
 	sourceString := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?%s",
 		username, password, host, port, dbName, connVars.Join("&"))

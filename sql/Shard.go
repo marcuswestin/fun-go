@@ -1,86 +1,105 @@
-package sql
+package shards
 
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/marcuswestin/fun-go/errs"
 )
 
-type shard struct {
+type Shard struct {
 	db *sql.DB
-	shardConn
+	ShardConn
 }
 
-type sqlConn interface {
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	Query(query string, args ...interface{}) (*sql.Rows, error)
+type Error interface {
+	Error() string
+	ASAPPUserErrorMessage() string
 }
 
-type shardConn struct {
-	sqlConn
+type ShardConn struct {
+	sqlConn interface {
+		Exec(query string, args ...interface{}) (sql.Result, error)
+		Query(query string, args ...interface{}) (*sql.Rows, error)
+	}
 }
 
-func (s *shard) Autocommit(acFun TxFunc) (err error) {
+// type txWrapper struct {
+// 	*sql.Tx
+// }
+//
+// func (t txWrapper) Exec(string, ...interface{}) (sql.Result, errs.Err) {
+// 	return nil, nil
+// }
+// func (t txWrapper) Query(string, ...interface{}) (*sql.Rows, errs.Err) {
+// 	return nil, nil
+// }
+// func (t txWrapper) Select(string, ...interface{}) (*sql.Rows, errs.Err) {
+// 	return nil, nil
+// }
+
+func (s *Shard) Autocommit(acFun TxFunc) errs.Err {
 	tx, err := s.db.Begin()
 	if err != nil {
-		return
+		return errs.Wrap(err, "Could not open autocommit", nil)
 	}
 
-	return acFun(&shardConn{tx})
+	return acFun(&ShardConn{tx})
 }
 
-func (s *shard) Transact(txFun TxFunc) (err error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		return
+func (s *Shard) Transact(txFun TxFunc) errs.Err {
+	tx, stdErr := s.db.Begin()
+	if stdErr != nil {
+		return errs.Wrap(stdErr, "Could not open transaction", nil)
 	}
 
-	err = txFun(&shardConn{tx})
+	err := txFun(&ShardConn{tx})
 	if err != nil {
 		rbErr := tx.Rollback()
 		if rbErr != nil {
-			return errors.New("Rollback error: " + rbErr.Error() + " Query error: " + err.Error())
+			return errs.Wrap(rbErr, "Transact rollback error", errs.Info{"TransactionError": err})
 		}
 
 	} else {
-		err = tx.Commit()
-		if err != nil {
-			return
+		stdErr = tx.Commit()
+		if stdErr != nil {
+			return errs.Wrap(stdErr, "Could not commit transaction", nil)
 		}
 	}
 
-	return
+	return nil
 }
 
 // Query with fixed args
-func (s *shardConn) Query(query string, args ...interface{}) (rows *sql.Rows, err error) {
+func (s *ShardConn) Query(query string, args ...interface{}) (*sql.Rows, errs.Err) {
 	fixArgs(args)
-	rows, err = s.sqlConn.Query(query, args...)
-	if err != nil {
-		err = errors.New("sql.Query Error: " + err.Error() + ". Query: " + query + " Args: " + fmt.Sprint(args))
+	rows, stdErr := s.sqlConn.Query(query, args...)
+	if stdErr != nil {
+		return nil, errs.Wrap(stdErr, "Query sqlConn.Query() error", errInfo(query, args))
 	}
-	return
+	return rows, nil
 }
 
 // Execute with fixed args
-func (s *shardConn) Exec(query string, args ...interface{}) (res sql.Result, err error) {
+func (s *ShardConn) Exec(query string, args ...interface{}) (sql.Result, errs.Err) {
 	fixArgs(args)
-	res, err = s.sqlConn.Exec(query, args...)
-	if err != nil {
-		err = errors.New("sql.Exec Error: " + err.Error() + ". Query: " + query + " Args: " + fmt.Sprint(args))
+	res, stdErr := s.sqlConn.Exec(query, args...)
+	if stdErr != nil {
+		return nil, errs.Wrap(stdErr, "Exec sqlConn.Exec() error", errInfo(query, args))
 	}
-	return
+	return res, nil
 }
-func IsDuplicateExecError(err error) bool {
-	return strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1060: Duplicate column name") ||
-		strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1061: Duplicate key name") ||
-		strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1050: Table") ||
-		strings.HasPrefix(err.Error(), "sql.Exec Error: Error 1022: Can't write; duplicate key in table")
+func IsDuplicateExecError(err errs.Err) bool {
+	str := err.StandardError().Error()
+	return strings.HasPrefix(str, "sql.Exec Error: Error 1060: Duplicate column name") ||
+		strings.HasPrefix(str, "sql.Exec Error: Error 1061: Duplicate key name") ||
+		strings.HasPrefix(str, "sql.Exec Error: Error 1050: Table") ||
+		strings.HasPrefix(str, "sql.Exec Error: Error 1022: Can't write; duplicate key in table")
 }
-func (s *shardConn) ExecIgnoreDuplicateError(query string, args ...interface{}) (res sql.Result, err error) {
+func (s *ShardConn) ExecIgnoreDuplicateError(query string, args ...interface{}) (res sql.Result, err errs.Err) {
 	res, err = s.Exec(query, args...)
 	if err != nil && IsDuplicateExecError(err) {
 		err = nil
@@ -114,18 +133,19 @@ func fixArgs(args []interface{}) {
 	}
 }
 
-func (s *shardConn) SelectInt(query string, args ...interface{}) (num int64, err error) {
+func (s *ShardConn) SelectInt(query string, args ...interface{}) (num int64, err errs.Err) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
 	}
 	if !found {
-		err = errors.New("Query returned no rows: " + query)
+		err = errs.New("Query returned no rows", errInfo(query, args))
+		return
 	}
 	return
 }
 
-func (s *shardConn) SelectString(query string, args ...interface{}) (str string, err error) {
+func (s *ShardConn) SelectString(query string, args ...interface{}) (str string, err errs.Err) {
 	var nullStr sql.NullString
 	found, err := s.queryOne(query, args, &nullStr)
 	if err != nil {
@@ -134,23 +154,25 @@ func (s *shardConn) SelectString(query string, args ...interface{}) (str string,
 	if found {
 		str = nullStr.String
 	} else {
-		err = errors.New("Query returned no rows: " + query)
+		err = errs.New("Query returned no rows", errInfo(query, args))
+		return
 	}
 	return
 }
 
-func (s *shardConn) SelectUint(query string, args ...interface{}) (num uint, err error) {
+func (s *ShardConn) SelectUint(query string, args ...interface{}) (num uint, err errs.Err) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
 	}
 	if !found {
-		err = errors.New("Query returned no rows: " + query)
+		err = errs.New("Query returned no rows", errInfo(query, args))
+		return
 	}
 	return
 }
 
-func (s *shardConn) SelectIntForce(query string, args ...interface{}) (num int64, err error) {
+func (s *ShardConn) SelectIntForce(query string, args ...interface{}) (num int64, err errs.Err) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
@@ -161,7 +183,7 @@ func (s *shardConn) SelectIntForce(query string, args ...interface{}) (num int64
 	return
 }
 
-func (s *shardConn) SelectStringForce(query string, args ...interface{}) (str string, err error) {
+func (s *ShardConn) SelectStringForce(query string, args ...interface{}) (str string, err errs.Err) {
 	found, err := s.queryOne(query, args, &str)
 	if err != nil {
 		return
@@ -172,7 +194,7 @@ func (s *shardConn) SelectStringForce(query string, args ...interface{}) (str st
 	return
 }
 
-func (s *shardConn) SelectUintForce(query string, args ...interface{}) (num uint, err error) {
+func (s *ShardConn) SelectUintForce(query string, args ...interface{}) (num uint, err errs.Err) {
 	found, err := s.queryOne(query, args, &num)
 	if err != nil {
 		return
@@ -183,22 +205,22 @@ func (s *shardConn) SelectUintForce(query string, args ...interface{}) (num uint
 	return
 }
 
-func (s *shardConn) SelectIntMaybe(query string, args ...interface{}) (num int64, found bool, err error) {
+func (s *ShardConn) SelectIntMaybe(query string, args ...interface{}) (num int64, found bool, err errs.Err) {
 	found, err = s.queryOne(query, args, &num)
 	return
 }
 
-func (s *shardConn) SelectStringMaybe(query string, args ...interface{}) (str string, found bool, err error) {
+func (s *ShardConn) SelectStringMaybe(query string, args ...interface{}) (str string, found bool, err errs.Err) {
 	found, err = s.queryOne(query, args, &str)
 	return
 }
 
-func (s *shardConn) SelectUintMaybe(query string, args ...interface{}) (num uint, found bool, err error) {
+func (s *ShardConn) SelectUintMaybe(query string, args ...interface{}) (num uint, found bool, err errs.Err) {
 	found, err = s.queryOne(query, args, &num)
 	return
 }
 
-func (s *shardConn) queryOne(query string, args []interface{}, out interface{}) (found bool, err error) {
+func (s *ShardConn) queryOne(query string, args []interface{}, out interface{}) (found bool, err errs.Err) {
 	rows, err := s.Query(query, args...)
 	if err != nil {
 		return
@@ -206,62 +228,69 @@ func (s *shardConn) queryOne(query string, args []interface{}, out interface{}) 
 	defer rows.Close()
 
 	if rows.Next() {
-		err = rows.Scan(out)
-		if err != nil {
+		stdErr := rows.Scan(out)
+		if stdErr != nil {
+			err = errs.Wrap(stdErr, "queryOne rows.Scan error", errInfo(query, args))
 			return
 		}
 		if rows.Next() {
-			err = errors.New("Query returned too many rows")
+			err = errs.New("queryOne query returned too many rows", errInfo(query, args))
 			return
 		}
 		found = true
-	} else {
-		found = false
 	}
 
-	err = rows.Err()
-	if err != nil {
+	stdErr := rows.Err()
+	if stdErr != nil {
+		err = errs.Wrap(stdErr, "queryOne rows.Err", errInfo(query, args))
 		return
 	}
 
 	return
 }
 
-func (s *shardConn) UpdateOne(query string, args ...interface{}) (err error) {
+func (s *ShardConn) UpdateOne(query string, args ...interface{}) (err errs.Err) {
 	return s.UpdateNum(1, query, args...)
 }
 
-func (s *shardConn) UpdateNum(num int64, query string, args ...interface{}) (err error) {
+func (s *ShardConn) UpdateNum(num int64, query string, args ...interface{}) (err errs.Err) {
 	rowsAffected, err := s.Update(query, args...)
 	if err != nil {
-		return
+		return err
 	}
 	if rowsAffected != num {
-		msg := fmt.Sprint("UpdateNum expected ", num, ", affected ", rowsAffected, ". Query: ", query, " Args: ", args)
-		return errors.New(msg)
+		info := errInfo(query, args)
+		info["ExpectedRows"] = num
+		info["AffectedRows"] = rowsAffected
+		return errs.New("UpdateNum affected unexpected number of rows", info)
 	}
 	return
 }
 
-func (s *shardConn) Update(query string, args ...interface{}) (rowsAffected int64, err error) {
+func (s *ShardConn) Update(query string, args ...interface{}) (rowsAffected int64, err errs.Err) {
 	res, err := s.Exec(query, args...)
 	if err != nil {
 		return
 	}
 
-	rowsAffected, err = res.RowsAffected()
+	rowsAffected, stdErr := res.RowsAffected()
+	if stdErr != nil {
+		err = errs.Wrap(stdErr, "Update RowsAffected error", errInfo(query, args))
+		return
+	}
 	return
 }
 
-func (s *shardConn) InsertIgnoreId(query string, args ...interface{}) (err error) {
+func (s *ShardConn) InsertIgnoreId(query string, args ...interface{}) (err errs.Err) {
 	_, err = s.Insert(query, args...)
 	return
 }
 
-func IsDuplicateEntryError(err error) bool {
-	return strings.Contains(err.Error(), "Duplicate entry")
+func IsDuplicateEntryError(err errs.Err) bool {
+	str := err.StandardError().Error()
+	return strings.Contains(str, "Duplicate entry")
 }
-func (s *shardConn) InsertIgnoreDuplicates(query string, args ...interface{}) (err error) {
+func (s *ShardConn) InsertIgnoreDuplicates(query string, args ...interface{}) (err errs.Err) {
 	_, err = s.Insert(query, args...)
 	if err != nil && IsDuplicateEntryError(err) {
 		err = nil
@@ -269,26 +298,31 @@ func (s *shardConn) InsertIgnoreDuplicates(query string, args ...interface{}) (e
 	return
 }
 
-func (s *shardConn) Insert(query string, args ...interface{}) (id int64, err error) {
+func (s *ShardConn) Insert(query string, args ...interface{}) (id int64, err errs.Err) {
 	res, err := s.Exec(query, args...)
 	if err != nil {
 		return
 	}
-	return res.LastInsertId()
+	id, stdErr := res.LastInsertId()
+	if stdErr != nil {
+		err = errs.Wrap(stdErr, "Insert LastInsertIderror", errInfo(query, args))
+		return
+	}
+	return
 }
 
-func (s *shardConn) Select(output interface{}, query string, args ...interface{}) error {
+func (s *ShardConn) Select(output interface{}, query string, args ...interface{}) errs.Err {
 	// Check types
 	var outputPtr = reflect.ValueOf(output)
 	if outputPtr.Kind() != reflect.Ptr {
-		return errors.New("fun/sql.Select: expects a pointer to a slice of items")
+		return errs.New("Select expects a pointer to a slice of items", errInfo(query, args))
 	}
 	var outputReflection = reflect.Indirect(outputPtr)
 	if outputReflection.Kind() != reflect.Slice {
-		return errors.New("fun/sql.Select: expects items to be a slice")
+		return errs.New("Select expects items to be a slice", errInfo(query, args))
 	}
 	if outputReflection.Len() != 0 {
-		return errors.New("fun/sql.Select: expects items to be empty")
+		return errs.New("Select expects items to be empty", errInfo(query, args))
 	}
 	outputReflection.Set(reflect.MakeSlice(outputReflection.Type(), 0, 0))
 
@@ -298,9 +332,9 @@ func (s *shardConn) Select(output interface{}, query string, args ...interface{}
 		return err
 	}
 	defer rows.Close()
-	columns, err := rows.Columns()
-	if err != nil {
-		return err
+	columns, stdErr := rows.Columns()
+	if stdErr != nil {
+		return errs.Wrap(stdErr, "Select rows.Columns error", errInfo(query, args))
 	}
 
 	valType := outputReflection.Type().Elem()
@@ -310,7 +344,7 @@ func (s *shardConn) Select(output interface{}, query string, args ...interface{}
 		for rows.Next() {
 			structPtrVal := reflect.New(valType.Elem())
 			outputItemStructVal := structPtrVal.Elem()
-			err = structFromRow(outputItemStructVal, columns, rows, query)
+			err = structFromRow(outputItemStructVal, columns, rows, query, args)
 			if err != nil {
 				return err
 			}
@@ -318,18 +352,18 @@ func (s *shardConn) Select(output interface{}, query string, args ...interface{}
 		}
 	} else {
 		if len(columns) != 1 {
-			return errors.New("Expected single column in select statement for slice of non-struct values")
+			return errs.New("Select expected single column in select statement for slice of non-struct values", errInfo(query, args))
 		}
 		for rows.Next() {
 			rawBytes := &sql.RawBytes{}
-			err = rows.Scan(rawBytes)
-			if err != nil {
-				return err
+			stdErr = rows.Scan(rawBytes)
+			if stdErr != nil {
+				return errs.Wrap(stdErr, "Select rows.Scan error", errInfo(query, args))
 			}
 			outputValue := reflect.New(valType).Elem()
-			err = scanColumnValue(columns[0], outputValue, rawBytes)
-			if err != nil {
-				return err
+			stdErr := scanColumnValue(columns[0], outputValue, rawBytes)
+			if stdErr != nil {
+				return errs.Wrap(stdErr, "Select scanColumnValue error", errInfo(query, args))
 			}
 			if err != nil {
 				return err
@@ -338,18 +372,22 @@ func (s *shardConn) Select(output interface{}, query string, args ...interface{}
 		}
 	}
 
-	return rows.Err()
+	stdErr = rows.Err()
+	if err != nil {
+		return errs.Wrap(stdErr, "Select rows.Err() error", errInfo(query, args))
+	}
+	return nil
 }
 
 const scanOneTypeError = "fun/sql.SelectOne: expects a **struct, e.g var person *Person; c.SelectOne(&person, sql)"
 
-func (s *shardConn) SelectOne(output interface{}, query string, args ...interface{}) error {
+func (s *ShardConn) SelectOne(output interface{}, query string, args ...interface{}) errs.Err {
 	return s.scanOne(output, query, true, args...)
 }
-func (s *shardConn) SelectMaybe(output interface{}, query string, args ...interface{}) error {
+func (s *ShardConn) SelectMaybe(output interface{}, query string, args ...interface{}) errs.Err {
 	return s.scanOne(output, query, false, args...)
 }
-func (s *shardConn) scanOne(output interface{}, query string, required bool, args ...interface{}) error {
+func (s *ShardConn) scanOne(output interface{}, query string, required bool, args ...interface{}) errs.Err {
 	// Check types
 	var outputReflectionPtr = reflect.ValueOf(output)
 	if !outputReflectionPtr.IsValid() {
@@ -364,20 +402,20 @@ func (s *shardConn) scanOne(output interface{}, query string, required bool, arg
 	}
 
 	// Query DB
-	var rows, err = s.Query(query, args...)
+	rows, err := s.Query(query, args...)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 
 	// Reflect onto struct
-	columns, err := rows.Columns()
-	if err != nil {
-		return err
+	columns, stdErr := rows.Columns()
+	if stdErr != nil {
+		return errs.Wrap(stdErr, "rows.Columns() error", errInfo(query, args))
 	}
 	if !rows.Next() {
 		if required {
-			return errors.New("SelectOne got 0 rows. Query: " + query + " Args: " + fmt.Sprint(args))
+			return errs.New("scanOne got no rows", errInfo(query, args))
 		} else {
 			return nil
 		}
@@ -392,18 +430,18 @@ func (s *shardConn) scanOne(output interface{}, query string, required bool, arg
 		vStruct = outputReflection.Elem()
 	}
 
-	err = structFromRow(vStruct, columns, rows, query)
+	err = structFromRow(vStruct, columns, rows, query, args)
 	if err != nil {
 		return err
 	}
 
 	if rows.Next() {
-		return errors.New("fun/sql.SelectOne: got multiple rows. Query: " + query + " Args: " + fmt.Sprint(args))
+		return errs.New("scanOne got multiple rows", errInfo(query, args))
 	}
 
-	err = rows.Err()
-	if err != nil {
-		return err
+	stdErr = rows.Err()
+	if stdErr != nil {
+		return errs.Wrap(stdErr, "scanOne rows.Err() error", errInfo(query, args))
 	}
 
 	return nil
@@ -418,25 +456,24 @@ func (s *scanError) Error() string {
 	return s.err.Error() + " [SQL: " + s.query + "]"
 }
 
-func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows, query string) (err error) {
+func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows, query string, args []interface{}) errs.Err {
 	vals := make([]interface{}, len(columns))
 	for i, _ := range columns {
 		vals[i] = &sql.RawBytes{}
 	}
-	err = rows.Scan(vals...)
-	if err != nil {
-		err = &scanError{err, query}
-		return
+	stdErr := rows.Scan(vals...)
+	if stdErr != nil {
+		return errs.Wrap(stdErr, "structFromRow error", errInfo(query, args))
 	}
 
 	for i, column := range columns {
-		err = scanColumnValue(column, outputItemStructVal.FieldByName(column), vals[i].(*sql.RawBytes))
-		if err != nil {
-			return
+		stdErr = scanColumnValue(column, outputItemStructVal.FieldByName(column), vals[i].(*sql.RawBytes))
+		if stdErr != nil {
+			return errs.Wrap(stdErr, "structFromRow scanColumnValue error", errInfo(query, args))
 		}
 	}
 
-	return
+	return nil
 }
 
 func scanColumnValue(column string, reflectVal reflect.Value, value *sql.RawBytes) (err error) {
@@ -471,4 +508,8 @@ func scanColumnValue(column string, reflectVal reflect.Value, value *sql.RawByte
 		}
 	}
 	return
+}
+
+func errInfo(query string, args []interface{}) errs.Info {
+	return errs.Info{"Query": query, "Args": args}
 }
