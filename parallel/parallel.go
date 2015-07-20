@@ -1,8 +1,8 @@
 package parallel
 
-import "asapp/t"
+import "github.com/marcuswestin/fun-go/errs"
 
-func Iterate(numItems int, maxParallelCount int, processingFunc func(i int) (err t.Err)) (err t.Err) {
+func Iterate(numItems int, maxParallelCount int, processingFunc func(i int) (err errs.Err)) (err errs.Err) {
 	if numItems == 0 {
 		return
 	}
@@ -11,8 +11,8 @@ func Iterate(numItems int, maxParallelCount int, processingFunc func(i int) (err
 	}
 
 	workChan := make(chan int)
-	resultChan := make(chan error)
-	errChan := make(chan error)
+	resultChan := make(chan errs.Err)
+	errChan := make(chan errs.Err)
 	go func() {
 		// This func generates work
 		index := 0
