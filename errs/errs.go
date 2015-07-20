@@ -3,7 +3,6 @@ package errs
 import (
 	"fmt"
 	"runtime/debug"
-	"strings"
 	"time"
 )
 
@@ -23,14 +22,24 @@ var (
 	DefaultUserMessage = "Oops! Something went wrong. Please try again."
 )
 
-func Wrap(stdErr error, internalInfo Info, userMessageStrs ...string) Err {
+func Wrap(stdErr error, internalInfo Info, userMessageStrs ...interface{}) Err {
 	return newErr(stdErr, internalInfo, userMessageStrs)
 }
-func New(internalInfo Info, userMessageStrs ...string) Err {
+func New(internalInfo Info, userMessageStrs ...interface{}) Err {
 	return newErr(nil, internalInfo, userMessageStrs)
 }
-func newErr(stdErr error, internalInfo Info, userMessageStrs []string) Err {
-	userMessage := strings.Join(userMessageStrs, " ")
+func UserError(userMessage interface{}, infos ...Info) Err { // Variable infos to allow no-info case easily
+	if len(infos) == 0 {
+		return newErr(nil, nil, []interface{}{userMessage})
+	} else if len(infos) == 1 {
+		return newErr(nil, infos[0], []interface{}{userMessage})
+	} else {
+		panic("UserError expected at most one info")
+	}
+}
+
+func newErr(stdErr error, internalInfo Info, userMessageStrs []interface{}) Err {
+	userMessage := fmt.Sprint(userMessageStrs...)
 	if userMessage == "" {
 		userMessage = DefaultUserMessage
 	}
