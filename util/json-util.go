@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 
@@ -17,6 +18,13 @@ func JSONBytes(v interface{}) ([]byte, errs.Err) {
 		return nil, errs.Wrap(stdErr, errs.Info{}, "Could not convert to JSON")
 	}
 	return bytes, nil
+}
+func JSONReader(v interface{}) (reader io.Reader, err errs.Err) {
+	jsonBytes, err := JSONBytes(v)
+	if err != nil {
+		return
+	}
+	return bytes.NewBuffer(jsonBytes), nil
 }
 func ParseJSON(jsonStr string, v interface{}) errs.Err {
 	return ParseJSONBytes([]byte(jsonStr), v)
