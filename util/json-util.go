@@ -19,6 +19,13 @@ func JSONBytes(v interface{}) ([]byte, errs.Err) {
 	}
 	return bytes, nil
 }
+func JSONBytesIndent(v interface{}, prefix, indent string) ([]byte, errs.Err) {
+	jsonBytes, stdErr := json.MarshalIndent(v, prefix, indent)
+	if stdErr != nil {
+		return nil, errs.Wrap(stdErr, errs.Info{})
+	}
+	return jsonBytes, nil
+}
 func JSONReader(v interface{}) (reader io.Reader, err errs.Err) {
 	jsonBytes, err := JSONBytes(v)
 	if err != nil {
