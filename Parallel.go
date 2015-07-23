@@ -3,15 +3,17 @@ package fun
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/marcuswestin/fun-go/errs"
 )
 
 type parallel2Result struct {
 	i   int
 	val interface{}
-	err error
+	err errs.Err
 }
 
-func Parallel2(funs ...interface{}) ([]interface{}, error) {
+func Parallel2(funs ...interface{}) ([]interface{}, errs.Err) {
 	resChan := make(chan parallel2Result)
 	results := make([]interface{}, len(funs))
 	// Dispatch functions
@@ -19,7 +21,7 @@ func Parallel2(funs ...interface{}) ([]interface{}, error) {
 		go func(i int, fun interface{}) {
 			res := reflect.ValueOf(fun).Call(nil)
 			val, _ := res[0].Interface().(interface{})
-			err, _ := res[1].Interface().(error)
+			err, _ := res[1].Interface().(errs.Err)
 			resChan <- parallel2Result{i: i, val: val, err: err}
 		}(i, fun)
 	}
@@ -34,7 +36,7 @@ func Parallel2(funs ...interface{}) ([]interface{}, error) {
 	return results, nil
 }
 
-func Parallel(args ...interface{}) error {
+func Parallel(args ...interface{}) errs.Err {
 	if reflect.TypeOf(args[0]).NumOut() == 2 {
 		funs := args[:len(args)-1]
 		return parallelWithDone(funs, Last(args))
@@ -43,7 +45,7 @@ func Parallel(args ...interface{}) error {
 	}
 }
 
-func parallelWithoutDone(funs []interface{}) error {
+func parallelWithoutDone(funs []interface{}) errs.Err {
 	resChan := make(chan reflect.Value)
 
 	for _, fun := range funs {
@@ -56,16 +58,16 @@ func parallelWithoutDone(funs []interface{}) error {
 	for i := 0; i < len(funs); i++ {
 		res := <-resChan
 
-		// There was an error
+		// There was an errs.Err
 		if !res.IsNil() {
-			return res.Interface().(error)
+			return res.Interface().(errs.Err)
 		}
 	}
 
 	return nil
 }
 
-func parallelWithDone(funs []interface{}, done interface{}) error {
+func parallelWithDone(funs []interface{}, done interface{}) errs.Err {
 	doneVal := reflect.ValueOf(done)
 	doneTyp := doneVal.Type()
 	errorIndex := len(funs)
@@ -119,7 +121,7 @@ func parallelWithDone(funs []interface{}, done interface{}) error {
 	for i := 0; i < len(funs); i++ {
 		res := <-resChan
 
-		// There was an error
+		// There was an errs.Err
 		if !res.err.IsNil() {
 			for funI, fun := range funs {
 				results[funI] = reflect.Zero(reflect.ValueOf(fun).Type().Out(0))
@@ -127,9 +129,9 @@ func parallelWithDone(funs []interface{}, done interface{}) error {
 			results[errorIndex] = res.err
 			doneRes := doneVal.Call(results)
 			if !doneReturnsError {
-				return res.err.Interface().(error)
+				return res.err.Interface().(errs.Err)
 			}
-			return doneRes[0].Interface().(error)
+			return doneRes[0].Interface().(errs.Err)
 		}
 
 		results[res.index] = res.val
@@ -143,7 +145,7 @@ func parallelWithDone(funs []interface{}, done interface{}) error {
 	if doneRes[0].IsNil() {
 		return nil
 	}
-	return doneRes[0].Interface().(error)
+	return doneRes[0].Interface().(errs.Err)
 }
 
 type parallelResult struct {
@@ -152,14 +154,14 @@ type parallelResult struct {
 	err   reflect.Value
 }
 
-var nilError = error(nil)
-var errorInterface = reflect.TypeOf(func(error) {}).In(0)
+var nilError = errs.Err(nil)
+var errorInterface = reflect.TypeOf(func(errs.Err) {}).In(0)
 
-const finalFuncErrArgMsg = "Parallel final function's last argument type should be error but is "
+const finalFuncErrArgMsg = "Parallel final function's last argument type should be errs.Err but is "
 const finalFuncNumArgsMsg = "Parallel final function should take %d arguments"
 const argFuncNoArgsMsg = "Parallel functions should not take any arguments\n(offending function is number %d with signature %q)"
 const argFuncNumReturnMsg = "Parallel function number %d should return two values (returns %d)"
 const argFuncDoneFuncTypeMismatch = "Parallel function number %d returns a %q but final function expects a %q"
-const argFuncErrReturnMsg = "Parallel function number %d should return an error as second return value (returns %q)"
-const finalFuncReturnCountMsg = "Parallel final function should return nothing or one error (returns %d values)"
-const finalFuncReturnWrongTypeMsg = "Parallel final function return value must be an error (is %q)"
+const argFuncErrReturnMsg = "Parallel function number %d should return an errs.Err as second return value (returns %q)"
+const finalFuncReturnCountMsg = "Parallel final function should return nothing or one errs.Err (returns %d values)"
+const finalFuncReturnWrongTypeMsg = "Parallel final function return value must be an errs.Err (is %q)"

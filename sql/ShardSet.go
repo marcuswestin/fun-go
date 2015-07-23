@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/marcuswestin/fun-go/errs"
 	"github.com/marcuswestin/fun-go/random"
 )
 
@@ -34,7 +35,7 @@ func NewShardSet(username string, password string, host string, port int, dbName
 	}
 }
 
-func (s *ShardSet) Connect() (err error) {
+func (s *ShardSet) Connect() (err errs.Err) {
 	s.shards = make([]*Shard, s.numShards)
 	for i := 0; i < s.numShards; i++ {
 		err = s.addShard(i)
@@ -65,7 +66,7 @@ func (s *ShardSet) RandomShard() *Shard {
 	return s.shards[random.Between(0, len(s.shards))]
 }
 
-func (s *ShardSet) addShard(i int) (err error) {
+func (s *ShardSet) addShard(i int) (err errs.Err) {
 	autoIncrementOffset := i + 1
 	dbName := fmt.Sprint(s.dbNamePrefix, autoIncrementOffset)
 	s.shards[i], err = newShard(s, dbName, autoIncrementOffset)
@@ -75,7 +76,7 @@ func (s *ShardSet) addShard(i int) (err error) {
 	return
 }
 
-func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*Shard, error) {
+func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*Shard, errs.Err) {
 	connVars := ConnVariables{
 		"autocommit":               "true",
 		"clientFoundRows":          "true",
@@ -93,9 +94,9 @@ func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*Shard, erro
 
 	db.SetMaxOpenConns(s.maxConns)
 	// db.SetMaxIdleConns(n)
-	err = db.Ping()
-	if err != nil {
-		return nil, err
+	stdErr := db.Ping()
+	if stdErr != nil {
+		return nil, errs.Wrap(stdErr, nil)
 	}
 	return &Shard{db, db}, nil
 }
@@ -119,6 +120,6 @@ func (connVars ConnVariables) Join(sep string) string {
 	return strings.Join(kvps, sep)
 }
 
-type Opener func(username, password, dbName, host string, port int, connVars ConnVariables) (*sql.DB, error)
+type Opener func(username, password, dbName, host string, port int, connVars ConnVariables) (*sql.DB, errs.Err)
 
 var dbOpener Opener

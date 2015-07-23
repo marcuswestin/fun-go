@@ -3,22 +3,23 @@ package random
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"errors"
 	"io"
+
+	"github.com/marcuswestin/fun-go/errs"
 )
 
-func Uid(numChars int) (uid string, err error) {
+func Uid(numChars int) (uid string, err errs.Err) {
 	if numChars%4 != 0 {
-		err = errors.New("uid length must be a multiple of 4")
+		err = errs.New(nil, "uid length must be a multiple of 4")
 		return
 	}
 	buf := make([]byte, numChars)
-	_, err = io.ReadFull(rand.Reader, buf)
-	if err != nil {
+	_, stdErr := io.ReadFull(rand.Reader, buf)
+	if stdErr != nil {
+		err = errs.Wrap(stdErr, nil)
 		return
 	}
 
 	uid = base64.URLEncoding.EncodeToString(buf)
-
 	return
 }

@@ -3,13 +3,15 @@ package async
 import (
 	"errors"
 	"reflect"
+
+	"github.com/marcuswestin/fun-go/errs"
 )
 
-func expects(str string) error {
+func expects(str string) errs.Err {
 	return errors.New("fun/async.Each expects " + str)
 }
 
-func Each(items interface{}, fn interface{}) (err error) {
+func Each(items interface{}, fn interface{}) (err errs.Err) {
 	vItems := reflect.ValueOf(items)
 	tItems := vItems.Type()
 	if tItems.Kind() != reflect.Slice {
@@ -26,10 +28,10 @@ func Each(items interface{}, fn interface{}) (err error) {
 		return expects("fn argument type to match items")
 	}
 	if tFn.NumOut() != 1 {
-		return expects("fn to return an error")
+		return expects("fn to return an errs.Err")
 	}
 
-	errChan := make(chan error)
+	errChan := make(chan errs.Err)
 
 	for i := 0; i < vItems.Len(); i++ {
 		var args []reflect.Value
@@ -44,7 +46,7 @@ func Each(items interface{}, fn interface{}) (err error) {
 			if vErr[0].IsNil() {
 				errChan <- nil
 			} else {
-				errChan <- vErr[0].Interface().(error)
+				errChan <- vErr[0].Interface().(errs.Err)
 			}
 		}()
 	}
