@@ -65,7 +65,7 @@ func (e *err) LogString() string {
 	if e.stdErr != nil {
 		err = e.stdErr.Error()
 	}
-	return fmt.Sprint("Error. Time:", e.time, "\tUserMessage:[", e.userMessage, "]\tStandardError:[", err, "]\tInternalInfo:[", e.internalInfo, "]\tStack:[", string(e.stack), "]")
+	return fmt.Sprint("Error | UserMessage: ", e.userMessage, " | StandardError: "+err+" | Stack: ", string(e.stack), " | tInternalInfo:[", e.internalInfo, "Time:", e.time)
 }
 
 func (e *err) String() string { return e.LogString() }
