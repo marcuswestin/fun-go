@@ -17,33 +17,40 @@ type Err interface {
 }
 
 type Info map[string]interface{}
+type Opts struct {
+	OmitStack bool
+}
 
 var (
 	DefaultUserMessage = "Oops! Something went wrong. Please try again."
+	DefaultOpts        = Opts{
+		OmitStack: false,
+	}
 )
 
-func Wrap(stdErr error, internalInfo Info, userMessageStrs ...interface{}) Err {
-	return newErr(stdErr, internalInfo, userMessageStrs)
+func Wrap(stdErr error, internalInfo Info, userMessage ...interface{}) Err {
+	return WrapWithOpts(stdErr, internalInfo, DefaultOpts, userMessage...)
 }
-func New(internalInfo Info, userMessageStrs ...interface{}) Err {
-	return newErr(nil, internalInfo, userMessageStrs)
+func New(internalInfo Info, userMessage ...interface{}) Err {
+	return NewWithOpts(internalInfo, DefaultOpts, userMessage...)
 }
-func UserError(userMessage interface{}, infos ...Info) Err { // Variable infos to allow no-info case easily
-	if len(infos) == 0 {
-		return newErr(nil, nil, []interface{}{userMessage})
-	} else if len(infos) == 1 {
-		return newErr(nil, infos[0], []interface{}{userMessage})
-	} else {
-		panic("UserError expected at most one info")
-	}
+func WrapWithOpts(stdErr error, internalInfo Info, opts Opts, userMessage ...interface{}) Err {
+	return newErr(stdErr, internalInfo, opts, userMessage)
+}
+func NewWithOpts(internalInfo Info, opts Opts, userMessage ...interface{}) Err {
+	return newErr(nil, internalInfo, opts, userMessage)
 }
 
-func newErr(stdErr error, internalInfo Info, userMessageStrs []interface{}) Err {
-	userMessage := fmt.Sprint(userMessageStrs...)
+func newErr(stdErr error, internalInfo Info, opts Opts, userMessageParts []interface{}) Err {
+	userMessage := fmt.Sprint(userMessageParts...)
 	if userMessage == "" {
 		userMessage = DefaultUserMessage
 	}
-	return &err{debug.Stack(), time.Now(), stdErr, internalInfo, userMessage}
+	var stack []byte
+	if !opts.OmitStack {
+		stack = debug.Stack()
+	}
+	return &err{stack, time.Now(), stdErr, internalInfo, userMessage}
 }
 
 type err struct {
