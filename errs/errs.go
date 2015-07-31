@@ -10,6 +10,7 @@ type Err interface {
 	Stack() []byte
 	Time() time.Time
 	StandardError() error
+	StandardErrorMessage() string
 	UserMessage() string
 	SetUserMessage(userMessage string)
 	InternalInfo() Info
@@ -50,6 +51,9 @@ func newErr(stdErr error, internalInfo Info, opts Opts, userMessageParts []inter
 	if !opts.OmitStack {
 		stack = debug.Stack()
 	}
+	if internalInfo == nil {
+		internalInfo = Info{}
+	}
 	return &err{stack, time.Now(), stdErr, internalInfo, userMessage}
 }
 
@@ -67,11 +71,14 @@ func (e *err) StandardError() error      { return e.stdErr }
 func (e *err) UserMessage() string       { return e.userMessage }
 func (e *err) SetUserMessage(msg string) { e.userMessage = msg }
 func (e *err) InternalInfo() Info        { return e.internalInfo }
+func (e *err) StandardErrorMessage() string {
+	if e.stdErr == nil {
+		return ""
+	}
+	return e.stdErr.Error()
+}
 func (e *err) LogString() string {
 	err := "nil"
-	if e.stdErr != nil {
-		err = e.stdErr.Error()
-	}
 	return fmt.Sprint("Error | UserMessage: ", e.userMessage, " | StandardError: "+err+" | Stack: ", string(e.stack), " | tInternalInfo:[", e.internalInfo, "Time:", e.time)
 }
 
