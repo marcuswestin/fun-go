@@ -263,7 +263,7 @@ func (s *Shard) InsertIgnoreId(query string, args ...interface{}) (err errs.Err)
 }
 
 func IsDuplicateEntryError(err errs.Err) bool {
-	str := err.StandardError().Error()
+	str := err.StandardErrorMessage()
 	return strings.Contains(str, "Duplicate entry")
 }
 func (s *Shard) InsertIgnoreDuplicates(query string, args ...interface{}) (err errs.Err) {
