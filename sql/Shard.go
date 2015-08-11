@@ -33,6 +33,16 @@ func (s *Shard) Transact(txFun TxFunc) errs.Err {
 	if stdErr != nil {
 		return errs.Wrap(stdErr, errs.Info{"Description": "Could not open transaction"})
 	}
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			rbErr := conn.Rollback()
+			panic(errs.New(errs.Info{
+				"Description": "Panic during sql transcation",
+				"PanicErr":    panicErr,
+				"RollbackErr": rbErr,
+			}))
+		}
+	}()
 
 	err := txFun(&Shard{nil, conn})
 	if err != nil {
