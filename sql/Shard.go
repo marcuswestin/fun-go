@@ -19,15 +19,6 @@ type Shard struct {
 	}
 }
 
-func (s *Shard) Autocommit(acFun TxFunc) errs.Err {
-	conn, err := s.db.Begin()
-	if err != nil {
-		return errs.Wrap(err, errs.Info{"Description": "Could not open autocommit"})
-	}
-
-	return acFun(&Shard{nil, conn})
-}
-
 func (s *Shard) Transact(txFun TxFunc) errs.Err {
 	conn, stdErr := s.db.Begin()
 	if stdErr != nil {
