@@ -470,6 +470,12 @@ func scanColumnValue(column string, reflectVal reflect.Value, value *sql.RawByte
 			return errs.Wrap(stdErr, errInfo("strconv.ParseInt error", query, args, errs.Info{"Bytes": bytes}))
 		}
 		reflectVal.SetInt(reflect.ValueOf(intVal).Int())
+	case reflect.Bool:
+		boolVal, stdErr := strconv.ParseBool(string(bytes))
+		if stdErr != nil {
+			return errs.Wrap(stdErr, errInfo("strconv.ParseBool error", query, args, errs.Info{"Bytes": bytes}))
+		}
+		reflectVal.SetBool(reflect.ValueOf(boolVal).Bool())
 	default:
 		if reflectVal.Kind() == reflect.Slice { // && reflectVal. == reflect.Uint8 {
 			// byte slice
