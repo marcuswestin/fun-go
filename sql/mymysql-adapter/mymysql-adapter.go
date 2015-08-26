@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/asappinc/mymysql/godrv"
+	"github.com/marcuswestin/fun-go/errs"
 	funGoSql "github.com/marcuswestin/fun-go/sql"
 )
 
@@ -16,5 +17,9 @@ func mymysqlDriverOpener(username, password, dbName, host string, port int, conn
 	sourceString := fmt.Sprintf(
 		"tcp:%s:%d,%s*%s/%s/%s",
 		host, port, connVars.Join(","), dbName, username, password)
-	return sql.Open("mymysql", sourceString)
+	db, stdErr := sql.Open("mymysql", sourceString)
+	if stdErr != nil {
+		return nil, errs.Wrap(stdErr, errs.Info{})
+	}
+	return db, nil
 }
