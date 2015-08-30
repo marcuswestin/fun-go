@@ -73,11 +73,11 @@ func (s *Shard) Exec(query string, args ...interface{}) (sql.Result, errs.Err) {
 	return res, nil
 }
 func IsDuplicateExecError(err errs.Err) bool {
-	str := err.StandardError().Error()
-	return strings.HasPrefix(str, "sql.Exec Error: Error 1060: Duplicate column name") ||
-		strings.HasPrefix(str, "sql.Exec Error: Error 1061: Duplicate key name") ||
-		strings.HasPrefix(str, "sql.Exec Error: Error 1050: Table") ||
-		strings.HasPrefix(str, "sql.Exec Error: Error 1022: Can't write; duplicate key in table")
+	str := err.StandardErrorMessage()
+	return strings.HasPrefix(str, "Error 1060: Duplicate column name") ||
+		strings.HasPrefix(str, "Error 1061: Duplicate key name") ||
+		strings.HasPrefix(str, "Error 1050: Table") ||
+		strings.HasPrefix(str, "Error 1022: Can't write; duplicate key in table")
 }
 func (s *Shard) ExecIgnoreDuplicateError(query string, args ...interface{}) (res sql.Result, err errs.Err) {
 	res, err = s.Exec(query, args...)
