@@ -98,7 +98,7 @@ func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*Shard, errs
 	if stdErr != nil {
 		return nil, errs.Wrap(stdErr, nil)
 	}
-	return &Shard{db, db}, nil
+	return &Shard{dbName, db, db}, nil
 }
 
 func SetOpener(opener Opener) {

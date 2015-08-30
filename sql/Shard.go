@@ -12,6 +12,7 @@ import (
 type TxFunc func(shard *Shard) errs.Err
 
 type Shard struct {
+	DBName  string
 	db      *sql.DB // Nil for transaction and autocommit shard structs
 	sqlConn interface {
 		Exec(query string, args ...interface{}) (sql.Result, error)
@@ -35,7 +36,7 @@ func (s *Shard) Transact(txFun TxFunc) errs.Err {
 		}
 	}()
 
-	err := txFun(&Shard{nil, conn})
+	err := txFun(&Shard{s.DBName, nil, conn})
 	if err != nil {
 		rbErr := conn.Rollback()
 		if rbErr != nil {
