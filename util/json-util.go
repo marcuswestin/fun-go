@@ -39,7 +39,7 @@ func ParseJSON(jsonStr string, v interface{}) errs.Err {
 func ParseJSONBytes(jsonBytes []byte, v interface{}) errs.Err {
 	stdErr := json.Unmarshal(jsonBytes, v)
 	if stdErr != nil {
-		return errs.Wrap(stdErr, nil, "Could not parse JSON")
+		return errs.Wrap(stdErr, errs.Info{"JSON": string(jsonBytes)}, "Could not parse JSON")
 	}
 	return nil
 }
