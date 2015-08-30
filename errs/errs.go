@@ -72,6 +72,9 @@ func (e *err) UserMessage() string       { return e.userMessage }
 func (e *err) SetUserMessage(msg string) { e.userMessage = msg }
 func (e *err) InternalInfo() Info        { return e.internalInfo }
 func (e *err) StandardErrorMessage() string {
+	if e == nil {
+		return ""
+	}
 	if e.stdErr == nil {
 		return ""
 	}
