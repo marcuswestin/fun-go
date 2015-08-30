@@ -78,8 +78,7 @@ func (e *err) StandardErrorMessage() string {
 	return e.stdErr.Error()
 }
 func (e *err) LogString() string {
-	err := "nil"
-	return fmt.Sprint("Error | UserMessage: ", e.userMessage, " | StandardError: "+err+" | Stack: ", string(e.stack), " | tInternalInfo:[", e.internalInfo, "Time:", e.time)
+	return fmt.Sprint("Error | UserMessage: ", e.userMessage, " | StandardError: "+e.StandardErrorMessage()+" | Stack: ", string(e.stack), " | tInternalInfo:[", e.internalInfo, "Time:", e.time)
 }
 
 func (e *err) String() string { return e.LogString() }
