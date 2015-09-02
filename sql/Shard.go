@@ -356,13 +356,21 @@ func (s *Shard) Select(output interface{}, query string, args ...interface{}) er
 
 const scanOneTypeError = "fun/sql.SelectOne: expects a **struct, e.g var person *Person; c.SelectOne(&person, sql)"
 
-func (s *Shard) SelectOne(output interface{}, query string, args ...interface{}) errs.Err {
-	return s.scanOne(output, query, true, args...)
+func (s *Shard) SelectOne(output interface{}, query string, args ...interface{}) (err errs.Err) {
+	found, err := s.scanOne(output, query, true, args...)
+	if err != nil {
+		return
+	}
+	if !found {
+		err = errs.New(errInfo("scanOne got no rows", query, args))
+		return
+	}
+	return
 }
-func (s *Shard) SelectMaybe(output interface{}, query string, args ...interface{}) errs.Err {
+func (s *Shard) SelectMaybe(output interface{}, query string, args ...interface{}) (found bool, err errs.Err) {
 	return s.scanOne(output, query, false, args...)
 }
-func (s *Shard) scanOne(output interface{}, query string, required bool, args ...interface{}) errs.Err {
+func (s *Shard) scanOne(output interface{}, query string, required bool, args ...interface{}) (found bool, err errs.Err) {
 	// Check types
 	var outputReflectionPtr = reflect.ValueOf(output)
 	if !outputReflectionPtr.IsValid() {
@@ -379,21 +387,18 @@ func (s *Shard) scanOne(output interface{}, query string, required bool, args ..
 	// Query DB
 	rows, err := s.Query(query, args...)
 	if err != nil {
-		return err
+		return
 	}
 	defer rows.Close()
 
 	// Reflect onto struct
 	columns, stdErr := rows.Columns()
 	if stdErr != nil {
-		return errs.Wrap(stdErr, errInfo("rows.Columns() error", query, args))
+		err = errs.Wrap(stdErr, errInfo("rows.Columns() error", query, args))
+		return
 	}
 	if !rows.Next() {
-		if required {
-			return errs.New(errInfo("scanOne got no rows", query, args))
-		} else {
-			return nil
-		}
+		return
 	}
 
 	var vStruct reflect.Value
@@ -407,19 +412,22 @@ func (s *Shard) scanOne(output interface{}, query string, required bool, args ..
 
 	err = structFromRow(vStruct, columns, rows, query, args)
 	if err != nil {
-		return err
+		return
 	}
 
 	if rows.Next() {
-		return errs.New(errInfo("scanOne got multiple rows", query, args))
+		err = errs.New(errInfo("scanOne got multiple rows", query, args))
+		return
 	}
 
 	stdErr = rows.Err()
 	if stdErr != nil {
-		return errs.Wrap(stdErr, errInfo("scanOne rows.Err() error", query, args))
+		err = errs.Wrap(stdErr, errInfo("scanOne rows.Err() error", query, args))
+		return
 	}
 
-	return nil
+	found = true
+	return
 }
 
 type scanError struct {
