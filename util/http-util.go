@@ -1,6 +1,7 @@
 package util
 
 import (
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -9,8 +10,7 @@ import (
 )
 
 func HTTPGet(url string) (statusCode int, body string, err errs.Err) {
-	res, stdErr := http.Get(url)
-	return wrapHandleRes(url, res, stdErr)
+	return do("GET", url, "", nil)
 }
 
 func HTTPPostJSON(url string, jsonPayload interface{}) (statusCode int, body string, err errs.Err) {
@@ -18,17 +18,27 @@ func HTTPPostJSON(url string, jsonPayload interface{}) (statusCode int, body str
 	if err != nil {
 		return
 	}
-	res, stdErr := http.Post(url, "application/json", jsonReader)
-	return wrapHandleRes(url, res, stdErr)
+	return do("POST", url, "application/json", jsonReader)
 }
 
 func HTTPPostString(url string, str string) (statusCode int, body string, err errs.Err) {
 	reader := strings.NewReader(str)
-	res, stdErr := http.Post(url, "text/plain", reader)
-	return wrapHandleRes(url, res, stdErr)
+	return do("POST", url, "text/plain", reader)
 }
 
-func wrapHandleRes(url string, res *http.Response, stdErr error) (statusCode int, body string, err errs.Err) {
+func do(method, url, contentType string, bodyReader io.Reader) (statusCode int, responseBody string, err errs.Err) {
+	req, stdErr := http.NewRequest("GET", url, bodyReader)
+	if stdErr != nil {
+		err = errs.Wrap(stdErr, errs.Info{"URL": url})
+		return
+	}
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
+	req.Close = true
+	req.Header.Set("Connection", "close")
+
+	res, stdErr := http.DefaultClient.Do(req)
 	if stdErr != nil {
 		err = errs.Wrap(stdErr, errs.Info{"URL": url})
 		return
@@ -41,6 +51,6 @@ func wrapHandleRes(url string, res *http.Response, stdErr error) (statusCode int
 		err = errs.Wrap(stdErr, errs.Info{"URL": url})
 		return
 	}
-	body = string(bodyBytes)
+	responseBody = string(bodyBytes)
 	return
 }
