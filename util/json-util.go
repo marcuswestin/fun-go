@@ -26,6 +26,13 @@ func JSONBytesIndent(v interface{}, prefix, indent string) ([]byte, errs.Err) {
 	}
 	return jsonBytes, nil
 }
+func JSONMustPrettyPrint(v interface{}) string {
+	bytes, err := JSONBytesIndent(v, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+	return string(bytes)
+}
 func JSONReader(v interface{}) (reader io.Reader, err errs.Err) {
 	jsonBytes, err := JSONBytes(v)
 	if err != nil {
