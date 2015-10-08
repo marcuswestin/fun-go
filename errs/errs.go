@@ -30,12 +30,18 @@ var (
 )
 
 func Wrap(stdErr error, internalInfo Info, userMessage ...interface{}) Err {
+	if stdErr == nil {
+		return nil
+	}
 	return WrapWithOpts(stdErr, internalInfo, DefaultOpts, userMessage...)
 }
 func New(internalInfo Info, userMessage ...interface{}) Err {
 	return NewWithOpts(internalInfo, DefaultOpts, userMessage...)
 }
 func WrapWithOpts(stdErr error, internalInfo Info, opts Opts, userMessage ...interface{}) Err {
+	if stdErr == nil {
+		return nil
+	}
 	return newErr(stdErr, internalInfo, opts, userMessage)
 }
 func NewWithOpts(internalInfo Info, opts Opts, userMessage ...interface{}) Err {
@@ -43,9 +49,6 @@ func NewWithOpts(internalInfo Info, opts Opts, userMessage ...interface{}) Err {
 }
 
 func newErr(stdErr error, internalInfo Info, opts Opts, userMessageParts []interface{}) Err {
-	if stdErr == nil {
-		return nil
-	}
 	userMessage := fmt.Sprint(userMessageParts...)
 	if userMessage == "" {
 		userMessage = DefaultUserMessage
