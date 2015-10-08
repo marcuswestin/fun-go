@@ -43,6 +43,9 @@ func NewWithOpts(internalInfo Info, opts Opts, userMessage ...interface{}) Err {
 }
 
 func newErr(stdErr error, internalInfo Info, opts Opts, userMessageParts []interface{}) Err {
+	if stdErr == nil {
+		return nil
+	}
 	userMessage := fmt.Sprint(userMessageParts...)
 	if userMessage == "" {
 		userMessage = DefaultUserMessage
