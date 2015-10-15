@@ -29,7 +29,10 @@ var (
 	}
 )
 
-func Wrap(stdErr error, internalInfo Info, userMessage ...interface{}) Err {
+func Wrap(stdErr error, userMessage ...interface{}) Err {
+	return WrapWithInfo(stdErr, nil, userMessage...)
+}
+func WrapWithInfo(stdErr error, internalInfo Info, userMessage ...interface{}) Err {
 	if stdErr == nil {
 		return nil
 	}
