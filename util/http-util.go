@@ -27,7 +27,7 @@ func HTTPPostString(url string, str string) (statusCode int, body string, err er
 }
 
 func do(method, url, contentType string, bodyReader io.Reader) (statusCode int, responseBody string, err errs.Err) {
-	req, stdErr := http.NewRequest("GET", url, bodyReader)
+	req, stdErr := http.NewRequest(method, url, bodyReader)
 	if stdErr != nil {
 		err = errs.Wrap(stdErr, errs.Info{"URL": url})
 		return
