@@ -42,6 +42,8 @@ func (s *Shard) Transact(txFun TxFunc) errs.Err {
 		rbErr := conn.Rollback()
 		if rbErr != nil {
 			return errs.Wrap(rbErr, errs.Info{"Description": "Transact rollback error", "TransactionError": err})
+		} else {
+			return err
 		}
 
 	} else {
