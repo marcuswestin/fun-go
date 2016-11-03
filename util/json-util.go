@@ -15,14 +15,14 @@ func JSON(v interface{}) (string, errs.Err) {
 func JSONBytes(v interface{}) ([]byte, errs.Err) {
 	bytes, stdErr := json.Marshal(v)
 	if stdErr != nil {
-		return nil, errs.Wrap(stdErr, errs.Info{}, "Could not convert to JSON")
+		return nil, errs.WrapWithInfo(stdErr, errs.Info{}, "Could not convert to JSON")
 	}
 	return bytes, nil
 }
 func JSONBytesIndent(v interface{}, prefix, indent string) ([]byte, errs.Err) {
 	jsonBytes, stdErr := json.MarshalIndent(v, prefix, indent)
 	if stdErr != nil {
-		return nil, errs.Wrap(stdErr, errs.Info{})
+		return nil, errs.WrapWithInfo(stdErr, errs.Info{})
 	}
 	return jsonBytes, nil
 }
@@ -46,7 +46,7 @@ func ParseJSON(jsonStr string, v interface{}) errs.Err {
 func ParseJSONBytes(jsonBytes []byte, v interface{}) errs.Err {
 	stdErr := json.Unmarshal(jsonBytes, v)
 	if stdErr != nil {
-		return errs.Wrap(stdErr, errs.Info{"JSON": string(jsonBytes)}, "Could not parse JSON")
+		return errs.WrapWithInfo(stdErr, errs.Info{"JSON": string(jsonBytes)}, "Could not parse JSON")
 	}
 	return nil
 }
@@ -54,7 +54,7 @@ func ParseJSONBytes(jsonBytes []byte, v interface{}) errs.Err {
 func DecodeJSON(reader io.Reader, v interface{}) errs.Err {
 	stdErr := json.NewDecoder(reader).Decode(v)
 	if stdErr != nil {
-		return errs.Wrap(stdErr, errs.Info{})
+		return errs.WrapWithInfo(stdErr, errs.Info{})
 	}
 	return nil
 }
