@@ -7,6 +7,7 @@ import (
 )
 
 type Err interface {
+	error
 	Stack() []byte
 	Time() time.Time
 	StandardError() error
@@ -94,3 +95,4 @@ func (e *err) LogString() string {
 }
 
 func (e *err) String() string { return e.LogString() }
+func (e *err) Error() string  { return e.LogString() }
