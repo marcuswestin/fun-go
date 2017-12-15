@@ -19,9 +19,18 @@ type Shard struct {
 		Exec(query string, args ...interface{}) (sql.Result, error)
 		Query(query string, args ...interface{}) (*sql.Rows, error)
 	}
+	BeginEndHandler func() (func(), error)
+	MetricsHandler  func() func(query string, shardName string)
 }
 
 func (s *Shard) Transact(txFun TxFunc) errs.Err {
+	if s.BeginEndHandler != nil {
+		doneFunc, stdErr := s.BeginEndHandler()
+		if stdErr != nil {
+			return errs.Wrap(stdErr)
+		}
+		defer doneFunc()
+	}
 	conn, stdErr := s.db.Begin()
 	if stdErr != nil {
 		return errs.Wrap(stdErr, errs.Info{"Description": "Could not open transaction"})
@@ -36,8 +45,7 @@ func (s *Shard) Transact(txFun TxFunc) errs.Err {
 			}))
 		}
 	}()
-
-	err := txFun(&Shard{s.DBName, nil, conn})
+	err := txFun(&Shard{DBName: s.DBName, sqlConn: conn, MetricsHandler: s.MetricsHandler})
 	if err != nil {
 		rbErr := conn.Rollback()
 		if rbErr != nil {
@@ -54,8 +62,30 @@ func (s *Shard) Transact(txFun TxFunc) errs.Err {
 	return nil
 }
 
+func (s *Shard) TransactWithPropagatedErrors(txFun TxFunc) errs.Err {
+	var err errs.Err
+	var txnResult = s.Transact(func(shard *Shard) errs.Err {
+		err = txFun(s)
+		return err
+	})
+	if txnResult != nil {
+		return txnResult
+	}
+	return err
+}
+
 // Query with fixed args
 func (s *Shard) Query(query string, args ...interface{}) (*sql.Rows, errs.Err) {
+	if s.BeginEndHandler != nil {
+		doneFunc, stdErr := s.BeginEndHandler()
+		if stdErr != nil {
+			return nil, errs.Wrap(stdErr)
+		}
+		defer doneFunc()
+	}
+	if s.MetricsHandler != nil {
+		defer s.MetricsHandler()(query, s.DBName)
+	}
 	fixArgs(args)
 	rows, stdErr := s.sqlConn.Query(query, args...)
 	if stdErr != nil {
@@ -66,6 +96,16 @@ func (s *Shard) Query(query string, args ...interface{}) (*sql.Rows, errs.Err) {
 
 // Execute with fixed args
 func (s *Shard) Exec(query string, args ...interface{}) (sql.Result, errs.Err) {
+	if s.BeginEndHandler != nil {
+		doneFunc, stdErr := s.BeginEndHandler()
+		if stdErr != nil {
+			return nil, errs.Wrap(stdErr)
+		}
+		defer doneFunc()
+	}
+	if s.MetricsHandler != nil {
+		defer s.MetricsHandler()(query, s.DBName)
+	}
 	fixArgs(args)
 	res, stdErr := s.sqlConn.Exec(query, args...)
 	if stdErr != nil {

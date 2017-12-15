@@ -11,19 +11,31 @@ import (
 )
 
 type ShardSet struct {
-	username     string
-	password     string
-	host         string
-	port         int
-	dbNamePrefix string
-	numShards    int
-	maxShards    int
-	maxConns     int
-	shards       []*Shard
+	username        string
+	password        string
+	host            string
+	port            int
+	dbNamePrefix    string
+	numShards       int
+	maxShards       int
+	maxConns        int
+	shards          []*Shard
+	beginEndHandler func() (func(), error)
+	metricsHandler  func() func(query string, shardName string)
 }
 
-func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int, maxConns int) *ShardSet {
-	return &ShardSet{
+func WithBeginEndHandler(handler func() (func(), error)) func(*ShardSet) {
+	return func(s *ShardSet) {
+		s.beginEndHandler = handler
+	}
+}
+func WithMetricsHandler(handler func() func(string, string)) func(*ShardSet) {
+	return func(s *ShardSet) {
+		s.metricsHandler = handler
+	}
+}
+func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int, maxConns int, options ...func(*ShardSet)) *ShardSet {
+	s := &ShardSet{
 		username:     username,
 		password:     password,
 		host:         host,
@@ -33,6 +45,10 @@ func NewShardSet(username string, password string, host string, port int, dbName
 		maxShards:    maxShards,
 		maxConns:     maxConns,
 	}
+	for _, option := range options {
+		option(s)
+	}
+	return s
 }
 
 func (s *ShardSet) Connect() (err errs.Err) {
@@ -98,7 +114,7 @@ func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*Shard, errs
 	if stdErr != nil {
 		return nil, errs.Wrap(stdErr, nil)
 	}
-	return &Shard{dbName, db, db}, nil
+	return &Shard{DBName: dbName, db: db, sqlConn: db, BeginEndHandler: s.beginEndHandler, MetricsHandler: s.metricsHandler}, nil
 }
 
 func SetOpener(opener Opener) {
