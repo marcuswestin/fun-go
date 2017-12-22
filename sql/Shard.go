@@ -2,7 +2,7 @@ package sql
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -15,6 +15,7 @@ type TxFunc func(shard *Shard) errs.Err
 type Shard struct {
 	DBName  string
 	db      *sql.DB // Nil for transaction and autocommit shard structs
+	log     *log.Logger
 	sqlConn interface {
 		Exec(query string, args ...interface{}) (sql.Result, error)
 		Query(query string, args ...interface{}) (*sql.Rows, error)
@@ -363,7 +364,7 @@ func (s *Shard) Select(output interface{}, query string, args ...interface{}) er
 		for rows.Next() {
 			structPtrVal := reflect.New(valType.Elem())
 			outputItemStructVal := structPtrVal.Elem()
-			err = structFromRow(outputItemStructVal, columns, rows, query, args)
+			err = structFromRow(outputItemStructVal, columns, rows, query, args, s.log)
 			if err != nil {
 				return err
 			}
@@ -451,7 +452,7 @@ func (s *Shard) scanOne(output interface{}, query string, required bool, args ..
 		vStruct = outputReflection.Elem()
 	}
 
-	err = structFromRow(vStruct, columns, rows, query, args)
+	err = structFromRow(vStruct, columns, rows, query, args, s.log)
 	if err != nil {
 		return
 	}
@@ -480,7 +481,7 @@ func (s *scanError) Error() string {
 	return s.err.Error() + " [SQL: " + s.query + "]"
 }
 
-func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows, query string, args []interface{}) errs.Err {
+func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows, query string, args []interface{}, log *log.Logger) errs.Err {
 	vals := make([]interface{}, len(columns))
 	for i, _ := range columns {
 		vals[i] = &sql.RawBytes{}
@@ -493,7 +494,7 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 	for i, column := range columns {
 		structFieldValue := outputItemStructVal.FieldByName(column)
 		if !structFieldValue.IsValid() {
-			fmt.Println("Warning: no corresponding struct field found for column: " + column)
+			log.Println("Warning: no corresponding struct field found for column: " + column)
 			continue
 		}
 		err := scanColumnValue(column, structFieldValue, vals[i].(*sql.RawBytes), query, args)

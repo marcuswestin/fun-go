@@ -3,6 +3,8 @@ package sql
 import (
 	"database/sql"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"strconv"
 	"strings"
 
@@ -22,6 +24,7 @@ type ShardSet struct {
 	shards          []*Shard
 	beginEndHandler func() (func(), error)
 	metricsHandler  func() func(query string, shardName string)
+	log             *log.Logger
 }
 
 func WithBeginEndHandler(handler func() (func(), error)) func(*ShardSet) {
@@ -34,6 +37,11 @@ func WithMetricsHandler(handler func() func(string, string)) func(*ShardSet) {
 		s.metricsHandler = handler
 	}
 }
+func WithLogger(logger *log.Logger) func(*ShardSet) {
+	return func(s *ShardSet) {
+		s.log = logger
+	}
+}
 func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int, maxConns int, options ...func(*ShardSet)) *ShardSet {
 	s := &ShardSet{
 		username:     username,
@@ -44,6 +52,7 @@ func NewShardSet(username string, password string, host string, port int, dbName
 		numShards:    numShards,
 		maxShards:    maxShards,
 		maxConns:     maxConns,
+		log:          log.New(ioutil.Discard, "", 0),
 	}
 	for _, option := range options {
 		option(s)
@@ -114,7 +123,7 @@ func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*Shard, errs
 	if stdErr != nil {
 		return nil, errs.Wrap(stdErr, nil)
 	}
-	return &Shard{DBName: dbName, db: db, sqlConn: db, BeginEndHandler: s.beginEndHandler, MetricsHandler: s.metricsHandler}, nil
+	return &Shard{DBName: dbName, db: db, sqlConn: db, BeginEndHandler: s.beginEndHandler, MetricsHandler: s.metricsHandler, log: s.log}, nil
 }
 
 func SetOpener(opener Opener) {
