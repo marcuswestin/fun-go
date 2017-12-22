@@ -2,7 +2,6 @@ package sql
 
 import (
 	"database/sql"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -453,7 +452,6 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 	for i, column := range columns {
 		structFieldValue := outputItemStructVal.FieldByName(column)
 		if !structFieldValue.IsValid() {
-			fmt.Println("Warning: no corresponding struct field found for column: " + column)
 			continue
 		}
 		err := scanColumnValue(column, structFieldValue, vals[i].(*sql.RawBytes), query, args)
