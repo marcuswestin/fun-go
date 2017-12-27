@@ -483,7 +483,7 @@ func (s *scanError) Error() string {
 
 func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows, query string, args []interface{}, log *log.Logger) errs.Err {
 	vals := make([]interface{}, len(columns))
-	for i, _ := range columns {
+	for i := range columns {
 		vals[i] = &sql.RawBytes{}
 	}
 	stdErr := rows.Scan(vals...)
@@ -494,7 +494,7 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 	for i, column := range columns {
 		structFieldValue := outputItemStructVal.FieldByName(column)
 		if !structFieldValue.IsValid() {
-			if log != nil{
+			if log != nil {
 				log.Println("Warning: no corresponding struct field found for column: " + column)
 			}
 			continue
