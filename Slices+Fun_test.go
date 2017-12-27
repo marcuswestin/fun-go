@@ -24,7 +24,7 @@ func TestFirstAndLastWithStructs(t *testing.T) {
 	first := testStruct{}
 	last := testStruct{}
 	one := []testStruct{first}
-	three := []testStruct{first, testStruct{}, last}
+	three := []testStruct{first, {}, last}
 	assert(t, First(one) == first)
 	assert(t, First(three) == first)
 	assert(t, Last(one) == first)
@@ -33,8 +33,8 @@ func TestFirstAndLastWithStructs(t *testing.T) {
 
 func TestFirstAndLastWithPtrs(t *testing.T) {
 	empty := []*testStruct{}
-	one := []*testStruct{&testStruct{}}
-	three := []*testStruct{&testStruct{}, &testStruct{}, &testStruct{}}
+	one := []*testStruct{{}}
+	three := []*testStruct{{}, {}, {}}
 	var nilSlice []*testStruct = nil
 	assert(t, First(empty).(*testStruct) == nil)
 	assert(t, First(one).(*testStruct) != nil)
