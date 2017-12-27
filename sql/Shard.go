@@ -494,7 +494,9 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 	for i, column := range columns {
 		structFieldValue := outputItemStructVal.FieldByName(column)
 		if !structFieldValue.IsValid() {
-			log.Println("Warning: no corresponding struct field found for column: " + column)
+			if log != nil{
+				log.Println("Warning: no corresponding struct field found for column: " + column)
+			}
 			continue
 		}
 		err := scanColumnValue(column, structFieldValue, vals[i].(*sql.RawBytes), query, args)
