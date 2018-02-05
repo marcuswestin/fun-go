@@ -3,6 +3,8 @@ package sql
 import (
 	"database/sql"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"strconv"
 	"strings"
 
@@ -11,19 +13,37 @@ import (
 )
 
 type ShardSet struct {
-	username     string
-	password     string
-	host         string
-	port         int
-	dbNamePrefix string
-	numShards    int
-	maxShards    int
-	maxConns     int
-	shards       []*Shard
+	username        string
+	password        string
+	host            string
+	port            int
+	dbNamePrefix    string
+	numShards       int
+	maxShards       int
+	maxConns        int
+	shards          []*Shard
+	beginEndHandler func() (func(), error)
+	metricsHandler  func(query string, shardName string) func()
+	log             *log.Logger
 }
 
-func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int, maxConns int) *ShardSet {
-	return &ShardSet{
+func WithBeginEndHandler(handler func() (func(), error)) func(*ShardSet) {
+	return func(s *ShardSet) {
+		s.beginEndHandler = handler
+	}
+}
+func WithMetricsHandler(handler func(query string, shardName string) func()) func(*ShardSet) {
+	return func(s *ShardSet) {
+		s.metricsHandler = handler
+	}
+}
+func WithLogger(logger *log.Logger) func(*ShardSet) {
+	return func(s *ShardSet) {
+		s.log = logger
+	}
+}
+func NewShardSet(username string, password string, host string, port int, dbNamePrefix string, numShards int, maxShards int, maxConns int, options ...func(*ShardSet)) *ShardSet {
+	s := &ShardSet{
 		username:     username,
 		password:     password,
 		host:         host,
@@ -32,7 +52,12 @@ func NewShardSet(username string, password string, host string, port int, dbName
 		numShards:    numShards,
 		maxShards:    maxShards,
 		maxConns:     maxConns,
+		log:          log.New(ioutil.Discard, "", 0),
 	}
+	for _, option := range options {
+		option(s)
+	}
+	return s
 }
 
 func (s *ShardSet) Connect() (err errs.Err) {
@@ -98,7 +123,7 @@ func newShard(s *ShardSet, dbName string, autoIncrementOffset int) (*Shard, errs
 	if stdErr != nil {
 		return nil, errs.Wrap(stdErr, nil)
 	}
-	return &Shard{dbName, db, db}, nil
+	return &Shard{DBName: dbName, db: db, sqlConn: db, BeginEndHandler: s.beginEndHandler, MetricsHandler: s.metricsHandler, log: s.log}, nil
 }
 
 func SetOpener(opener Opener) {

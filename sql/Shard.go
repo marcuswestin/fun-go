@@ -2,7 +2,7 @@ package sql
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -15,13 +15,23 @@ type TxFunc func(shard *Shard) errs.Err
 type Shard struct {
 	DBName  string
 	db      *sql.DB // Nil for transaction and autocommit shard structs
+	log     *log.Logger
 	sqlConn interface {
 		Exec(query string, args ...interface{}) (sql.Result, error)
 		Query(query string, args ...interface{}) (*sql.Rows, error)
 	}
+	BeginEndHandler func() (func(), error)
+	MetricsHandler  func(query string, shardName string) func()
 }
 
 func (s *Shard) Transact(txFun TxFunc) errs.Err {
+	if s.BeginEndHandler != nil {
+		doneFunc, stdErr := s.BeginEndHandler()
+		if stdErr != nil {
+			return errs.Wrap(stdErr)
+		}
+		defer doneFunc()
+	}
 	conn, stdErr := s.db.Begin()
 	if stdErr != nil {
 		return errs.Wrap(stdErr, errs.Info{"Description": "Could not open transaction"})
@@ -36,8 +46,7 @@ func (s *Shard) Transact(txFun TxFunc) errs.Err {
 			}))
 		}
 	}()
-
-	err := txFun(&Shard{s.DBName, nil, conn})
+	err := txFun(&Shard{DBName: s.DBName, sqlConn: conn, MetricsHandler: s.MetricsHandler})
 	if err != nil {
 		rbErr := conn.Rollback()
 		if rbErr != nil {
@@ -54,8 +63,30 @@ func (s *Shard) Transact(txFun TxFunc) errs.Err {
 	return nil
 }
 
+func (s *Shard) TransactWithPropagatedErrors(txFun TxFunc) errs.Err {
+	var err errs.Err
+	var txnResult = s.Transact(func(shard *Shard) errs.Err {
+		err = txFun(s)
+		return err
+	})
+	if txnResult != nil {
+		return txnResult
+	}
+	return err
+}
+
 // Query with fixed args
 func (s *Shard) Query(query string, args ...interface{}) (*sql.Rows, errs.Err) {
+	if s.BeginEndHandler != nil {
+		doneFunc, stdErr := s.BeginEndHandler()
+		if stdErr != nil {
+			return nil, errs.Wrap(stdErr)
+		}
+		defer doneFunc()
+	}
+	if s.MetricsHandler != nil {
+		defer s.MetricsHandler(query, s.DBName)()
+	}
 	fixArgs(args)
 	rows, stdErr := s.sqlConn.Query(query, args...)
 	if stdErr != nil {
@@ -66,6 +97,16 @@ func (s *Shard) Query(query string, args ...interface{}) (*sql.Rows, errs.Err) {
 
 // Execute with fixed args
 func (s *Shard) Exec(query string, args ...interface{}) (sql.Result, errs.Err) {
+	if s.BeginEndHandler != nil {
+		doneFunc, stdErr := s.BeginEndHandler()
+		if stdErr != nil {
+			return nil, errs.Wrap(stdErr)
+		}
+		defer doneFunc()
+	}
+	if s.MetricsHandler != nil {
+		defer s.MetricsHandler(query, s.DBName)()
+	}
 	fixArgs(args)
 	res, stdErr := s.sqlConn.Exec(query, args...)
 	if stdErr != nil {
@@ -323,7 +364,7 @@ func (s *Shard) Select(output interface{}, query string, args ...interface{}) er
 		for rows.Next() {
 			structPtrVal := reflect.New(valType.Elem())
 			outputItemStructVal := structPtrVal.Elem()
-			err = structFromRow(outputItemStructVal, columns, rows, query, args)
+			err = structFromRow(outputItemStructVal, columns, rows, query, args, s.log)
 			if err != nil {
 				return err
 			}
@@ -411,7 +452,7 @@ func (s *Shard) scanOne(output interface{}, query string, required bool, args ..
 		vStruct = outputReflection.Elem()
 	}
 
-	err = structFromRow(vStruct, columns, rows, query, args)
+	err = structFromRow(vStruct, columns, rows, query, args, s.log)
 	if err != nil {
 		return
 	}
@@ -440,9 +481,9 @@ func (s *scanError) Error() string {
 	return s.err.Error() + " [SQL: " + s.query + "]"
 }
 
-func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows, query string, args []interface{}) errs.Err {
+func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sql.Rows, query string, args []interface{}, log *log.Logger) errs.Err {
 	vals := make([]interface{}, len(columns))
-	for i, _ := range columns {
+	for i := range columns {
 		vals[i] = &sql.RawBytes{}
 	}
 	stdErr := rows.Scan(vals...)
@@ -453,7 +494,9 @@ func structFromRow(outputItemStructVal reflect.Value, columns []string, rows *sq
 	for i, column := range columns {
 		structFieldValue := outputItemStructVal.FieldByName(column)
 		if !structFieldValue.IsValid() {
-			fmt.Println("Warning: no corresponding struct field found for column: " + column)
+			if log != nil {
+				log.Println("Warning: no corresponding struct field found for column: " + column)
+			}
 			continue
 		}
 		err := scanColumnValue(column, structFieldValue, vals[i].(*sql.RawBytes), query, args)
