@@ -20,16 +20,16 @@ func TestNewShardSetWithNoBeginEndHandler(t *testing.T) {
 	assert.Nil(t, n.beginEndHandler)
 }
 func TestNewShardSetWithMetricsHandler(t *testing.T) {
-	f := func() func(string, string) {
-		return func(string, string) {}
+	f := func(string, string) func() {
+		return func() {}
 	}
 	n := NewShardSet("test", "test", "test", 9999, "test", 9999, 9999, 9999, WithMetricsHandler(f))
 	assert.NotEmpty(t, n)
 	assert.NotNil(t, n.metricsHandler)
 }
 func TestNewShardSetWithBothHandlers(t *testing.T) {
-	metricsHandler := func() func(string, string) {
-		return func(string, string) {}
+	metricsHandler := func(string, string) func() {
+		return func() {}
 	}
 	beginEndHandler := func() (func(), error) {
 		return func() {}, nil

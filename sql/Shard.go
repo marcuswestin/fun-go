@@ -21,7 +21,7 @@ type Shard struct {
 		Query(query string, args ...interface{}) (*sql.Rows, error)
 	}
 	BeginEndHandler func() (func(), error)
-	MetricsHandler  func() func(query string, shardName string)
+	MetricsHandler  func(query string, shardName string) func()
 }
 
 func (s *Shard) Transact(txFun TxFunc) errs.Err {
@@ -85,7 +85,7 @@ func (s *Shard) Query(query string, args ...interface{}) (*sql.Rows, errs.Err) {
 		defer doneFunc()
 	}
 	if s.MetricsHandler != nil {
-		defer s.MetricsHandler()(query, s.DBName)
+		defer s.MetricsHandler(query, s.DBName)()
 	}
 	fixArgs(args)
 	rows, stdErr := s.sqlConn.Query(query, args...)
@@ -105,7 +105,7 @@ func (s *Shard) Exec(query string, args ...interface{}) (sql.Result, errs.Err) {
 		defer doneFunc()
 	}
 	if s.MetricsHandler != nil {
-		defer s.MetricsHandler()(query, s.DBName)
+		defer s.MetricsHandler(query, s.DBName)()
 	}
 	fixArgs(args)
 	res, stdErr := s.sqlConn.Exec(query, args...)

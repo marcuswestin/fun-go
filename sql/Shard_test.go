@@ -20,7 +20,7 @@ func (dbcb *mockCircuitBreaker) CircuitBreakerHandler() (func(), error) {
 
 type mockShard struct {
 	BeginEndHandler func() (func(), error)
-	MetricsHandler  func() func(string, string)
+	MetricsHandler  func(string, string) func()
 }
 
 func (s *mockShard) Transact(txFun TxFunc) error {
@@ -78,7 +78,7 @@ type mockMetricsCollector struct {
 	numCalled int
 }
 
-func (hist *mockMetricsCollector) HistogramHandler() func(string, string) {
+func (hist *mockMetricsCollector) HistogramHandler(string, string) func() {
 	hist.numCalled++
 	return nil
 }

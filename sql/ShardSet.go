@@ -23,7 +23,7 @@ type ShardSet struct {
 	maxConns        int
 	shards          []*Shard
 	beginEndHandler func() (func(), error)
-	metricsHandler  func() func(query string, shardName string)
+	metricsHandler  func(query string, shardName string) func()
 	log             *log.Logger
 }
 
@@ -32,7 +32,7 @@ func WithBeginEndHandler(handler func() (func(), error)) func(*ShardSet) {
 		s.beginEndHandler = handler
 	}
 }
-func WithMetricsHandler(handler func() func(string, string)) func(*ShardSet) {
+func WithMetricsHandler(handler func(query string, shardName string) func()) func(*ShardSet) {
 	return func(s *ShardSet) {
 		s.metricsHandler = handler
 	}
